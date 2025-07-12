@@ -1,4 +1,6 @@
-<img width="1920" height="1080" alt="bymotiondesign" src="https://github.com/user-attachments/assets/8e81e223-a662-415d-b088-79425fb407b9" />
+<img width="1920" height="1080" alt="bymotiondesign" src="https://github.com/user-attachments/assets/bb99122a-b2a6-474c-8038-5f5ad98e5468" />
+
+
 # by motion & design
 > input anything and everything
 
