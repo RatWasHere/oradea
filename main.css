@@ -1,0 +1,609 @@
+body {
+  background: black;
+}
+
+:root {
+  --s: 600px;
+  --nr: 75px;
+  --notePreviewDelay: 1650ms;
+  view-transition-name: root;
+}
+
+.line {
+  width: 800px;
+  height: 90px;
+  border-bottom: 10px black solid;
+  background: white;
+}
+
+.note {
+  width: 150px;
+  height: 150px;
+  background: url('./quad_arc.svg');
+  background-size: cover;
+  margin-bottom: -150px;
+  rotate: 0deg;
+  /* transition: all cubic-bezier(.21,.81,.33,1.48) 0.2s; */
+}
+
+.note_child {
+  width: 20px;
+  margin: auto;
+  background: red;
+  text-align: center;
+  height: 20px;
+}
+
+@keyframes move {
+  0% {
+    left: 0px;
+  }
+
+  100% {
+    left: 800px;
+  }
+}
+
+@keyframes in {
+  0% {
+    scale: 2;
+    opacity: 0;
+  }
+
+  20% {
+    opacity: 1;
+  }
+
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+.indicator {
+  width: 10px;
+  position: absolute;
+  background: #ffb30072;
+  margin-left: 0px;
+  height: 190px;
+  animation: linear move var(--this-duration);
+}
+
+.flexbox {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+flexbox {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  width: 100%;
+}
+
+btext {
+  transition: color 0.4s ease;
+  font-size: 18px;
+  color: #ffffff;
+  text-align: center;
+  margin-left: auto;
+  margin-right: auto;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+.bpmMarker {
+  border-radius: 100%;
+  width: 10px;
+  height: 90px;
+  background: #ff0000;
+
+  margin-left: var(--bpm-margin);
+  margin-right: var(--bpm-margin);
+}
+
+
+body {
+  font-family:
+    "Arial",
+    Arial,
+    system-ui,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Open Sans",
+    "Helvetica Neue",
+    sans-serif,
+    sans-serif !important;
+  overflow: hidden;
+  cursor: default;
+  user-select: none;
+  justify-content: center;
+  align-items: center;
+  transition: all ease 0.5s;
+  color: #ffffff90;
+  font-size: 18px;
+}
+
+.animated_in {
+  animation: animate_in cubic-bezier(.17, .67, .13, 1.35);
+  scale: 1.5;
+}
+
+.preview_note {
+  animation: preview_note linear 0.2s infinite;
+  opacity: 0.5;
+}
+
+@keyframes preview_note {
+  0% {
+    rotate: 0deg;
+  }
+
+  25% {
+    rotate: 2deg;
+  }
+
+  75% {
+    rotate: -2deg;
+  }
+
+  100% {
+    rotate: 0deg;
+  }
+}
+
+@keyframes animate_in {
+  0% {
+    scale: 3;
+    opacity: 0;
+  }
+
+  100% {
+    scale: 1.5;
+    opacity: 1;
+  }
+}
+
+.arc {
+  width: var(--s);
+  aspect-ratio: 1;
+  position: absolute;
+  border-radius: 100%;
+  /* animation: note_in_classic linear 2s; */
+  /* margin-top: -10px; */
+  transition: opacity 0.4s ease;
+  /* opacity: 0.1; */
+  border: solid 0px white inset;
+  /* border-bottom: 22px white solid; */
+  background: url(./note.svg);
+  background-repeat: no-repeat;
+  background-size: cover;
+  rotate: var(--r);
+}
+
+.held {
+  box-shadow: yellow 0px -10px 1px 0px inset;
+  animation: held 500ms ease;
+  opacity: 0;
+  background-image: none !important;
+}
+
+.flicked {
+  transform: scale(0.9);
+}
+
+.flick1,
+.flick2 {
+  background: url(arrow.svg) !important;
+  background-size: cover !important;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.flick1 {
+  rotate: 180deg;
+}
+
+/* Left arrow border */
+
+
+.flick2>.header,
+.flick1>.header {
+  display: none;
+}
+
+@keyframes held {
+  0% {
+    scale: 1.1;
+    opacity: 0;
+  }
+
+  35% {
+    opacity: 1;
+    scale: 1;
+  }
+
+  60% {
+    scale: 1;
+  }
+
+  100% {
+    opacity: 0;
+    scale: 1;
+  }
+}
+
+.hold {
+  border-bottom: 12px green dashed;
+  transition: opacity 0.4s ease;
+}
+
+@keyframes note_in_classic {
+  0% {
+    opacity: 0;
+    scale: 0;
+  }
+
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+.done {
+  opacity: 0;
+  transition: all 0.2s ease !important;
+  animation: none !important;
+}
+
+.lane {
+  height: var(--s);
+  width: var(--nr);
+  margin-left: calc((var(--s) / 2) - var(--nr) / 2);
+  /* margin-top: var(--s); */
+  /* padding: calc(var(--nr) / 2 * -1); */
+  /* background: blue !important; */
+  margin-right: auto;
+  position: absolute;
+  border-radius: 1000px;
+  opacity: 0.5;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.item:hover {
+  scale: 1.2 !important;
+}
+
+.item {
+  width: var(--nr);
+  height: var(--nr);
+  border-radius: var(--nr);
+  /* margin-left: calc((var(--nr) / 2 * -1)); */
+  /* position: absolute; */
+  /* margin-top: calc(var(--s) / 2 - var(--nr)); */
+  margin-top: calc((var(--s) / 2) - var(--nr) / 2);
+  background: white;
+  z-index: 500;
+  pointer-events: auto;
+  position: relative;
+  ;
+  backdrop-filter: blur(10px);
+  /* animation: note_in_classic 100ms ease; */
+}
+
+@keyframes note_in_classic {
+  0% {
+    opacity: 0;
+    scale: 0;
+  }
+
+  100% {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+.header {
+  width: var(--nr);
+  height: var(--nr);
+  border-radius: var(--nr);
+  background: white;
+}
+
+.header:nth-of-type(1) {
+  margin-right: 0px;
+}
+
+#cursor {
+  width: 24px;
+  height: 24px;
+  border-radius: 100%;
+}
+
+.previewer {
+  --bg: #ffffff5e;
+  background: conic-gradient(var(--bg) 0deg,
+      var(--bg) 45deg,
+      #00000000 45deg);
+  rotate: calc(var(--i) * 45deg + 22.5deg);
+  width: var(--s);
+  aspect-ratio: 1;
+  position: absolute;
+  border-radius: 100%;
+  /* pointer-events: none; */
+  opacity: 1;
+  transition: scale 0.1s ease;
+}
+
+.previewer.hovered {
+  opacity: 1;
+  --bg: #f5b642;
+  transform: translateY(-12px) translateX(5px);
+}
+
+.previewer:nth-of-type(3),
+.previewer:nth-of-type(5),
+.previewer:nth-of-type(7),
+.previewer:nth-of-type(9) {
+  opacity: 0.8;
+}
+
+
+@view-transition {
+  navigation: auto !important;
+}
+
+
+::view-transition-group(root) {
+  animation-duration: 0.5s;
+}
+
+
+@keyframes move-out {
+  from {
+    opacity: 1;
+  }
+
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes move-in {
+  from {
+    opacity: 0;
+  }
+
+  to {
+    opacity: 1;
+  }
+}
+
+/* Apply the custom animation to the old and new page states */
+
+::view-transition-old(root) {
+  animation: 0.4s ease-in both move-out;
+}
+
+::view-transition-new(root) {
+  animation: 0.4s ease-in both move-in;
+}
+
+@font-face {
+  font-family: 'Moderno';
+  src: url('days.ttf');
+}
+
+.m {
+  font-family: 'Moderno';
+}
+
+
+btext {
+  transition: color 0.4s ease;
+  font-size: 18px;
+}
+
+btextm {
+  font-family: 'Moderno';
+  font-size: 24px;
+  color: #ffffff;
+}
+
+.big {
+  font-size: 32px;
+}
+
+.small {
+  font-size: 18px;
+  opacity: 0.5;
+}
+
+
+.image {
+  margin: auto;
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+  background-clip: content-box !important;
+  background-position: center !important;
+  transition: all 0.3s ease;
+  text-align: center;
+}
+
+btn {
+  background: #FFFFFF30;
+  transition: all ease .07s;
+  position: initial;
+  width: auto;
+  padding: 5px;
+  padding-left: 7px;
+  padding-right: 7px;
+  border-radius: 5px;
+  box-shadow: inset 0 0 2px #ffffff10;
+  display: block;
+  backdrop-filter: blur(12px);
+}
+
+btn:hover {
+  background: #FFFFFF50;
+}
+
+btn:active {
+  background: #FFFFFF20;
+}
+
+.comeIn {
+  animation: come-in 0.2s ease;
+}
+
+@keyframes come-in {
+  from {
+    opacity: 0;
+    scale: 0.5;
+  }
+
+  to {
+    opacity: 1;
+    scale: 1;
+  }
+}
+
+.noteContainer {
+  width: 100%;
+  height: 50%;
+  border-radius: var(--nr);
+  overflow: hidden;
+  transform: translateY(calc(var(--s) / 2));
+}
+
+.slider {
+  background: greenyellow;
+  padding-bottom: var(--nr);
+}
+
+.center {
+  --size: calc(var(--nr) * 1.5);
+  width: var(--size);
+  aspect-ratio: 1;
+  border-radius: var(--size);
+  z-index: 500;
+  background: #000000;
+  position: absolute;
+  translate: calc(var(--s) / 2 - var(--size) / 2) calc(var(--s) / 2 - var(--size) / 2);
+}
+
+#comboDisplay {
+  font-size: 24px;
+  color: #ffffff;
+  margin: auto;
+  display: block;
+  align-self: center;
+  justify-self: center;
+  text-align: center;
+}
+
+.hitIndicator {
+  --bg: #ffffff;
+  background:
+    conic-gradient(var(--bg) 0deg, var(--bg) 45deg, #00000000 45deg);
+  width: var(--s);
+  aspect-ratio: 1;
+  position: absolute;
+  border-radius: 100%;
+  /* pointer-events: none; */
+  opacity: 0.5;
+  transition: scale 0.1s ease;
+}
+
+.hitAlready {
+  width: 100%;
+  height: 100%;
+  --rotation: 67.5deg;
+  position: absolute;
+  inset: 0;
+  border-radius: 100%;
+  pointer-events: none;
+  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 45deg, transparent 45deg);
+  z-index: 1;
+  background-size: var(--s);
+  background-position: 600px 600px;
+  rotate: calc(var(--rotation) * -1);
+  transition: all 0.2s ease;
+  opacity: 1;
+  /* animation: glow 2s linear; */
+  background: linear-gradient(270deg, #FFFFFF, #FFFFFF30, #FFFFFF00);
+}
+
+.previewer:has(.hitKid)::after::after {
+  content: "";
+  border-radius: 100%;
+  --rotation: 67.5deg; /* define the variable here */
+  rotate: -67.5deg;
+  filter: blur(50px);
+  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 45deg, transparent 45deg);
+  mask-composite: exclude;
+  height: var(--s);
+  display: block;
+  width: var(--s);
+  background: blue;
+  z-index: 5000;
+  position: absolute;
+}
+
+.previewer::after {
+  content: "";
+  transition: all 0.15s cubic-bezier(0,.93,.68,1.03);
+  --rotation: 67.5deg;
+  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 45deg, transparent 45deg) !important;
+  scale: 1.2;
+  opacity: 0;
+  rotate: -67.5deg;
+  background: red;
+  width: var(--s);
+  height: var(--s);
+  display: block;
+  border-radius: 50px;
+}
+
+.previewer:has(.hitKid)::after {
+  filter: blur(50px);
+  scale: 1;
+  opacity: 1;
+  border-radius: var(--s);
+}
+
+.hitKid {
+  opacity: 0.5;
+  /* animation: glow 2s linear infinite; */
+}
+
+@keyframes glow {
+  0% {
+    opacity: 0;
+    background-position: 600px 600px;
+  }
+
+  50% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+    background-position: 0px 0px;
+  }
+}
+
+.laneParent {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+}

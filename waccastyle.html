@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Wacca Style Tunnel</title>
+  <style>
+    :root {
+      --tunnel-size: 100px;
+      --ring-inner: 30%;
+      --ring-outer: 70%;
+      --arc-start: 10deg;
+      --arc-angle: 60deg; /* NEW: arc size */
+      --arc-end: calc(var(--arc-start) + var(--arc-angle));
+      --ring-color: cyan;
+    }
+
+    .viewport {
+      perspective: 800px;
+      /* Controls the strength of the 3D effect */
+      overflow: hidden;
+      width: 100vw;   
+      height: 100vh;
+      background: black;
+      position: relative;
+    }
+
+    .tunnel-item {
+      width: var(--tunnel-size);
+      height: var(--tunnel-size);
+      background:
+        radial-gradient(circle, transparent var(--ring-inner), var(--ring-color) calc(var(--ring-inner) + 1%), var(--ring-color) var(--ring-outer), transparent calc(var(--ring-outer) + 1%));
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      border-radius: 50%;
+      transform-style: preserve-3d;
+      animation: tunnelMove 3s linear infinite;
+      -webkit-mask-image: conic-gradient(transparent 0deg var(--arc-start), white var(--arc-start) var(--arc-end), transparent var(--arc-end) 360deg);
+      mask-image: conic-gradient(transparent 0deg var(--arc-start), white var(--arc-start) var(--arc-end), transparent var(--arc-end) 360deg);
+      -webkit-mask-repeat: no-repeat;
+      mask-repeat: no-repeat;
+    }
+
+    @keyframes war {
+      0% {
+        rotate: 0deg;
+      }
+      100% {
+        rotate: -360deg;
+      }
+    }
+
+    @keyframes tunnelMove {
+      0% {
+        transform: translate(-50%, -50%) translateZ(-1000px) scale(0.8);
+        opacity: 0;
+      }
+
+      50% {
+        opacity: 1;
+      }
+
+      100% {
+        transform: translate(-50%, -50%) translateZ(0px) scale(1.5);
+        opacity: 0;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <a href="./index.html">back</a>
+</body>
+<script>
+  let parser = require('osu-mania-parser');
+  let beatmap = parser.parseFileSync('./beatmap.osu');
+  let sheet = [];
+  function swap(json){
+  var ret = {};
+  for(var key in json){
+    ret[json[key]] = key;
+  }
+  return ret;
+}
+
+  let keyPositions = swap(beatmap.keyPositions);
+
+  beatmap.hitObjects.forEach((hitObject, index) => {
+    if (hitObject.type == "note") {
+      let additionalOptions = {};
+      if (hitObject.hitSound.includes("clap")) {
+        additionalOptions.flickDirection = 1;
+      } else if (hitObject.hitSound.includes("whistle")) {
+        additionalOptions.flickDirection = 2;
+      } else if (hitObject.hitSound.includes("finish")) {
+        additionalOptions.hold = true;
+      }
+      if (hitObject.hitSound[0] != 'normal') console.log(hitObject.hitSound[0]);
+      console.log(hitObject.hitSound);
+      sheet.push({
+        time: hitObject.time,
+        angle: keyPositions[hitObject.x],
+        ...additionalOptions
+      });
+    } else if (hitObject.type == "hold") {
+      sheet.push({
+        time: hitObject.time,
+        angle: keyPositions[hitObject.x],
+        slider: true,
+        sliderEnd: hitObject.endTime,
+      });
+    }
+  });
+
+  require('fs').writeFileSync('./map.json', JSON.stringify(sheet, null, 2));
+</script>
+</html>
