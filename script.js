@@ -373,6 +373,7 @@ class InputSystem {
     // Handle sliders first
     const sliderNote = this.findSliderToHold(matchingNotes);
     if (sliderNote) {
+    console.log('snadskafldK')
       this.holdSlider(sliderNote);
       return;
     }
@@ -436,7 +437,7 @@ class InputSystem {
   }
 
   releaseSlider(note) {
-    this.gameState.breakCombo();
+    this.gameState.combo = 0;
     note.element.style.opacity = '0.5';
   }
 
@@ -479,6 +480,7 @@ class InputSystem {
   canBeHeld(note) {
     const currentTime = this.gameState.currentTime;
     if (note.slider) {
+      console.log('ayeeyee')
       return note.time - CONFIG.HOLD_WINDOW < currentTime && note.time + CONFIG.HOLD_WINDOW > currentTime;
     }
     return note.time - CONFIG.HOLD_WINDOW < currentTime;
@@ -538,9 +540,10 @@ class InputSystem {
 // RENDERING SYSTEM
 // ============================================================================
 class RenderingSystem {
-  constructor(gameState, timingSystem) {
+  constructor(gameState, timingSystem, inputSystem) {
     this.gameState = gameState;
     this.timingSystem = timingSystem;
+    this.inputSystem = inputSystem;
     this.lastUpdateTime = 0;
     this.frameCount = 0;
   }
@@ -642,6 +645,8 @@ class RenderingSystem {
     let { noteElement, lane, noteContainer } = elements
     if (note.hold) {
       noteElement.classList.add('hold');
+      noteContainer.appendChild(lane);
+      lane.appendChild(noteElement);
     } else if (note.slider) {
       noteElement.classList.add('slider');
       const actualHeight = (note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY * (CONFIG.CONTAINER_RADIUS / 2);
@@ -655,6 +660,8 @@ class RenderingSystem {
       lane.appendChild(noteContainer);
     } else if (note.flickDirection) {
       noteElement.classList.add(`flick${note.flickDirection}`);
+      noteContainer.appendChild(lane);
+      lane.appendChild(noteElement);
     } else {
       noteContainer.appendChild(lane);
       lane.appendChild(noteElement);
@@ -669,13 +676,12 @@ class RenderingSystem {
   updateNotePositions(currentTime) {
     this.gameState.sheet.forEach(note => {
       if (!note.done && note.element) {
-        this.updateSingleNote(note, currentTime);
+        this.updateNote(note, currentTime);
       }
     });
   }
 
-  updateSingleNote(note, currentTime) {
-    // Get timing information
+  updateNote(note, currentTime) {
     const noteTiming = note.timeSheet
       ? this.timingSystem.getTimingPointAt(currentTime, note.timeSheet, {
         speed: 1,
@@ -708,6 +714,8 @@ class RenderingSystem {
       note.element.style.translate = newTranslate;
     }
 
+    // WIP: dynamic slider heights based on current speed
+
     // if (note.element.style.height !== `${actualHeight}px` && !note.heightUnchanged) {
     //   note.element.style.height = `${actualHeight}px`;
     // }
@@ -721,6 +729,10 @@ class RenderingSystem {
     const noteTime = note.time
     // Offset does not affect note hit time, it's purely visual
     if (noteTime < currentTime < note.sliderEnd) {
+      note.element.style.opacity = '1';
+      note.element.style.scale = '2';
+      note.wasEverHeld = true;
+      note.isBeingHeld = true;
       console.log('it should be held')
     } else {
       console.log('it is not being held')
@@ -747,7 +759,7 @@ class RenderingSystem {
       if (note.element && !note.done && this.hasFailed(note, currentTime)) {
         note.element.parentElement.parentElement.remove();
         note.done = true;
-        // Create failed hold effect
+
         this.createFailedHoldEffect(note);
       }
     });
@@ -759,7 +771,12 @@ class RenderingSystem {
 
     // For sliders, check if they've ended and weren't held
     if (note.slider) {
-      return !note.wasEverHeld && (currentTime - note.sliderEnd) > CONFIG.ACCEPTANCE_THRESHOLD;
+      if (note.isBeingHeld && (note.sliderEnd + CONFIG.ACCEPTANCE_THRESHOLD) > currentTime) {
+        this.inputSystem.releaseSlider(note);
+        return true;
+      } else if (!note.isBeingHeld && (note.sliderEnd - CONFIG.ACCEPTANCE_THRESHOLD) < currentTime) return true;
+      return false;
+      // return !note.wasEverHeld && Math.abs(note.time) > CONFIG.ACCEPTANCE_THRESHOLD;
     }
 
     // For regular notes, check if they've passed the acceptance window
@@ -814,10 +831,6 @@ class ScoringSystem {
     return accuracy;
   }
 
-  breakCombo() {
-    this.gameState.combo = 0;
-  }
-
   updateComboDisplay() {
     const comboText = `${this.gameState.combo}`;
     if (this.gameState.elements.comboDisplay.innerText !== comboText) {
@@ -834,7 +847,7 @@ class RhythmGame {
     this.gameState = new GameState();
     this.timingSystem = new TimingSystem();
     this.inputSystem = new InputSystem(this.gameState);
-    this.renderingSystem = new RenderingSystem(this.gameState, this.timingSystem);
+    this.renderingSystem = new RenderingSystem(this.gameState, this.timingSystem, this.inputSystem);
     this.scoringSystem = new ScoringSystem(this.gameState);
 
     this.startGameLoop();
