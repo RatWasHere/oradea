@@ -369,13 +369,11 @@ class InputSystem {
     const rotation = this.gameState.rotations[laneIndex];
 
     const matchingNotes = this.findMatchingNotes(laneIndex, rotation);
-    console.log('Matching notes:', matchingNotes.length);
 
     // Handle sliders first
     const sliderNote = this.findSliderToHold(matchingNotes);
-    console.log('Found slider note:', !!sliderNote);
+    console.log('Found slider note:', sliderNote);
     if (sliderNote) {
-      console.log('Holding slider at time:', this.gameState.currentTime, 'slider time:', sliderNote.time);
       this.holdSlider(sliderNote);
       return;
     }
@@ -613,7 +611,6 @@ class RenderingSystem {
 
     relevantNotes.forEach(note => {
       if (note.slider) {
-        console.log('got a slider!')
       }
       if (!note.element) {
         this.createNoteElement(note);

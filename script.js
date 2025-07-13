@@ -369,13 +369,11 @@ class InputSystem {
     const rotation = this.gameState.rotations[laneIndex];
 
     const matchingNotes = this.findMatchingNotes(laneIndex, rotation);
-    console.log('Matching notes:', matchingNotes.length);
 
     // Handle sliders first
     const sliderNote = this.findSliderToHold(matchingNotes);
-    console.log('Found slider note:', !!sliderNote);
+    console.log(sliderNote)
     if (sliderNote) {
-      console.log('Holding slider at time:', this.gameState.currentTime, 'slider time:', sliderNote.time);
       this.holdSlider(sliderNote);
       return;
     }
@@ -393,9 +391,8 @@ class InputSystem {
     const rotation = this.gameState.rotations[laneIndex];
 
     const matchingNotes = this.findMatchingNotes(laneIndex, rotation);
-
     // Handle sliders first - look for currently held sliders
-    const sliderNote = this.findSliderToHold(matchingNotes, false);
+    const sliderNote = this.findSliderToRelease(matchingNotes, false);
     if (sliderNote) {
       this.releaseSlider(sliderNote);
       return;
@@ -404,7 +401,7 @@ class InputSystem {
 
   findMatchingNotes(laneIndex, rotation) {
     return this.gameState.sheet.filter(note => {
-      if (!note.element || note.isBeingHeld || note.done) return false;
+      if (!note.element || note.done) return false;
 
       const matchesInput = !note.requiredInput || note.requiredInput === (laneIndex + 1);
       const inArc = this.isInArc(note, rotation);
@@ -413,17 +410,17 @@ class InputSystem {
     });
   }
 
-  findSliderToHold(notes, shouldBeHeld = true) {
+  findSliderToHold(notes) {
     return notes.find(note => {
       if (!note.slider) return false;
+      return !note.isBeingHeld && this.canBeHeld(note);
+    });
+  }
 
-      if (shouldBeHeld) {
-        // Find sliders that aren't being held but are within the holdable time window
-        return !note.isBeingHeld && this.canBeHeld(note);
-      } else {
-        // Find sliders that are currently being held
-        return note.isBeingHeld;
-      }
+  findSliderToRelease(notes) {
+    return notes.find(note => {
+      if (!note.slider) return false;
+      return note.isBeingHeld;
     });
   }
 
@@ -448,7 +445,6 @@ class InputSystem {
     note.isBeingHeld = false;
     note.element.style.opacity = '0.5';
     note.element.style.scale = '1';
-    // Don't reset combo here - let the failure system handle it
   }
 
   hitNote(note, laneIndex) {
@@ -613,7 +609,6 @@ class RenderingSystem {
 
     relevantNotes.forEach(note => {
       if (note.slider) {
-        console.log('got a slider!')
       }
       if (!note.element) {
         this.createNoteElement(note);
@@ -726,7 +721,7 @@ class RenderingSystem {
     }
 
     // Fix this condition - it was using invalid syntax
-    if (currentTime >= noteTime && currentTime <= note.sliderEnd) {
+    if (note.isBeingHeld || currentTime <= note.sliderEnd) {
       this.updateSliderHoldStatus(note, currentTime, timing);
     }
   }
@@ -735,14 +730,12 @@ class RenderingSystem {
     const noteTime = note.time;
 
     // Check if we're within the slider's active time
-    if (currentTime >= noteTime && currentTime <= note.sliderEnd) {
-      if (note.isBeingHeld) {
-        note.element.style.opacity = '1';
-        note.element.style.scale = '2';
-      } else {
-        note.element.style.opacity = '0.5';
-        note.element.style.scale = '1';
-      }
+    if (note.isBeingHeld) {
+      note.element.style.opacity = '1';
+      note.element.style.scale = '1';
+    } else {
+      note.element.style.opacity = '0.5';
+      note.element.style.scale = '1';
     }
   }
 
