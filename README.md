@@ -17,6 +17,8 @@
 
 <img width="1920" height="1080" alt="dynamicstyling" src="https://github.com/user-attachments/assets/957b64ae-aaba-444a-93ec-a2f011a60bbc" />
 
+<img width="1920" height="1080" alt="flicking" src="https://github.com/user-attachments/assets/f68c5382-b440-4058-9389-ee45eaedc283" />
+
 
 
 Inspired by MAIMAI DX.
