@@ -21,7 +21,8 @@ const CONFIG = {
     'good': [200, 300],
     'ok': [300, 400],
     'bad': [400, 500],
-  }
+  },
+  FLICK_COUNT_ANGLE: 10,
 };
 
 // ============================================================================
@@ -391,6 +392,11 @@ class InputSystem {
     const rotation = this.gameState.rotations[laneIndex];
 
     const matchingNotes = this.findMatchingNotes(laneIndex, rotation);
+    matchingNotes.forEach(note => {
+      if (note.flickStart && note.input === laneIndex && !note.done) {
+        this.releaseFlick(note);
+      }
+    })
     // Handle sliders first - look for currently held sliders
     const sliderNote = this.findSliderToRelease(matchingNotes, false);
     if (sliderNote) {
@@ -448,7 +454,7 @@ class InputSystem {
   }
 
   hitNote(note, laneIndex) {
-    if (note.flickDirection) {
+    if (note.flick) {
       this.startFlick(note, laneIndex);
       return;
     }
@@ -469,6 +475,12 @@ class InputSystem {
     note.input = laneIndex;
     note.flickMoment = this.gameState.currentTime;
     this.vibrate(4);
+  }
+
+  releaseFlick(note) {
+    note.flickStart = null;
+    note.flickMoment = null;
+    note.input = null;
   }
 
   isInArc(note, rotation) {
@@ -664,7 +676,7 @@ class RenderingSystem {
 
       noteContainer.appendChild(noteElement);
       lane.appendChild(noteContainer);
-    } else if (note.flickDirection) {
+    } else if (note.flick) {
       noteElement.classList.add(`flick${note.flickDirection}`);
       noteContainer.appendChild(lane);
       lane.appendChild(noteElement);
@@ -702,6 +714,25 @@ class RenderingSystem {
 
     if (note.slider) {
       this.updateSliderPosition(note, currentTime, noteTiming);
+    } else if (note.flick) {
+      let rotations = note.rotations || [0, 0];
+      let toBeHigher0 = note.flickDirection == 1 ? this.gameState.rawRotations[0] : rotations[0];
+      let toBeLower0 = note.flickDirection == 1 ? rotations[0] : this.gameState.rawRotations[0];
+
+      let toBeHigher1 = note.flickDirection == 1 ? this.gameState.rawRotations[1] : rotations[1];
+      let toBeLower1 = note.flickDirection == 1 ? rotations[1] : this.gameState.rawRotations[1];
+
+      if (toBeHigher0 > toBeLower0 && this.gameState.keysPressed['w']) {
+        rotations[0] = this.gameState.rawRotations[0];
+      }
+      if (toBeHigher1 > toBeLower1 && this.gameState.keysPressed['s']) {
+        rotations[1] = this.gameState.rawRotations[1];
+      }
+
+      if (rotations[0] || rotations[1]) {
+        note.rotations = rotations;
+      }
+      this.updateRegularNotePosition(note, currentTime, noteTiming);
     } else {
       this.updateRegularNotePosition(note, currentTime, noteTiming);
     }
