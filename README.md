@@ -5,6 +5,7 @@
 > input anything and everything. rhythm game allowing for input via controller, touch, mouse and keyboard.
 
 
+<img width="1920" height="318" alt="Frame 2_1" src="https://github.com/user-attachments/assets/6eda26ae-3bbd-42af-ad5a-98f1aff4c639" />
 
 <img width="1920" height="1080" alt="playsheet" src="https://github.com/user-attachments/assets/63804961-b1d3-4a4e-8d4e-b07244737bb6" />
 
