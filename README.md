@@ -13,4 +13,10 @@
 
 
 
+<img width="1920" height="318" alt="capabilities" src="https://github.com/user-attachments/assets/45d66e8a-f36f-4928-be42-cd7ce45bd86e" />
+
+<img width="1920" height="1080" alt="dynamicstyling" src="https://github.com/user-attachments/assets/957b64ae-aaba-444a-93ec-a2f011a60bbc" />
+
+
+
 Inspired by MAIMAI DX.
