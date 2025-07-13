@@ -248,13 +248,16 @@ class InputSystem {
     this.gameState.keysPressed[key] = true;
 
     if (key === 'w' || key === 's') {
-      this.processNoteHit(key);
+      this.processNoteHold(key);
     }
   }
 
   handleKeyUp(event) {
     const key = event.key.toLowerCase();
     this.gameState.keysPressed[key] = false;
+    if (key === 'w' || key === 's') {
+      this.processNoteRelease(key);
+    }
   }
 
   handleMouseMove(event) {
@@ -317,7 +320,7 @@ class InputSystem {
   updateTriggerState(key, pressed, cursorIndex) {
     if (pressed && !this.gameState.keysPressed[key]) {
       this.gameState.keysPressed[key] = true;
-      this.processNoteHit(key);
+      this.processNoteHold(key);
       this.scaleCursor(cursorIndex, '2');
     } else if (!pressed && this.gameState.keysPressed[key]) {
       this.gameState.keysPressed[key] = false;
@@ -360,7 +363,7 @@ class InputSystem {
     return ((parseFloat(deg) % 360) + 360) % 360;
   }
 
-  processNoteHit(key) {
+  processNoteHold(key) {
     const isW = key === 'w';
     const laneIndex = isW ? 0 : 1;
     const rotation = this.gameState.rotations[laneIndex];
@@ -381,9 +384,24 @@ class InputSystem {
     }
   }
 
+  processNoteRelease(key) {
+    const isW = key === 'w';
+    const laneIndex = isW ? 0 : 1;
+    const rotation = this.gameState.rotations[laneIndex];
+
+    const matchingNotes = this.findMatchingNotes(laneIndex, rotation);
+
+    // Handle sliders first
+    const sliderNote = this.findSliderToHold(matchingNotes);
+    if (sliderNote) {
+      this.releaseSlider(sliderNote);
+      return;
+    }
+  }
+
   findMatchingNotes(laneIndex, rotation) {
     return this.gameState.sheet.filter(note => {
-      if (!note.element || note.wasHeld || note.done) return false;
+      if (!note.element || note.isBeingHeld || note.done) return false;
 
       const matchesInput = !note.requiredInput || note.requiredInput === (laneIndex + 1);
       const inArc = this.isInArc(note, rotation);
@@ -395,7 +413,7 @@ class InputSystem {
   findSliderToHold(notes) {
     return notes.find(note =>
       note.slider &&
-      !note.wasHeld &&
+      !note.isBeingHeld &&
       this.canBeHeld(note)
     );
   }
@@ -412,9 +430,14 @@ class InputSystem {
   }
 
   holdSlider(note) {
-    note.wasHeld = true;
+    note.isBeingHeld = true;
     note.wasEverHeld = true;
     note.element.style.opacity = '1';
+  }
+
+  releaseSlider(note) {
+    this.gameState.breakCombo();
+    note.element.style.opacity = '0.5';
   }
 
   hitNote(note, laneIndex) {
@@ -732,7 +755,7 @@ class RenderingSystem {
 
   hasFailed(note, currentTime) {
     // Don't fail notes that are already done or haven't started yet
-    if (note.done || note.wasHeld) return false;
+    if (note.done || note.isBeingHeld) return false;
 
     // For sliders, check if they've ended and weren't held
     if (note.slider) {
@@ -789,6 +812,10 @@ class ScoringSystem {
     }
 
     return accuracy;
+  }
+
+  breakCombo() {
+    this.gameState.combo = 0;
   }
 
   updateComboDisplay() {
