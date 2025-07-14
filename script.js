@@ -722,6 +722,18 @@ class RenderingSystem {
       let toBeHigher1 = note.flickDirection == 1 ? this.gameState.rawRotations[1] : rotations[1];
       let toBeLower1 = note.flickDirection == 1 ? rotations[1] : this.gameState.rawRotations[1];
 
+      if (this.gameState.keysPressed['w'] && this.inputSystem.isInArc(note, this.gameState.rawRotations[0])) {
+        
+      } else if (rotations[0]) {
+        rotations[0] = null;
+      }
+
+      if (this.gameState.keysPressed['s'] && this.inputSystem.isInArc(note, this.gameState.rawRotations[1])) {
+        
+      } else if (rotations[1]) {
+        rotations[1] = null;
+      }
+
       if (toBeHigher0 > toBeLower0 && this.gameState.keysPressed['w']) {
         rotations[0] = this.gameState.rawRotations[0];
       }
@@ -733,6 +745,8 @@ class RenderingSystem {
         note.rotations = rotations;
       }
       this.updateRegularNotePosition(note, currentTime, noteTiming);
+
+      
     } else {
       this.updateRegularNotePosition(note, currentTime, noteTiming);
     }
