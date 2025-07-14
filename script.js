@@ -21,8 +21,7 @@ const CONFIG = {
     'good': [200, 300],
     'ok': [300, 400],
     'bad': [400, 500],
-  },
-  FLICK_COUNT_ANGLE: 10,
+  }
 };
 
 // ============================================================================
@@ -723,13 +722,13 @@ class RenderingSystem {
       let toBeLower1 = note.flickDirection == 1 ? rotations[1] : this.gameState.rawRotations[1];
 
       if (this.gameState.keysPressed['w'] && this.inputSystem.isInArc(note, this.gameState.rawRotations[0])) {
-        
+        rotations[0] = this.gameState.rawRotations[0];
       } else if (rotations[0]) {
         rotations[0] = null;
       }
 
       if (this.gameState.keysPressed['s'] && this.inputSystem.isInArc(note, this.gameState.rawRotations[1])) {
-        
+        rotations[1] = this.gameState.rawRotations[1];
       } else if (rotations[1]) {
         rotations[1] = null;
       }
@@ -746,7 +745,11 @@ class RenderingSystem {
       }
       this.updateRegularNotePosition(note, currentTime, noteTiming);
 
-      
+      if (Math.abs(rotations[0] - this.gameState.rawRotations[0]) > CONFIG.FLICK_THRESHOLD || Math.abs(rotations[1] - this.gameState.rawRotations[1])) {
+        let currentDiff = ((this.gameState.rawRotations[0] - baseline + 540) % 360) - 180;
+        let savedDiff = ((rotations[0] - baseline + 540) % 360) - 180;
+
+      }
     } else {
       this.updateRegularNotePosition(note, currentTime, noteTiming);
     }
