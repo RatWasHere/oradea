@@ -478,7 +478,11 @@ class InputSystem {
 
   releaseFlick(note) {
     if (note.done) {
-
+      note.element.classList.remove('flick1', 'flick2');
+      note.element.classList.add('flicked');
+      setTimeout(() => {
+        note.element.parentElement.parentElement.remove();
+      }, 250);
     }
     note.flickStart = null;
     note.flickMoment = null;
@@ -678,6 +682,9 @@ class RenderingSystem {
 
       noteContainer.appendChild(noteElement);
       lane.appendChild(noteContainer);
+      const header = document.createElement('div');
+      header.classList.add('header');
+      noteElement.appendChild(header);
     } else if (note.flick) {
       noteElement.classList.add(`flick${note.flickDirection}`);
       noteContainer.appendChild(lane);
@@ -685,12 +692,12 @@ class RenderingSystem {
     } else {
       noteContainer.appendChild(lane);
       lane.appendChild(noteElement);
+      const header = document.createElement('div');
+      header.classList.add('header');
+      noteElement.appendChild(header);
     }
 
     // The header is just the note in itself
-    const header = document.createElement('div');
-    header.classList.add('header');
-    noteElement.appendChild(header);
   }
 
   updateNotePositions(currentTime) {
