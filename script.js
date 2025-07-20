@@ -8,7 +8,7 @@ const CONFIG = {
   SNAP_INTERVAL: 45,
   ANGLE_MODIFIER: 45,
   NOTE_ARC_ANGLE: 20,
-  NOTE_PREVIEW_DELAY: 1650,
+  NOTE_PREVIEW_DELAY: 750,
   CONTAINER_RADIUS: 600,
   NOTE_RADIUS: 75,
   PREVIEW_COUNT: 8,
@@ -31,7 +31,10 @@ class GameState {
   constructor() {
     this.crossDetails = JSON.parse(fs.readFileSync('./crossdetails', 'utf8'));
     this.sheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/${this.crossDetails.map}`, 'utf8'));
-    this.timeSheet = [{ time: 100, transition: 430, speed: 1, offset: 2 }];
+    try {
+      this.timeSheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/time_${this.crossDetails.map}`, 'utf8'));
+
+    } catch (error) {}
 
     this.combo = 0;
     this.keysPressed = {};
@@ -81,6 +84,7 @@ class TimingSystem {
    * @returns {Object} Interpolated timing point with speed and offset
    */
   getTimingPointAt(time, timingSheet, defaultPoint = { speed: 1, offset: 0 }) {
+    if (!timingSheet) return { ...defaultPoint };
     // Don't cache when note is provided (for style updates)
     const shouldCache = !defaultPoint.note;
     const cacheKey = shouldCache ? `${time}_${JSON.stringify(timingSheet)}` : null;
@@ -142,11 +146,26 @@ class TimingSystem {
       });
     }
 
+    console.log(timingPoint.style)
+
     // Apply child styles
     if (timingPoint.style.child) {
       const childElement = noteElement.parentElement;
       Object.entries(timingPoint.style.child).forEach(([key, value]) => {
         childElement.style.setProperty(key, value);
+      });
+    }
+
+    if (timingPoint.style.segments) {
+      let previewers = document.querySelectorAll('.previewer_parent');
+      previewers.forEach((previewer, index) => {
+        const segmentStyle = timingPoint.style.segments[index];
+        console.log(segmentStyle, index, timingPoint.style.segments)
+        if (segmentStyle) {
+          Object.entries(segmentStyle).forEach(([key, value]) => {
+            previewer.style.setProperty(key, value);
+          });
+        }
       });
     }
   }
@@ -274,7 +293,8 @@ class InputSystem {
   }
 
   handleGamepadConnected(event) {
-    this.gameState.gamepad = navigator.getGamepads()[0];
+    let gamepads = navigator.getGamepads()
+    this.gameState.gamepad = gamepads.find(gp => !!gp);
   }
 
   updateGamepadInput() {

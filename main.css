@@ -351,14 +351,14 @@ body {
 
 .previewer.hovered {
   opacity: 1;
-  --bg: #f5b642;
+  --bg: #f5b64260;
   transform: translateY(-12px) translateX(5px);
 }
 
-.previewer:nth-of-type(3),
-.previewer:nth-of-type(5),
-.previewer:nth-of-type(7),
-.previewer:nth-of-type(9) {
+.previewer_parent:nth-of-type(3) > .previewer,
+.previewer_parent:nth-of-type(5) > .previewer,
+.previewer_parent:nth-of-type(7) > .previewer,
+.previewer_parent:nth-of-type(9) > .previewer {
   opacity: 0.8;
 }
 
@@ -611,4 +611,11 @@ btn:active {
   width: 100%;
   height: 100%;
   position: absolute;
+}
+
+.previewer_parent {
+  position: absolute;
+  scale: 1;
+  width: var(--s);
+  height: var(--s);
 }

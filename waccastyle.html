@@ -90,13 +90,13 @@
       let additionalOptions = {};
       if (hitObject.hitSound.includes("clap")) {
         additionalOptions.flickDirection = 1;
+        additionalOptions.flick = true;
       } else if (hitObject.hitSound.includes("whistle")) {
         additionalOptions.flickDirection = 2;
+        additionalOptions.flick = true;
       } else if (hitObject.hitSound.includes("finish")) {
         additionalOptions.hold = true;
       }
-      if (hitObject.hitSound[0] != 'normal') console.log(hitObject.hitSound[0]);
-      console.log(hitObject.hitSound);
       sheet.push({
         time: hitObject.time,
         angle: keyPositions[hitObject.x],
