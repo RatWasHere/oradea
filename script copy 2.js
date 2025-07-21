@@ -33,7 +33,8 @@ class GameState {
     this.sheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/${this.crossDetails.map}`, 'utf8'));
     try {
       this.timeSheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/time_${this.crossDetails.map}`, 'utf8'));
-    } catch (error) {}
+
+    } catch (error) { }
 
     this.combo = 0;
     this.keysPressed = {};
@@ -73,7 +74,6 @@ class GameState {
 class TimingSystem {
   constructor() {
     this.cachedTimingPoints = new Map();
-    this.globalTimingPoint = { speed: 1, offset: 0 };
   }
 
   /**
@@ -83,37 +83,53 @@ class TimingSystem {
    * @param {Object} defaultPoint - Default timing values
    * @returns {Object} Interpolated timing point with speed and offset
    */
-
-  getTiming(note, time) {
-    return note.timeSheet ? this.getTimingPointAt(time, note.timeSheet, { note }) : this.globalTimingPoint;
-  }
-
-  updateGlobalTimingPoint(sheet, time) {
-    const currentGlobalPoint = this.getTimingPointAt(time, sheet, { speed: 1, offset: 0 });
-    this.globalTimingPoint = currentGlobalPoint;
-    console.log(currentGlobalPoint)
-  }
-
   getTimingPointAt(time, timingSheet, defaultPoint = { speed: 1, offset: 0 }) {
-    if (!timingSheet) return defaultPoint;
+    // Use note timesheet exclusively if it exists, otherwise fall back to global
+    const activeSheet = defaultPoint.note?.timeSheet || timingSheet;
+    if (!activeSheet) return { ...defaultPoint };
 
+    // Store reference to parent sheet for interpolation
+    if (defaultPoint.note?.timeSheet) {
+      activeSheet.forEach(point => point.parentSheet = activeSheet);
+    }
+
+    // Don't cache when note is provided (for style updates)
+    const shouldCache = !defaultPoint.note;
+    const cacheKey = shouldCache ? `${time}_${JSON.stringify(activeSheet)}` : null;
+
+    if (shouldCache && this.cachedTimingPoints.has(cacheKey)) {
+      return this.cachedTimingPoints.get(cacheKey);
+    }
+
+    // Find the active timing point
     let activePoint = null;
+    let nextPoint = null;
 
-    for (let i = 0; i < timingSheet.length; i++) {
-      const point = timingSheet[i];
+    for (let i = 0; i < activeSheet.length; i++) {
+      const point = activeSheet[i];
       const pointStartTime = parseFloat(point.time);
 
       if (pointStartTime <= time) {
         activePoint = point;
+        nextPoint = activeSheet[i + 1] || null;
+      } else {
+        break;
       }
     }
-    
+
+    if (!activePoint) {
+      const result = { ...defaultPoint };
+      if (shouldCache) this.cachedTimingPoints.set(cacheKey, result);
+      return result;
+    }
+
     // Apply styles if note is provided
     if (defaultPoint.note) {
       this.applyNoteStyles(activePoint, defaultPoint);
     }
 
-    const result = this.interpolateTimingPoint(time, activePoint, defaultPoint);
+    const result = this.interpolateTimingPoint(time, activePoint, nextPoint, defaultPoint);
+    if (shouldCache) this.cachedTimingPoints.set(cacheKey, result);
     return result;
   }
 
@@ -138,6 +154,8 @@ class TimingSystem {
       });
     }
 
+    console.log(timingPoint.style)
+
     // Apply child styles
     if (timingPoint.style.child) {
       const childElement = noteElement.parentElement;
@@ -160,12 +178,12 @@ class TimingSystem {
     }
   }
 
-  interpolateTimingPoint(time, activePoint, defaultPoint) {
+  interpolateTimingPoint(time, activePoint, nextPoint, defaultPoint) {
     const startTime = parseFloat(activePoint.time);
     const transition = parseFloat(activePoint.transition || 0);
 
     // If no transition, return the active point values
-    if (!transition) {
+    if (transition === 0) {
       return {
         speed: parseFloat(activePoint.speed ?? defaultPoint.speed),
         offset: parseFloat(activePoint.offset ?? defaultPoint.offset) * CONFIG.NOTE_PREVIEW_DELAY
@@ -174,13 +192,20 @@ class TimingSystem {
 
     const endTime = startTime + transition;
 
-    let speedFrom = defaultPoint.speed, offsetFrom = defaultPoint.offset;
+    // Get starting values (from 'from' property or previous point values)
+    let speedFrom, offsetFrom;
 
     if (activePoint.from) {
       speedFrom = parseFloat(activePoint.from.speed ?? defaultPoint.speed);
       offsetFrom = parseFloat(activePoint.from.offset ?? defaultPoint.offset);
+    } else {
+      // Find the previous timing point or use defaults
+      const prevPoint = this.findPreviousTimingPoint(startTime, activePoint.parentSheet || []);
+      speedFrom = parseFloat(prevPoint?.speed ?? defaultPoint.speed);
+      offsetFrom = parseFloat(prevPoint?.offset ?? defaultPoint.offset);
     }
 
+    // Get ending values
     const speedTo = parseFloat(activePoint.speed ?? defaultPoint.speed);
     const offsetTo = parseFloat(activePoint.offset ?? defaultPoint.offset);
 
@@ -243,6 +268,10 @@ class TimingSystem {
 
   lerp(a, b, t) {
     return a + (b - a) * t;
+  }
+
+  clearCache() {
+    this.cachedTimingPoints.clear();
   }
 }
 // ============================================================================
@@ -539,12 +568,18 @@ class InputSystem {
   canBeHeld(note) {
     const currentTime = this.gameState.currentTime;
     if (note.slider) {
-      const start = note.time;
-      const end = note.sliderEnd ;
+      // Get current timing to apply offset
+      const timing = this.gameState.timeSheet
+        ? this.timingSystem.getTimingPointAt(currentTime, this.gameState.timeSheet, { speed: 1, offset: 0 })
+        : { speed: 1, offset: 0 };
+
+      const offset = timing.offset || 0;
+      const adjustedStart = note.time + (offset / CONFIG.NOTE_PREVIEW_DELAY);
+      const adjustedEnd = note.sliderEnd + (offset / CONFIG.NOTE_PREVIEW_DELAY);
 
       // Allow holding from a bit before the slider starts until it ends
       const earlyWindow = 200; // milliseconds before slider starts
-      return currentTime >= (start - earlyWindow) && currentTime <= end;
+      return currentTime >= (adjustedStart - earlyWindow) && currentTime <= adjustedEnd;
     }
     return note.time - CONFIG.HOLD_WINDOW < currentTime;
   }
@@ -747,7 +782,17 @@ class RenderingSystem {
   }
 
   updateNote(note, currentTime) {
-    const noteTiming = this.timingSystem.getTiming(note, currentTime);
+    const noteTiming = note.timeSheet
+      ? this.timingSystem.getTimingPointAt(currentTime, note.timeSheet, {
+        speed: 1,
+        offset: 0,
+        note
+      })
+      : this.timingSystem.getTimingPointAt(currentTime, this.gameState.timeSheet, {
+        speed: 1,
+        offset: 0,
+        note
+      });
 
     if (note.slider) {
       this.updateSliderPosition(note, currentTime, noteTiming);
@@ -798,9 +843,9 @@ class RenderingSystem {
       let spentHeight = ((sliderEnd - currentTime) / previewDelay) * sliderMaxHeight;
 
       // unchangedHeight disables dynamic scaling
-      // if (note.unchangedHeight) {
-        // spentHeight = ((note.sliderEnd - note.time) / previewDelay) * sliderMaxHeight;
-      // }
+      if (note.unchangedHeight) {
+        spentHeight = ((note.sliderEnd - note.time) / previewDelay) * sliderMaxHeight;
+      }
 
       const newTranslate = `0px ${spentHeight * -1}px`;
       if (note.element.style.translate !== newTranslate) {
@@ -953,9 +998,6 @@ class RhythmGame {
 
       // Update rendering
       this.renderingSystem.update(currentTime);
-
-      // (Global) Update global timing point
-      this.timingSystem.updateGlobalTimingPoint(this.gameState.timeSheet, currentTime);
 
       // Continue loop
       requestAnimationFrame(gameLoop);
