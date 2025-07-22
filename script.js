@@ -33,7 +33,7 @@ class GameState {
     this.sheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/${this.crossDetails.map}`, 'utf8'));
     try {
       this.timeSheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/time_${this.crossDetails.map}`, 'utf8'));
-    } catch (error) {}
+    } catch (error) { }
 
     this.combo = 0;
     this.keysPressed = {};
@@ -72,7 +72,6 @@ class GameState {
 // ============================================================================
 class TimingSystem {
   constructor() {
-    this.cachedTimingPoints = new Map();
     this.globalTimingPoint = { speed: 1, offset: 0 };
   }
 
@@ -85,13 +84,20 @@ class TimingSystem {
    */
 
   getTiming(note, time) {
-    return note.timeSheet ? this.getTimingPointAt(time, note.timeSheet, { note }) : this.globalTimingPoint;
+    const timingPoint = note.timeSheet ? this.getTimingPointAt(time, note.timeSheet, { note }) : this.globalTimingPoint;
+    if (timingPoint.style) {
+      this.applyNoteStyles(timingPoint, { note });
+    }
+    return timingPoint;
   }
 
   updateGlobalTimingPoint(sheet, time) {
-    const currentGlobalPoint = this.getTimingPointAt(time, sheet, { speed: 1, offset: 0 });
-    this.globalTimingPoint = currentGlobalPoint;
-    console.log(currentGlobalPoint)
+    const timingPoint = this.getTimingPointAt(time, sheet, { speed: 1, offset: 0 });
+    this.globalTimingPoint = timingPoint;
+      console.log(timingPoint, sheet, time)
+    if (timingPoint.style) {
+      this.applySegmentStyles(timingPoint);
+    }
   }
 
   getTimingPointAt(time, timingSheet, defaultPoint = { speed: 1, offset: 0 }) {
@@ -107,28 +113,32 @@ class TimingSystem {
         activePoint = point;
       }
     }
-    
+
+    if (!activePoint) return defaultPoint;
+
     // Apply styles if note is provided
     if (defaultPoint.note) {
       this.applyNoteStyles(activePoint, defaultPoint);
     }
 
-    const result = this.interpolateTimingPoint(time, activePoint, defaultPoint);
-    return result;
+    const timing = this.interpolateTimingPoint(time, activePoint, defaultPoint);
+    activePoint.speed = timing.speed;
+    activePoint.offset = timing.offset;
+    return activePoint;
   }
 
-  applyNoteStyles(timingPoint, defaultPoint) {
-    if (!defaultPoint.note?.element || !timingPoint.style) {
+  applyNoteStyles(timingPoint, note) {
+    if (!note?.element || !timingPoint.style) {
       return;
     }
 
     // Only apply styles once per timing point
-    if (defaultPoint.note.setStyle === timingPoint.time) {
+    if (note.setStyle === timingPoint.time) {
       return;
     }
 
-    defaultPoint.note.setStyle = timingPoint.time;
-    const noteElement = defaultPoint.note.element;
+    note.setStyle = timingPoint.time;
+    const noteElement = note.element;
 
     // Apply parent styles
     if (timingPoint.style.parent) {
@@ -145,12 +155,13 @@ class TimingSystem {
         childElement.style.setProperty(key, value);
       });
     }
+  }
 
+  applySegmentStyles(timingPoint) {
     if (timingPoint.style.segments) {
       let previewers = document.querySelectorAll('.previewer_parent');
       previewers.forEach((previewer, index) => {
         const segmentStyle = timingPoint.style.segments[index];
-        console.log(segmentStyle, index, timingPoint.style.segments)
         if (segmentStyle) {
           Object.entries(segmentStyle).forEach(([key, value]) => {
             previewer.style.setProperty(key, value);
@@ -540,7 +551,7 @@ class InputSystem {
     const currentTime = this.gameState.currentTime;
     if (note.slider) {
       const start = note.time;
-      const end = note.sliderEnd ;
+      const end = note.sliderEnd;
 
       // Allow holding from a bit before the slider starts until it ends
       const earlyWindow = 200; // milliseconds before slider starts
@@ -799,7 +810,7 @@ class RenderingSystem {
 
       // unchangedHeight disables dynamic scaling
       // if (note.unchangedHeight) {
-        // spentHeight = ((note.sliderEnd - note.time) / previewDelay) * sliderMaxHeight;
+      // spentHeight = ((note.sliderEnd - note.time) / previewDelay) * sliderMaxHeight;
       // }
 
       const newTranslate = `0px ${spentHeight * -1}px`;
