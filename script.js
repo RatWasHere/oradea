@@ -94,7 +94,6 @@ class TimingSystem {
   updateGlobalTimingPoint(sheet, time) {
     const timingPoint = this.getTimingPointAt(time, sheet, { speed: 1, offset: 0 });
     this.globalTimingPoint = timingPoint;
-      console.log(timingPoint, sheet, time)
     if (timingPoint.style) {
       this.applySegmentStyles(timingPoint);
     }
@@ -103,14 +102,21 @@ class TimingSystem {
   getTimingPointAt(time, timingSheet, defaultPoint = { speed: 1, offset: 0 }) {
     if (!timingSheet) return defaultPoint;
 
-    let activePoint = null;
+    let activePoint = {};
 
     for (let i = 0; i < timingSheet.length; i++) {
       const point = timingSheet[i];
       const pointStartTime = parseFloat(point.time);
 
       if (pointStartTime <= time) {
-        activePoint = point;
+        activePoint.offset = point.offset;
+        activePoint.speed = point.speed;
+        activePoint.time = pointStartTime;
+        activePoint.transition = point.transition;
+        activePoint.easing = point.easing || 'linear';
+        activePoint.style = point.style || {};
+        activePoint.from = point.from || {};
+        activePoint.note = point.note || null;
       }
     }
 
@@ -213,7 +219,6 @@ class TimingSystem {
 
     // Calculate interpolation progress (0 to 1)
     const progress = (time - startTime) / transition;
-
     // Apply easing function if specified
     const easedProgress = this.applyEasing(progress, activePoint.easing);
 
@@ -246,7 +251,6 @@ class TimingSystem {
         return progress < 0.5
           ? 2 * progress * progress
           : 1 - Math.pow(-2 * progress + 2, 2) / 2;
-      case 'linear':
       default:
         return progress;
     }
@@ -405,7 +409,6 @@ class InputSystem {
 
     // Handle sliders first
     const sliderNote = this.findSliderToHold(matchingNotes);
-    console.log(sliderNote)
     if (sliderNote) {
       this.holdSlider(sliderNote);
       return;
