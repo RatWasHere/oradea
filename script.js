@@ -84,9 +84,9 @@ class TimingSystem {
    */
 
   getTiming(note, time) {
-    const timingPoint = note.timeSheet ? this.getTimingPointAt(time, note.timeSheet, { note }) : this.globalTimingPoint;
+    const timingPoint = note.timeSheet ? this.getTimingPointAt(time, note.timeSheet, note) : this.globalTimingPoint;
     if (timingPoint.style) {
-      this.applyNoteStyles(timingPoint, { note });
+      this.applyNoteStyles(timingPoint, note);
     }
     return timingPoint;
   }
@@ -109,7 +109,7 @@ class TimingSystem {
       const pointStartTime = parseFloat(point.time);
 
       if (pointStartTime <= time) {
-        activePoint.offset = point.offset;
+        activePoint.offset = this.fromSpecial(point.offset);
         activePoint.speed = point.speed;
         activePoint.time = pointStartTime;
         activePoint.transition = point.transition;
@@ -120,12 +120,7 @@ class TimingSystem {
       }
     }
 
-    if (!activePoint) return defaultPoint;
-
-    // Apply styles if note is provided
-    if (defaultPoint.note) {
-      this.applyNoteStyles(activePoint, defaultPoint);
-    }
+    if (activePoint.time == undefined) return defaultPoint;
 
     const timing = this.interpolateTimingPoint(time, activePoint, defaultPoint);
     activePoint.speed = timing.speed;
@@ -185,7 +180,7 @@ class TimingSystem {
     if (!transition) {
       return {
         speed: parseFloat(activePoint.speed ?? defaultPoint.speed),
-        offset: parseFloat(activePoint.offset ?? defaultPoint.offset) * CONFIG.NOTE_PREVIEW_DELAY
+        offset: parseFloat(activePoint.offset ?? defaultPoint.offset)
       };
     }
 
@@ -196,6 +191,11 @@ class TimingSystem {
     if (activePoint.from) {
       speedFrom = parseFloat(activePoint.from.speed ?? defaultPoint.speed);
       offsetFrom = parseFloat(activePoint.from.offset ?? defaultPoint.offset);
+    } else {
+      return {
+        speed: parseFloat(activePoint.speed ?? defaultPoint.speed),
+        offset: parseFloat(activePoint.offset ?? defaultPoint.offset)
+      }
     }
 
     const speedTo = parseFloat(activePoint.speed ?? defaultPoint.speed);
@@ -205,7 +205,7 @@ class TimingSystem {
     if (time >= endTime) {
       return {
         speed: speedTo,
-        offset: offsetTo * CONFIG.NOTE_PREVIEW_DELAY
+        offset: offsetTo
       };
     }
 
@@ -213,7 +213,7 @@ class TimingSystem {
     if (time < startTime) {
       return {
         speed: speedFrom,
-        offset: offsetFrom * CONFIG.NOTE_PREVIEW_DELAY
+        offset: offsetFrom
       };
     }
 
@@ -224,7 +224,7 @@ class TimingSystem {
 
     return {
       speed: this.lerp(speedFrom, speedTo, easedProgress),
-      offset: this.lerp(offsetFrom, offsetTo, easedProgress) * CONFIG.NOTE_PREVIEW_DELAY
+      offset: this.lerp(offsetFrom, offsetTo, easedProgress)
     };
   }
 
@@ -258,6 +258,28 @@ class TimingSystem {
 
   lerp(a, b, t) {
     return a + (b - a) * t;
+  }
+
+  fromSpecial(value) {
+    if (typeof value === 'object') {
+      let endValue = CONFIG.NOTE_PREVIEW_DELAY
+      value.forEach((item) => {
+        endValue = this.processSpecialItem(item, endValue);
+      });
+      let previewDelay = CONFIG.NOTE_PREVIEW_DELAY;
+      if (value.operation == 'multiply') previewDelay *= value.operand;
+      if (value.operation == 'divide') previewDelay /= value.operand;
+    } else {
+      return value;
+    }
+  }
+
+  processSpecialItem(iteration, currentValue) {
+      if (iteration.operation == 'multiply') return currentValue * iteration.operand;
+      if (iteration.operation == 'divide') return currentValue / iteration.operand;
+      if (iteration.operation == 'addition') return currentValue + iteration.operand;
+      if (iteration.operation == 'subtraction') return currentValue - iteration.operand;
+      if (iteration.operation == 'percentage') return (currentValue / 100) * iteration.operand;
   }
 }
 // ============================================================================
@@ -789,46 +811,32 @@ class RenderingSystem {
   updateSliderPosition(note, currentTime, timing) {
     const sliderMaxHeight = CONFIG.CONTAINER_RADIUS / 2;
 
-    // Handle speed = 0 case (frozen slider)
-    if (timing.speed === 0) {
-      // Slider is frozen - keep it at its current position
-      const frozenHeight = note.unchangedHeight ?
-        ((note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY) * sliderMaxHeight :
-        note.height || sliderMaxHeight;
+    const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / timing.speed;
+    const offset = timing.offset;
 
-      const newTranslate = `0px ${frozenHeight * -1}px`;
-      if (note.element.style.translate !== newTranslate) {
-        note.element.style.translate = newTranslate;
-      }
+    const sliderStart = note.time;
+    const sliderEnd = note.sliderEnd;
+
+    let spentHeight;
+    
+    if (offset == undefined || offset == null) {
+      spentHeight = (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight;
     } else {
-      const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / timing.speed;
-      const offset = timing.offset || 0;
-
-      // Apply offset consistently
-      const sliderStart = note.time + (offset / CONFIG.NOTE_PREVIEW_DELAY);
-      const sliderEnd = note.sliderEnd + (offset / CONFIG.NOTE_PREVIEW_DELAY);
-
-      // Calculate how much of the slider should be visible (from the top)
-      let spentHeight = ((sliderEnd - currentTime) / previewDelay) * sliderMaxHeight;
-
-      // unchangedHeight disables dynamic scaling
-      // if (note.unchangedHeight) {
-      // spentHeight = ((note.sliderEnd - note.time) / previewDelay) * sliderMaxHeight;
-      // }
-
-      const newTranslate = `0px ${spentHeight * -1}px`;
-      if (note.element.style.translate !== newTranslate) {
-        note.element.style.translate = newTranslate;
-      }
+      spentHeight = (((sliderEnd - (sliderStart + offset))) / previewDelay) * sliderMaxHeight;
+    }
+    
+    const newTranslate = `0px ${spentHeight * -1}px`;
+    if (note.element.style.translate !== newTranslate) {
+      note.element.style.translate = newTranslate;
     }
 
-    if (note.isBeingHeld || currentTime <= (note.sliderEnd + (timing.offset || 0) / CONFIG.NOTE_PREVIEW_DELAY)) {
-      this.updateSliderHoldStatus(note, currentTime, timing);
+    if (note.isBeingHeld || currentTime <= note.sliderEnd) {
+      this.updateSliderHoldStatus(note);
     }
   }
 
 
-  updateSliderHoldStatus(note, currentTime, timing) {
+  updateSliderHoldStatus(note) {
     const noteTime = note.time;
 
     // Check if we're within the slider's active time
@@ -843,9 +851,8 @@ class RenderingSystem {
 
   updateRegularNotePosition(note, currentTime, timing) {
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / timing.speed;
-    // offset is already multiplied by NOTE_PREVIEW_DELAY in timing system
     const offset = timing.offset || 0;
-    const noteTime = note.time + (offset / CONFIG.NOTE_PREVIEW_DELAY);
+    const noteTime = note.time + (offset);
 
     const noteTravelMax = CONFIG.CONTAINER_RADIUS / 2;
 
