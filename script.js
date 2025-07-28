@@ -262,13 +262,12 @@ class TimingSystem {
 
   fromSpecial(value) {
     if (typeof value === 'object') {
-      let endValue = CONFIG.NOTE_PREVIEW_DELAY
+      let endValue = CONFIG.NOTE_PREVIEW_DELAY;
       value.forEach((item) => {
         endValue = this.processSpecialItem(item, endValue);
       });
-      let previewDelay = CONFIG.NOTE_PREVIEW_DELAY;
-      if (value.operation == 'multiply') previewDelay *= value.operand;
-      if (value.operation == 'divide') previewDelay /= value.operand;
+      console.log(endValue)
+      return endValue;
     } else {
       return value;
     }
