@@ -4,6 +4,7 @@ body {
 
 :root {
   --s: 600px;
+  --sr: 590px;
   --nr: 75px;
   --notePreviewDelay: 1650ms;
   view-transition-name: root;
@@ -198,7 +199,7 @@ body {
 
 .flicked {
   scale: 2 0.1;
-  transition: all 0.25s ease, opacity 0.30s cubic-bezier(1,-0.13,.4,1.25) !important;
+  transition: all 0.25s ease, opacity 0.30s cubic-bezier(1, -0.13, .4, 1.25) !important;
   filter: blur(12px);
   rotate: 90deg;
   opacity: 0;
@@ -246,10 +247,10 @@ body {
   }
 }
 
-.hold {
+/* .hold {
   border-bottom: 12px green dashed;
   transition: opacity 0.4s ease;
-}
+} */
 
 @keyframes note_in_classic {
   0% {
@@ -355,10 +356,10 @@ body {
   transform: translateY(-12px) translateX(5px);
 }
 
-.previewer_parent:nth-of-type(3) > .previewer,
-.previewer_parent:nth-of-type(5) > .previewer,
-.previewer_parent:nth-of-type(7) > .previewer,
-.previewer_parent:nth-of-type(9) > .previewer {
+.previewer_parent:nth-of-type(3)>.previewer,
+.previewer_parent:nth-of-type(5)>.previewer,
+.previewer_parent:nth-of-type(7)>.previewer,
+.previewer_parent:nth-of-type(9)>.previewer {
   opacity: 0.8;
 }
 
@@ -551,7 +552,8 @@ btn:active {
 .previewer:has(.hitKid)::after::after {
   content: "";
   border-radius: 100%;
-  --rotation: 67.5deg; /* define the variable here */
+  --rotation: 67.5deg;
+  /* define the variable here */
   rotate: -67.5deg;
   filter: blur(50px);
   mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 45deg, transparent 45deg);
@@ -566,7 +568,7 @@ btn:active {
 
 .previewer::after {
   content: "";
-  transition: all 0.15s cubic-bezier(0,.93,.68,1.03);
+  transition: all 0.15s cubic-bezier(0, .93, .68, 1.03);
   --rotation: 67.5deg;
   mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 45deg, transparent 45deg) !important;
   scale: 1.2;
@@ -618,4 +620,78 @@ btn:active {
   scale: 1;
   width: var(--s);
   height: var(--s);
+}
+
+.frame {
+  width: var(--sr);
+  height: var(--sr);
+  background: url(./frame.svg);
+  background-size: cover;
+  margin-left: calc((var(--s) - var(--sr)) / 2);
+  margin-top: calc((var(--s) - var(--sr)) / 2);
+  position: absolute;
+}
+
+.indicator_parent {
+  --sr: 560px;
+  width: var(--sr);
+  height: var(--sr);
+  margin-left: calc((var(--s) - var(--sr)) / 2);
+  margin-top: calc((var(--s) - var(--sr)) / 2);
+  position: absolute;
+}
+
+.indicator {
+  border-radius: 100%;
+  border: solid white 10px;
+  margin: auto;
+}
+
+.hit {
+  width: calc(var(--nr) * 2);
+  height: calc(var(--nr) * 2);
+  scale: 0;
+  opacity: 1;
+  animation: hit 0.3s ease;
+}
+
+.hold {
+  width: calc(var(--nr) * 2);
+  height: calc(var(--nr) * 2);
+  animation: hold 0.3s cubic-bezier(.79,.03,.26,1.02) infinite;
+}
+
+@keyframes hit {
+  0% {
+    scale: 0;
+    filter: blur(10px);
+  }
+
+  20% {
+    scale: 0.5;
+    filter: blur(30px);
+  }
+
+  100% {
+    filter: blur(10px);
+    scale: 0;
+  }
+}
+
+@keyframes hold {
+  0% {
+    width: calc(var(--nr) * 2);
+    height: calc(var(--nr) * 2);
+    filter: blur(0px);
+  }
+  50% {
+    width: calc(var(--nr) * 1.8);
+    height: calc(var(--nr) * 1.8);
+    filter: blur(12px);
+  }
+  100% {  
+    width: calc(var(--nr) * 2);
+    height: calc(var(--nr) * 2);
+    filter: blur(0px);
+  }
 }
