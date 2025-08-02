@@ -1,5 +1,5 @@
 body {
-  background: black;
+  background: url('./Assets/bg.png');
 }
 
 :root {
@@ -336,7 +336,7 @@ body {
 }
 
 .previewer {
-  --bg: #ffffff5e;
+  --bg: transparent;
   background: conic-gradient(var(--bg) 0deg,
       var(--bg) 45deg,
       #00000000 45deg);
@@ -469,6 +469,7 @@ btn:active {
 
 .comeIn {
   animation: come-in 0.2s ease;
+  backdrop-filter: blur(50px);
 }
 
 @keyframes come-in {

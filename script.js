@@ -123,6 +123,10 @@ class TimingSystem {
         activePoint.style = point.style || {};
         activePoint.from = point.from || {};
         activePoint.note = point.note || null;
+
+        if (activePoint.from?.offset) {
+          activePoint.from.offset = this.fromSpecial(activePoint.from.offset);
+        }
       }
     }
 
@@ -272,7 +276,6 @@ class TimingSystem {
       value.forEach((item) => {
         endValue = this.processSpecialItem(item, endValue);
       });
-      console.log(endValue)
       return endValue;
     } else {
       return value;
@@ -280,11 +283,11 @@ class TimingSystem {
   }
 
   processSpecialItem(iteration, currentValue) {
-      if (iteration.operation == 'multiply') return currentValue * iteration.operand;
-      if (iteration.operation == 'divide') return currentValue / iteration.operand;
-      if (iteration.operation == 'addition') return currentValue + iteration.operand;
-      if (iteration.operation == 'subtraction') return currentValue - iteration.operand;
-      if (iteration.operation == 'percentage') return (currentValue / 100) * iteration.operand;
+    if (iteration.operation == 'multiply') return currentValue * iteration.operand;
+    if (iteration.operation == 'divide') return currentValue / iteration.operand;
+    if (iteration.operation == 'addition') return currentValue + iteration.operand;
+    if (iteration.operation == 'subtraction') return currentValue - iteration.operand;
+    if (iteration.operation == 'percentage') return (currentValue / 100) * iteration.operand;
   }
 }
 // ============================================================================
@@ -343,7 +346,7 @@ class InputSystem {
   }
 
   updateGamepadInput() {
-    if (!this.gameState.phone) return;
+    if (this.gameState.phone) return;
 
     const gamepad = navigator.getGamepads()[0];
     if (!gamepad) return;
@@ -358,9 +361,13 @@ class InputSystem {
     const y1 = gamepad.axes[1];
     if (Math.abs(x1) > CONFIG.GAMEPAD_DEADZONE || Math.abs(y1) > CONFIG.GAMEPAD_DEADZONE) {
       const angle1 = Math.atan2(y1, x1) * (180 / Math.PI);
-      this.gameState.rawRotations[0] = angle1;
-      const snapped1 = this.gameState.snapToInterval ? this.snapAngle(angle1) : angle1;
-      this.updateCursorRotation(0, snapped1);
+
+      // Extended snapping for controllers
+      const extendedSnap1 = this.extendedSnapAngle(angle1, 0);
+      if (extendedSnap1 !== null) {
+        this.gameState.rawRotations[0] = angle1;
+        this.updateCursorRotation(0, extendedSnap1);
+      }
     }
 
     // Right stick is cursor2
@@ -368,10 +375,48 @@ class InputSystem {
     const y2 = gamepad.axes[3];
     if (Math.abs(x2) > CONFIG.GAMEPAD_DEADZONE || Math.abs(y2) > CONFIG.GAMEPAD_DEADZONE) {
       const angle2 = Math.atan2(y2, x2) * (180 / Math.PI);
-      this.gameState.rawRotations[1] = angle2;
-      const snapped2 = this.gameState.snapToInterval ? this.snapAngle(angle2) : angle2;
-      this.updateCursorRotation(1, snapped2);
+      const extendedSnap2 = this.extendedSnapAngle(angle2, 1);
+      if (extendedSnap2 !== null) {
+        this.gameState.rawRotations[1] = angle2;
+        this.updateCursorRotation(1, extendedSnap2);
+      }
     }
+  }
+
+  /**
+   * Extended snapping for controller segments.
+   * Only snaps if the angle is within the extended segment range.
+   * Returns snapped angle or null if not in extended range.
+   */
+  extendedSnapAngle(angle, cursorIndex) {
+    // Segment size is SNAP_INTERVAL (e.g., 45deg)
+    const segmentSize = CONFIG.SNAP_INTERVAL;
+    const extension = 15; // degrees to extend on both sides
+
+    // Calculate which segment the cursor is currently in
+    const baseAngle = this.snapAngle(angle);
+    const normalizedAngle = this.normalizeAngle(angle);
+
+    // Find the segment center
+    const segmentCenter = Math.round(normalizedAngle / segmentSize) * segmentSize;
+
+    // Extended segment range
+    const start = this.normalizeAngle(segmentCenter - (segmentSize / 2) - extension);
+    const end = this.normalizeAngle(segmentCenter + (segmentSize / 2) + extension);
+
+    // Check if angle is within extended segment
+    // Handle wrap-around
+    let inSegment;
+    if (start < end) {
+      inSegment = normalizedAngle >= start && normalizedAngle <= end;
+    } else {
+      inSegment = normalizedAngle >= start || normalizedAngle <= end;
+    }
+
+    if (inSegment) {
+      return segmentCenter;
+    }
+    return null;
   }
 
   updateGamepadButtons(gamepad) {
@@ -521,12 +566,12 @@ class InputSystem {
       if (accuracy !== 'miss') {
         this.vibrate(2);
         this.createHoldEffect(note);
-        note.element.parentElement.parentElement.remove();
+        note.element.parentElement.parentElement.parentElement.remove();
       }
     } else {
       note.element.style.opacity = '0.5';
       note.element.style.scale = '1';
-      note.element.parentElement.parentElement.remove();
+      note.element.parentElement.parentElement.parentElement.remove();
     }
   }
 
@@ -623,7 +668,7 @@ class InputSystem {
         this.vibrate(2);
       }
       setTimeout(() => {
-        note.element.parentElement.parentElement.remove();
+        note.element.parentElement.parentElement.parentElement.remove();
       }, 500);
     }
 
@@ -849,13 +894,13 @@ class RenderingSystem {
     const sliderEnd = note.sliderEnd;
 
     let spentHeight;
-    
+
     if (timing.default) {
       spentHeight = (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight;
     } else {
       spentHeight = (((sliderEnd - (sliderStart + offset))) / previewDelay) * sliderMaxHeight;
     }
-    
+
     const newTranslate = `0px ${spentHeight * -1}px`;
     if (note.element.style.translate !== newTranslate) {
       note.element.style.translate = newTranslate;
@@ -879,17 +924,25 @@ class RenderingSystem {
   }
 
   updateRegularNotePosition(note, currentTime, timing) {
-    const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / timing.speed;
+    const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / (timing.speed || 1);
     const offset = timing.offset || 0;
-    const noteTime = note.time + (offset);
+    const noteTime = note.time;
 
     const noteTravelMax = CONFIG.CONTAINER_REAL_RADIUS / 2;
 
     // Calculate travel distance based on how far we are into the preview window
-    const timeIntoPreview = currentTime - (noteTime - previewDelay);
+    let timeIntoPreview;
+    if (!offset) {
+      timeIntoPreview = currentTime - (noteTime - previewDelay);
+    } else {
+      timeIntoPreview = (noteTime - offset) - (noteTime - previewDelay);
+    }
+
     const noteTravel = Math.max(timeIntoPreview / previewDelay, 0) * noteTravelMax;
+    console.log(timeIntoPreview, noteTime, offset, noteTravel)
 
     const newTranslate = `0px ${noteTravel}px`;
+    // console.log(newTranslate)
     if (note.element.style.translate !== newTranslate) {
       note.element.style.translate = newTranslate;
     }
