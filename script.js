@@ -112,7 +112,7 @@ class TimingSystem {
 
     for (let i = 0; i < timingSheet.length; i++) {
       const point = timingSheet[i];
-      const pointStartTime = parseFloat(point.time);
+      const pointStartTime = parseFloat(point.time) + (defaultPoint.time ? parseFloat(defaultPoint.time) : 0);
 
       if (pointStartTime <= time) {
         activePoint.offset = this.fromSpecial(point.offset);
@@ -183,7 +183,7 @@ class TimingSystem {
   }
 
   interpolateTimingPoint(time, activePoint, defaultPoint) {
-    const startTime = parseFloat(activePoint.time);
+    const startTime = parseFloat(activePoint.time) + (defaultPoint.time ? parseFloat(defaultPoint.time) : 0);
     const transition = parseFloat(activePoint.transition || 0);
 
     // If no transition, return the active point values
