@@ -337,12 +337,13 @@ class InputSystem {
   }
 
   handleGamepadConnected(event) {
+    if (this.gameState.phone) return
     let gamepads = navigator.getGamepads()
     this.gameState.gamepad = gamepads.find(gp => !!gp);
   }
 
   updateGamepadInput() {
-    if (!this.gameState.gamepad) return;
+    if (!this.gameState.phone) return;
 
     const gamepad = navigator.getGamepads()[0];
     if (!gamepad) return;
@@ -352,7 +353,7 @@ class InputSystem {
   }
 
   updateGamepadRotations(gamepad) {
-    // Left stick for cursor1
+    // Left stick is cursor1
     const x1 = gamepad.axes[0];
     const y1 = gamepad.axes[1];
     if (Math.abs(x1) > CONFIG.GAMEPAD_DEADZONE || Math.abs(y1) > CONFIG.GAMEPAD_DEADZONE) {
@@ -362,7 +363,7 @@ class InputSystem {
       this.updateCursorRotation(0, snapped1);
     }
 
-    // Right stick for cursor2
+    // Right stick is cursor2
     const x2 = gamepad.axes[2];
     const y2 = gamepad.axes[3];
     if (Math.abs(x2) > CONFIG.GAMEPAD_DEADZONE || Math.abs(y2) > CONFIG.GAMEPAD_DEADZONE) {
@@ -400,6 +401,7 @@ class InputSystem {
   }
 
   updateRotations(angle1, angle2) {
+    console.log(angle1)
     this.gameState.rawRotations[0] = angle1;
     this.gameState.rawRotations[1] = angle2;
 

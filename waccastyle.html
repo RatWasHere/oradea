@@ -88,7 +88,9 @@
   beatmap.hitObjects.forEach((hitObject, index) => {
     if (hitObject.type == "note") {
       let additionalOptions = {};
-      if (hitObject.hitSound.includes("clap")) {
+      if (hitObject.hitSound.includes("clap") && hitObject.hitSound.includes("whistle")) {
+        additionalOptions.golden = true
+      } else if (hitObject.hitSound.includes("clap")) {
         additionalOptions.flickDirection = 1;
         additionalOptions.flick = true;
       } else if (hitObject.hitSound.includes("whistle")) {
