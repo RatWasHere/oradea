@@ -9,12 +9,14 @@ const CONFIG = {
   ANGLE_MODIFIER: 45,
   NOTE_ARC_ANGLE: 20,
   NOTE_PREVIEW_DELAY: 750,
-  CONTAINER_RADIUS: 670,
+  APPEARANCE_HASTE: 100,
+  CONTAINER_RADIUS: 590,
   CONTAINER_REAL_RADIUS: 590,
+  BASELINE_OFFSET: -100, // Only applies to visuals.
   NOTE_RADIUS: 75,
   PREVIEW_COUNT: 8,
   GAMEPAD_DEADZONE: 0.1,
-  HOLD_WINDOW: 300,
+  HOLD_WINDOW: 500,
   FLICK_THRESHOLD: 10,
   ACCURACY_RANGES: {
     'perfect': [0, 100],
@@ -123,7 +125,7 @@ class TimingSystem {
         activePoint.style = point.style || {};
         activePoint.from = point.from || {};
         activePoint.note = point.note || null;
-
+        
         if (activePoint.from?.offset) {
           activePoint.from.offset = this.fromSpecial(activePoint.from.offset);
         }
@@ -183,7 +185,8 @@ class TimingSystem {
   }
 
   interpolateTimingPoint(time, activePoint, defaultPoint) {
-    const startTime = parseFloat(activePoint.time) + (defaultPoint.time ? parseFloat(defaultPoint.time) : 0);
+    const startTime = parseFloat(activePoint.time);
+    // console.log(startTime, activePoint.time, defaultPoint?.time)
     const transition = parseFloat(activePoint.transition || 0);
 
     // If no transition, return the active point values
@@ -446,7 +449,6 @@ class InputSystem {
   }
 
   updateRotations(angle1, angle2) {
-    console.log(angle1)
     this.gameState.rawRotations[0] = angle1;
     this.gameState.rawRotations[1] = angle2;
 
@@ -551,6 +553,8 @@ class InputSystem {
   }
 
   holdSlider(note) {
+    const currentTime = this.gameState.currentTime;
+    console.log(note.time - currentTime);
     note.isBeingHeld = true;
     note.wasEverHeld = true;
     note.element.style.opacity = '1';
@@ -576,6 +580,9 @@ class InputSystem {
   }
 
   hitNote(note, laneIndex) {
+    const currentTime = this.gameState.currentTime;
+    console.log(note.time - currentTime);
+    
     if (note.flick) {
       this.startFlick(note, laneIndex);
       return;
@@ -644,12 +651,7 @@ class InputSystem {
   canBeHeld(note) {
     const currentTime = this.gameState.currentTime;
     if (note.slider) {
-      const start = note.time;
-      const end = note.sliderEnd;
-
-      // Allow holding from a bit before the slider starts until it ends
-      const earlyWindow = 200; // milliseconds before slider starts
-      return currentTime >= (start - earlyWindow) && currentTime <= end;
+      return note.time - CONFIG.HOLD_WINDOW < currentTime && currentTime <= note.sliderEnd;
     }
     return note.time - CONFIG.HOLD_WINDOW < currentTime;
   }
@@ -766,7 +768,7 @@ class RenderingSystem {
   }
 
   createNewNoteElements(currentTime) {
-    const relevantNotes = this.gameState.sheet.filter(note => ((currentTime >= (note.startAt || note.time) - CONFIG.NOTE_PREVIEW_DELAY) && !note.element));
+    const relevantNotes = this.gameState.sheet.filter(note => ((currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.APPEARANCE_HASTE)) && !note.element));
 
     relevantNotes.forEach(note => {
       if (note.slider) {
@@ -788,7 +790,7 @@ class RenderingSystem {
     laneParent.classList.add('laneParent');
 
     const noteContainer = document.createElement('div');
-    noteContainer.className = 'noteContainer';
+    noteContainer.classList.add('noteContainer')
 
     const rotation = (note.angle * CONFIG.ANGLE_MODIFIER) + 270;
     lane.style.rotate = `${rotation}deg`;
@@ -809,16 +811,13 @@ class RenderingSystem {
   }
 
   assembleNote(note, elements) {
-    let { noteElement, lane, noteContainer } = elements
-    if (note.hold) {
-      noteElement.classList.add('hold');
-      noteContainer.appendChild(lane);
-      lane.appendChild(noteElement);
-    } else if (note.slider) {
-      noteElement.classList.add('slider');
-      const actualHeight = (note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY * (CONFIG.CONTAINER_RADIUS / 2);
+    let { noteElement, lane, noteContainer } = elements;
 
-      noteElement.style.height = `${actualHeight}px`;
+    if (note.slider) {
+      noteElement.classList.add('slider');
+      const actualHeight = ((note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2);
+
+      noteElement.style.height = `${actualHeight + (CONFIG.NOTE_RADIUS / 2)}px`;
       noteElement.style.translate = `0px`;
 
       note.height = actualHeight;
@@ -828,6 +827,22 @@ class RenderingSystem {
       const header = document.createElement('div');
       header.classList.add('header');
       noteElement.appendChild(header);
+    } else {
+      noteElement.style.translate = `0px`;
+
+      noteContainer.appendChild(noteElement);
+      lane.appendChild(noteContainer);
+      const header = document.createElement('div');
+      header.classList.add('header');
+      noteElement.appendChild(header);
+    }
+    return
+    if (note.hold) {
+      noteElement.classList.add('hold');
+      noteContainer.appendChild(lane);
+      lane.appendChild(noteElement);
+    } else if (note.slider) {
+
     } else if (note.flick) {
       noteElement.classList.add(`flick${note.flickDirection}`);
       noteContainer.appendChild(lane);
@@ -885,7 +900,7 @@ class RenderingSystem {
   }
 
   updateSliderPosition(note, currentTime, timing) {
-    const sliderMaxHeight = CONFIG.CONTAINER_REAL_RADIUS / 2;
+    const sliderMaxHeight = CONFIG.CONTAINER_REAL_RADIUS / 2;  // Use CONTAINER_REAL_RADIUS
 
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / timing.speed;
     const offset = timing.offset;
@@ -915,9 +930,11 @@ class RenderingSystem {
   updateSliderHoldStatus(note) {
     // Check if we're within the slider's active time
     if (note.isBeingHeld) {
+      note.element.parentElement.classList.add('containerActive');
       note.element.style.opacity = '1';
       note.element.style.scale = '1';
     } else {
+      // note.element.parentElement.classList.remove('containerActive');
       note.element.style.opacity = '0.5';
       note.element.style.scale = '1';
     }
@@ -928,21 +945,20 @@ class RenderingSystem {
     const offset = timing.offset || 0;
     const noteTime = note.time;
 
-    const noteTravelMax = CONFIG.CONTAINER_REAL_RADIUS / 2;
+    const noteTravelMax = CONFIG.CONTAINER_REAL_RADIUS / 2;  // Use CONTAINER_REAL_RADIUS
 
     // Calculate travel distance based on how far we are into the preview window
     let timeIntoPreview;
     if (!offset) {
-      timeIntoPreview = currentTime - (noteTime - previewDelay);
+      // (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight
+      timeIntoPreview = ((noteTime - currentTime) / previewDelay) * noteTravelMax;
     } else {
       timeIntoPreview = (noteTime - offset) - (noteTime - previewDelay);
     }
 
     const noteTravel = Math.max(timeIntoPreview / previewDelay, 0) * noteTravelMax;
-    console.log(timeIntoPreview, noteTime, offset, noteTravel)
 
-    const newTranslate = `0px ${noteTravel}px`;
-    // console.log(newTranslate)
+    const newTranslate = `0px ${timeIntoPreview * -1}px`;
     if (note.element.style.translate !== newTranslate) {
       note.element.style.translate = newTranslate;
     }
@@ -1059,7 +1075,6 @@ class RhythmGame {
 
       // (Global) Update global timing point
       this.timingSystem.updateGlobalTimingPoint(this.gameState.timeSheet, currentTime);
-
       // Continue loop
       requestAnimationFrame(gameLoop);
     };
