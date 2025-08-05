@@ -846,26 +846,6 @@ class RenderingSystem {
         noteElement.classList.add(`flick${note.flickDirection}`);
       }
     }
-    return
-    if (note.hold) {
-      noteElement.classList.add('hold');
-      noteContainer.appendChild(lane);
-      lane.appendChild(noteElement);
-    } else if (note.slider) {
-
-    } else if (note.flick) {
-      noteElement.classList.add(`flick${note.flickDirection}`);
-      noteContainer.appendChild(lane);
-      lane.appendChild(noteElement);
-    } else {
-      noteContainer.appendChild(lane);
-      lane.appendChild(noteElement);
-      const header = document.createElement('div');
-      header.classList.add('header');
-      noteElement.appendChild(header);
-    }
-
-    // The header is just the note in itself
   }
 
   updateNotePositions(currentTime) {
