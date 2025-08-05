@@ -125,7 +125,7 @@ class TimingSystem {
         activePoint.style = point.style || {};
         activePoint.from = point.from || {};
         activePoint.note = point.note || null;
-        
+
         if (activePoint.from?.offset) {
           activePoint.from.offset = this.fromSpecial(activePoint.from.offset);
         }
@@ -562,9 +562,9 @@ class InputSystem {
 
   releaseSlider(note) {
     note.isBeingHeld = false;
-    const timeDiff = Math.abs(this.gameState.currentTime - note.sliderEnd);
+    const timeDiff = Math.abs((this.gameState.currentTime * 1000) - note.sliderEnd);
 
-    if (timeDiff <= CONFIG.ACCEPTANCE_THRESHOLD) {
+    if (Math.abs(timeDiff) <= CONFIG.ACCEPTANCE_THRESHOLD) {
       note.done = true;
       const accuracy = this.gameState.scoringSystem.judge(note.sliderEnd);
       if (accuracy !== 'miss') {
@@ -581,15 +581,14 @@ class InputSystem {
 
   hitNote(note, laneIndex) {
     const currentTime = this.gameState.currentTime;
-    console.log(note.time - currentTime);
-    
+
     if (note.flick) {
       this.startFlick(note, laneIndex);
       return;
     }
 
     note.done = true;
-    note.element.parentElement.parentElement.remove();
+    note.element.parentElement.parentElement.parentElement.remove();
 
     if (note.hold && note.time < this.gameState.currentTime) {
       this.vibrate(3);
@@ -617,10 +616,14 @@ class InputSystem {
   }
 
   startFlick(note, laneIndex) {
+    console.log('flcikk')
     note.flickStart = this.gameState.rawRotations[laneIndex];
     note.input = laneIndex;
+    console.log('set note input to ', laneIndex)
     note.flickMoment = this.gameState.currentTime;
+    note.rotations = this.gameState.rawRotations;
     this.vibrate(4);
+    console.log(note)
   }
 
   releaseFlick(note) {
@@ -628,8 +631,9 @@ class InputSystem {
       note.element.classList.remove('flick1', 'flick2');
       note.element.classList.add('flicked');
       setTimeout(() => {
-        note.element.parentElement.parentElement.remove();
+        note.element.parentElement.parentElement.parentElement.remove();
       }, 250);
+      return;
     }
     note.flickStart = null;
     note.flickMoment = null;
@@ -835,6 +839,12 @@ class RenderingSystem {
       const header = document.createElement('div');
       header.classList.add('header');
       noteElement.appendChild(header);
+      if (note.hold) {
+        noteElement.classList.add('hold');
+      }
+      if (note.flick) {
+        noteElement.classList.add(`flick${note.flickDirection}`);
+      }
     }
     return
     if (note.hold) {
@@ -872,29 +882,21 @@ class RenderingSystem {
     if (note.slider) {
       return this.updateSliderPosition(note, currentTime, noteTiming);
     } else if (note.flick) {
-      let rotations = note.rotations || [0, 0];
-
-      if (this.gameState.keysPressed['w'] && this.inputSystem.isInArc(note, this.gameState.rotations[0]) && !rotations[0]) {
-        rotations[0] = this.gameState.rawRotations[0];
-        if (Math.abs(rotations[0] - this.gameState.rawRotations[0]) > CONFIG.FLICK_THRESHOLD) {
+      if (note.rotations) {
+        let input = note.input;
+        if (Math.abs(note.flickStart - this.gameState.rawRotations[input]) > CONFIG.FLICK_THRESHOLD) {
           note.done = true;
           this.inputSystem.releaseFlick(note);
         }
-      } else if (!this.gameState.keysPressed['w'] && rotations[0]) {
-        rotations[0] = null;
-        if (Math.abs(rotations[1] - this.gameState.rawRotations[1]) > CONFIG.FLICK_THRESHOLD) {
-          note.done = true;
-          this.inputSystem.releaseFlick(note);
+      } else {
+        if (note.holdable) {
+          if (this.gameState.keysPressed['w'] && this.inputSystem.isInArc(note, this.gameState.rotations[0]) && !rotations[0]) {
+            this.inputSystem.startFlick(note, 0)
+          } else if (this.gameState.keysPressed['s'] && this.inputSystem.isInArc(note, this.gameState.rotations[1]) && !rotations[1]) {
+            this.inputSystem.startFlick(note, 1)
+          }
         }
       }
-
-      if (this.gameState.keysPressed['s'] && this.inputSystem.isInArc(note, this.gameState.rotations[1]) && !rotations[1]) {
-        rotations[1] = this.gameState.rawRotations[1];
-      } else if (!this.gameState.keysPressed['s'] && rotations[1]) {
-        rotations[1] = null;
-      }
-
-      note.rotations = rotations;
     }
     this.updateRegularNotePosition(note, currentTime, noteTiming);
   }
@@ -967,7 +969,7 @@ class RenderingSystem {
   cleanupFailedNotes(currentTime) {
     this.gameState.sheet.forEach(note => {
       if (note.element && !note.done && this.hasFailed(note, currentTime)) {
-        note.element.parentElement.parentElement.remove();
+        note.element.parentElement.parentElement.parentElement.remove();
         note.done = true;
 
         this.createFailedHoldEffect(note);
@@ -982,7 +984,7 @@ class RenderingSystem {
     // For sliders, they only fail if they end without being held
     if (note.slider) {
       // Only fail if the slider has completely ended and was never held
-      return currentTime > note.sliderEnd && !note.wasEverHeld;
+      return currentTime > (note.sliderEnd + CONFIG.ACCEPTANCE_THRESHOLD) && !note.wasEverHeld;
     }
 
     // For regular notes, check if they've passed the acceptance window

@@ -334,10 +334,10 @@ body {
 }
 
 .previewer {
-  --bg: transparent;
+  --bg: rgba(0, 0, 0, 0.5);
   background: conic-gradient(var(--bg) 0deg,
       var(--bg) 45deg,
-      #00000000 45deg);
+      transparent 45deg);
   rotate: calc(var(--i) * 45deg + 22.5deg);
   width: var(--s);
   aspect-ratio: 1;
@@ -491,7 +491,7 @@ btn:active {
 }
 
 .containerActive {
-  height: calc(50% - ((var(--s) - var(--sr)) / 2)) !important;
+  height: calc(50% + (var(--nr) / 4)) !important;
 }
 
 .slider {
@@ -549,7 +549,7 @@ btn:active {
   transition: all 0.2s ease;
   opacity: 1;
   /* animation: glow 2s linear; */
-  background: linear-gradient(270deg, #FFFFFF, #FFFFFF30, #FFFFFF00);
+  /* background: linear-gradient(270deg, #FFFFFF, #FFFFFF30, #FFFFFF00); */
 }
 
 
