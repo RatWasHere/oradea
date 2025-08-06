@@ -24,6 +24,13 @@ const CONFIG = {
     'good': [200, 300],
     'ok': [300, 400],
     'bad': [400, 500],
+  },
+  ACCURACY_SCORES: {
+    'perfect': 100,
+    'great': 80,
+    'good': 60,
+    'ok': 40,
+    'bad': 20,
   }
 };
 
@@ -39,13 +46,19 @@ class GameState {
     } catch (error) { }
 
     this.combo = 0;
+    this.score = 0;
+
     this.keysPressed = {};
+
     this.rotations = [0, 0];
     this.rawRotations = [0, 0];
     this.sectors = [1, 1];
-    this.displayedNotes = [];
-    this.gamepad = null;
     this.snapToInterval = true;
+
+    this.displayedNotes = [];
+
+    this.gamepad = null;
+    
     this.lastFrameTime = 0;
 
     this.initializeDOM();
@@ -1034,6 +1047,10 @@ class ScoringSystem {
     this.gameState = gameState;
   }
 
+  increaseScore(amount) {
+    this.gameState.score += Number(amount) * Math.max(Math.min(8, this.gameState.combo), 1);
+  }
+
   judge(noteTime, affectCombo = true) {
     const currentTime = this.gameState.currentTime;
     const difference = Math.abs(noteTime - currentTime);
@@ -1045,6 +1062,9 @@ class ScoringSystem {
         break;
       }
     }
+
+    let score = CONFIG.ACCURACY_SCORES[accuracy] || 0;
+    this.increaseScore(score);
 
     if (affectCombo) {
       if (difference > 300 || isNaN(difference)) {
