@@ -562,7 +562,7 @@ class InputSystem {
 
   releaseSlider(note) {
     note.isBeingHeld = false;
-    const timeDiff = Math.abs((this.gameState.currentTime * 1000) - note.sliderEnd);
+    const timeDiff = Math.abs(note.sliderEnd - (this.gameState.currentTime));
 
     if (Math.abs(timeDiff) <= CONFIG.ACCEPTANCE_THRESHOLD) {
       note.done = true;
@@ -580,7 +580,7 @@ class InputSystem {
   }
 
   hitNote(note, laneIndex) {
-    const currentTime = this.gameState.currentTime;
+    this.gameState.scoringSystem.judge(note.time);
 
     if (note.flick) {
       this.startFlick(note, laneIndex);
@@ -628,11 +628,13 @@ class InputSystem {
 
   releaseFlick(note) {
     if (note.done) {
-      note.element.classList.remove('flick1', 'flick2');
+      // note.element.classList.remove('flick1', 'flick2');
+      note.element.parentElement.parentElement.classList.add('flicked_p');
       note.element.classList.add('flicked');
+      note.element.parentElement.parentElement.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + (note.flickDirection == "2" ? -50 : 50) + 270}deg`;
       setTimeout(() => {
         note.element.parentElement.parentElement.parentElement.remove();
-      }, 250);
+      }, 500);
       return;
     }
     note.flickStart = null;
@@ -718,9 +720,20 @@ class RenderingSystem {
     this.gameState = gameState;
     this.timingSystem = timingSystem;
     this.inputSystem = inputSystem;
+
+    this.previewElements = [];
+    this.cachePreviewElements();
+
     this.lastUpdateTime = 0;
     this.frameCount = 0;
   }
+
+  cachePreviewElements() {
+    for (let i = 0; i < CONFIG.PREVIEW_COUNT; i++) {
+      this.previewElements[i] = document.getElementById(`previewer${i}`);
+    }
+  }
+
 
   update(currentTime) {
     this.updateNoteVisibility(currentTime);
@@ -740,7 +753,7 @@ class RenderingSystem {
 
     // Update both hover highlighting AND active press effects
     for (let i = 0; i < CONFIG.PREVIEW_COUNT; i++) {
-      const el = document.getElementById(`previewer${i}`);
+      const el = this.previewElements[i];
       if (!el) continue;
 
       // Check if either cursor is in this sector (hover effect)
@@ -849,11 +862,13 @@ class RenderingSystem {
   }
 
   updateNotePositions(currentTime) {
-    this.gameState.sheet.forEach(note => {
+    const sheet = this.gameState.sheet;
+    for (let i = 0; i < sheet.length; i++) {
+      const note = sheet[i];
       if (!note.done && note.element) {
         this.updateNote(note, currentTime);
       }
-    });
+    }
   }
 
   updateNote(note, currentTime) {
@@ -863,17 +878,23 @@ class RenderingSystem {
       return this.updateSliderPosition(note, currentTime, noteTiming);
     } else if (note.flick) {
       if (note.rotations) {
-        let input = note.input;
-        if (Math.abs(note.flickStart - this.gameState.rawRotations[input]) > CONFIG.FLICK_THRESHOLD) {
-          note.done = true;
-          this.inputSystem.releaseFlick(note);
+        const input = note.input;
+        const flickDiff = Math.abs(note.flickStart - this.gameState.rawRotations[input]);
+
+        if (!note.lastFlickCheck || this.gameState.currentTime - note.lastFlickCheck > 16) {
+          note.lastFlickCheck = this.gameState.currentTime;
+
+          if (flickDiff > CONFIG.FLICK_THRESHOLD) {
+            note.done = true;
+            this.inputSystem.releaseFlick(note);
+          }
         }
       } else {
         if (note.holdable) {
-          if (this.gameState.keysPressed['w'] && this.inputSystem.isInArc(note, this.gameState.rotations[0]) && !rotations[0]) {
-            this.inputSystem.startFlick(note, 0)
-          } else if (this.gameState.keysPressed['s'] && this.inputSystem.isInArc(note, this.gameState.rotations[1]) && !rotations[1]) {
-            this.inputSystem.startFlick(note, 1)
+          if ((this.gameState.keysPressed['w'] && this.inputSystem.isInArc(note, this.gameState.rotations[0])) ||
+            (this.gameState.keysPressed['s'] && this.inputSystem.isInArc(note, this.gameState.rotations[1]))) {
+            const laneIndex = this.gameState.keysPressed['w'] ? 0 : 1;
+            this.inputSystem.startFlick(note, laneIndex);
           }
         }
       }
@@ -882,7 +903,7 @@ class RenderingSystem {
   }
 
   updateSliderPosition(note, currentTime, timing) {
-    const sliderMaxHeight = CONFIG.CONTAINER_REAL_RADIUS / 2;  // Use CONTAINER_REAL_RADIUS
+    const sliderMaxHeight = CONFIG.CONTAINER_REAL_RADIUS / 2;
 
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / timing.speed;
     const offset = timing.offset;
@@ -910,13 +931,28 @@ class RenderingSystem {
 
 
   updateSliderHoldStatus(note) {
-    // Check if we're within the slider's active time
     if (note.isBeingHeld) {
+      let determinedLane = (this.gameState.keysPressed['w'] ? (this.inputSystem.findMatchingNotes(0, this.gameState.rotations[0]).indexOf(note) != -1) : false) || (this.gameState.keysPressed['s'] ? (this.inputSystem.findMatchingNotes(1, this.gameState.rotations[1]).indexOf(note) != -1) : false);
+      if (!determinedLane) {
+        note.isBeingHeld = false;
+        return;
+      }
       note.element.parentElement.classList.add('containerActive');
       note.element.style.opacity = '1';
       note.element.style.scale = '1';
     } else {
-      // note.element.parentElement.classList.remove('containerActive');
+      if (!note.wasEverHeld && this.gameState.currentTime - note.time > CONFIG.ACCEPTANCE_THRESHOLD) {
+        this.gameState.combo = 0;
+        this.gameState.scoringSystem.updateComboDisplay();
+        this.createFailedHoldEffect(note)
+      }
+      if (note.wasEverHeld && !note.done) {
+        let determinedLane = (this.gameState.keysPressed['w'] ? (this.inputSystem.findMatchingNotes(0, this.gameState.rotations[0]).indexOf(note) != -1) : false) || (this.gameState.keysPressed['s'] ? (this.inputSystem.findMatchingNotes(1, this.gameState.rotations[1]).indexOf(note) != -1) : false);
+        if (determinedLane) {
+          note.isBeingHeld = true;
+        }
+      }
+      note.element.parentElement.classList.remove('containerActive');
       note.element.style.opacity = '0.5';
       note.element.style.scale = '1';
     }
@@ -951,6 +987,9 @@ class RenderingSystem {
       if (note.element && !note.done && this.hasFailed(note, currentTime)) {
         note.element.parentElement.parentElement.parentElement.remove();
         note.done = true;
+
+        this.gameState.combo = 0;
+        this.gameState.scoringSystem.updateComboDisplay();
 
         this.createFailedHoldEffect(note);
       }
