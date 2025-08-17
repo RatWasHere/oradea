@@ -31,6 +31,10 @@ let difficultyMap = {
   4: "Expert"
 }
 
+levelsDisplay.innerHTML = `
+<div style="height: 400px;"></div>
+`
+
 levels.forEach((level, index) => {
   let difficulties = ``;
   for (let i in level.information.difficulties) {
@@ -50,6 +54,10 @@ levels.forEach((level, index) => {
   `
   levelsDisplay.appendChild(item)
 });
+  levelsDisplay.innerHTML += `
+  <div style="height: 400px;"></div>
+  `
+
 
 let currentAudio = null;
 let currentAudioStopTimer = null;
@@ -59,12 +67,18 @@ async function highlightSong(index) {
   document.getElementById('level-' + chosenSong)?.classList.remove('highlighted');
   // Add highlight to new song
   document.getElementById('level-' + index)?.classList.add('highlighted');
+  document.getElementById('levels').scrollTo({
+    top: (document.getElementById('level-' + index).offsetTop - document.getElementById('level-' + index).getBoundingClientRect().height) - 50,
+    left: 0,
+    behavior: 'smooth'
+  })
+  console.log(document.getElementById('level-' + index).scrollTop)
 
   chosenSong = index;
 
   const level = levels[chosenSong];
   const basePath = `${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}`;
-  
+
   // Update UI elements
   document.getElementById('song').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
   document.getElementById('song-cover').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
@@ -85,7 +99,7 @@ async function highlightSong(index) {
   const playPreview = () => {
     // Ensure this is still the current audio (user hasn't clicked another song)
     if (audio !== currentAudio) return;
-    
+
     // Play from the middle
     if (audio.duration) {
       audio.currentTime = Math.min(Math.floor(audio.duration / 2), audio.duration - 15);
@@ -93,9 +107,9 @@ async function highlightSong(index) {
       // Fallback if duration isn't available yet
       audio.currentTime = 30;
     }
-    
+
     audio.play().catch(e => console.error("Audio play failed:", e));
-    
+
     // Set timeout to stop after 15 seconds
     currentAudioStopTimer = setTimeout(() => {
       if (audio === currentAudio) {
@@ -124,7 +138,7 @@ function stopCurrentPreview() {
     clearTimeout(currentAudioStopTimer);
     currentAudioStopTimer = null;
   }
-  
+
   if (currentAudio) {
     currentAudio.pause();
     currentAudio.currentTime = 0;
@@ -156,11 +170,11 @@ function play() {
   }, 400);
 }
 
-document.onwheel = (event) => {
-  console.log(event.deltaY)
+document.addEventListener('wheel', event => {
+  event.preventDefault();
   if (event.deltaY > 0) {
     highlightSong((chosenSong + 1) % levels.length);
   } else if (event.deltaY < 0) {
     highlightSong((chosenSong + levels.length - 1) % levels.length);
   }
-} 
+}, { passive: false });

@@ -14,20 +14,21 @@ body {
 #levels {
   width: 100%;
   height: calc(100% - 130px);
+  padding-top: 20px;
+  padding-bottom: 20px;
 }
 
 .songTile {
-  width: 100%;
-  scale: 0.9;
+  width: calc(100% - 90px);
   transform-origin: left;
   opacity: 0.8;
   height: auto;
   background: #FFFFFF20;
   border-top-right-radius: 5px;
   border-bottom-right-radius: 5px;
-  padding: 15px;
-  /* margin-bottom: -12px; */
-  /* margin-top: -12px; */
+  margin-bottom: 10px;
+  margin-top: 10px;
+  padding: 10px;
   position: relative;
   z-index: 2;
   backdrop-filter: blur(200px);
@@ -61,7 +62,8 @@ body {
 
 
 .highlighted {
-  scale: 1;
+  width: calc(100% - 50px);
+  padding: 15px;
   opacity: 1;
   z-index: 5;
 }
@@ -106,4 +108,58 @@ body {
   margin: auto;
   position: absolute;
   margin-top: calc(100vh - 120px);
+}
+
+.masked-overflow {
+    /* scroll bar width, for use in mask calculations */
+    --scrollbar-width: 8px;
+
+    /* mask fade distance, for use in mask calculations */
+    --mask-height: 12px;
+
+    /* If content exceeds height of container, overflow! */
+    /* overflow-y: auto; */
+
+    /* Our height limit */
+    height: 300px;
+
+    /* Need to make sure container has bottom space,
+  otherwise content at the bottom is always faded out */
+    padding-bottom: var(--mask-height);
+
+    /* Keep some space between content and scrollbar */
+    padding-right: 20px;
+
+    /* The CSS mask */
+
+    /* The content mask is a linear gradient from top to bottom */
+    --mask-image-content: linear-gradient(
+        to bottom,
+        transparent,
+        black var(--mask-height),
+        black calc(100% - var(--mask-height)),
+        transparent
+    );
+
+    /* Here we scale the content gradient to the width of the container 
+  minus the scrollbar width. The height is the full container height */
+    --mask-size-content: calc(100% - var(--scrollbar-width)) 100%;
+
+    /* The scrollbar mask is a black pixel */
+    --mask-image-scrollbar: linear-gradient(black, black);
+
+    /* The width of our black pixel is the width of the scrollbar.
+  The height is the full container height */
+    --mask-size-scrollbar: var(--scrollbar-width) 100%;
+
+    /* Apply the mask image and mask size variables */
+    mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+    mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+
+    /* Position the content gradient in the top left, and the 
+  scroll gradient in the top right */
+    mask-position: 0 0, 100% 0;
+
+    /* We don't repeat our mask images */
+    mask-repeat: no-repeat, no-repeat;
 }

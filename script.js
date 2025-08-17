@@ -10,10 +10,10 @@ const CONFIG = {
   NOTE_ARC_ANGLE: 20,
   NOTE_PREVIEW_DELAY: 750,
   APPEARANCE_HASTE: 100,
-  CONTAINER_RADIUS: 590,
-  CONTAINER_REAL_RADIUS: 590,
+  CONTAINER_RADIUS: 660,
+  CONTAINER_REAL_RADIUS: 660,
   BASELINE_OFFSET: -100, // Only applies to visuals.
-  NOTE_RADIUS: 75,
+  NOTE_RADIUS: 100,
   PREVIEW_COUNT: 8,
   GAMEPAD_DEADZONE: 0.1,
   HOLD_WINDOW: 500,
@@ -58,7 +58,7 @@ class GameState {
     this.displayedNotes = [];
 
     this.gamepad = null;
-    
+
     this.lastFrameTime = 0;
 
     this.initializeDOM();
@@ -127,13 +127,16 @@ class TimingSystem {
 
     for (let i = 0; i < timingSheet.length; i++) {
       const point = timingSheet[i];
+      if (typeof point.time == 'object') {
+        point.time = this.fromSpecial(point.time);
+      }
       const pointStartTime = parseFloat(point.time) + (defaultPoint.time ? parseFloat(defaultPoint.time) : 0);
 
       if (pointStartTime <= time) {
         activePoint.offset = this.fromSpecial(point.offset);
         activePoint.speed = point.speed;
         activePoint.time = pointStartTime;
-        activePoint.transition = point.transition;
+        activePoint.transition = this.fromSpecial(point.transition);
         activePoint.easing = point.easing || 'linear';
         activePoint.style = point.style || {};
         activePoint.from = point.from || {};
@@ -178,6 +181,13 @@ class TimingSystem {
     if (timingPoint.style.child) {
       const childElement = noteElement.parentElement;
       Object.entries(timingPoint.style.child).forEach(([key, value]) => {
+        childElement.style.setProperty(key, value);
+      });
+    }
+
+    if (timingPoint.style.header) {
+      const childElement = noteElement;
+      Object.entries(timingPoint.style.header).forEach(([key, value]) => {
         childElement.style.setProperty(key, value);
       });
     }
@@ -278,6 +288,11 @@ class TimingSystem {
           ? 2 * progress * progress
           : 1 - Math.pow(-2 * progress + 2, 2) / 2;
       default:
+        if (typeof easingType == 'object' && easingType.cubicBezier) {
+          const [p1, p2, p3, p4] = easingType.cubicBezier;
+          // Cubic Bezier easing function
+          return this.cubicBezier(progress, p1, p2, p3, p4);
+        }
         return progress;
     }
   }
@@ -296,6 +311,55 @@ class TimingSystem {
     } else {
       return value;
     }
+  }
+
+  cubicBezier(t, x1, y1, x2, y2) {
+    const cx = 3 * x1;
+    const bx = 3 * (x2 - x1) - cx;
+    const ax = 1 - cx - bx;
+
+    const cy = 3 * y1;
+    const by = 3 * (y2 - y1) - cy;
+    const ay = 1 - cy - by;
+
+    const sampleCurveX = (t) => ((ax * t + bx) * t + cx) * t;
+    const sampleCurveY = (t) => ((ay * t + by) * t + cy) * t;
+    const sampleCurveDerivativeX = (t) => (3 * ax * t + 2 * bx) * t + cx;
+
+    let currentT = t;
+    for (let i = 0; i < 8; i++) {
+      const currentX = sampleCurveX(currentT) - t;
+      if (Math.abs(currentX) < 1e-7) {
+        return sampleCurveY(currentT);
+      }
+      const currentSlope = sampleCurveDerivativeX(currentT);
+      if (Math.abs(currentSlope) < 1e-7) {
+        break;
+      }
+      currentT -= currentX / currentSlope;
+    }
+
+    let aT = 0;
+    let bT = 1;
+    currentT = t;
+
+    if (currentT < aT) return sampleCurveY(aT);
+    if (currentT > bT) return sampleCurveY(bT);
+
+    while (aT < bT) {
+      const currentX = sampleCurveX(currentT);
+      if (Math.abs(currentX - t) < 1e-7) {
+        return sampleCurveY(currentT);
+      }
+      if (t > currentX) {
+        aT = currentT;
+      } else {
+        bT = currentT;
+      }
+      currentT = (bT - aT) * 0.5 + aT;
+    }
+
+    return sampleCurveY(currentT);
   }
 
   processSpecialItem(iteration, currentValue) {
@@ -497,15 +561,12 @@ class InputSystem {
     const matchingNotes = this.findMatchingNotes(laneIndex, rotation);
 
     // Handle sliders first
-    const sliderNote = this.findSliderToHold(matchingNotes);
-    if (sliderNote) {
-      this.holdSlider(sliderNote);
-      return;
-    }
-
-    // Handle regular notes
     const closestNote = this.findClosestNote(matchingNotes, rotation);
     if (closestNote) {
+      if (closestNote.slider) {
+        this.holdSlider(closestNote);
+        return
+      }
       this.hitNote(closestNote, laneIndex);
     }
   }
@@ -520,13 +581,10 @@ class InputSystem {
       if (note.flickStart && note.input === laneIndex && !note.done) {
         this.releaseFlick(note);
       }
+      if (note.slider) {
+        this.releaseSlider(note);
+      }
     })
-    // Handle sliders first - look for currently held sliders
-    const sliderNote = this.findSliderToRelease(matchingNotes, false);
-    if (sliderNote) {
-      this.releaseSlider(sliderNote);
-      return;
-    }
   }
 
   findMatchingNotes(laneIndex, rotation) {
@@ -540,56 +598,35 @@ class InputSystem {
     });
   }
 
-  findSliderToHold(notes) {
-    return notes.find(note => {
-      if (!note.slider) return false;
-      return !note.isBeingHeld && this.canBeHeld(note);
-    });
-  }
 
-  findSliderToRelease(notes) {
-    return notes.find(note => {
-      if (!note.slider) return false;
-      return note.isBeingHeld;
-    });
-  }
-
-  findClosestNote(notes, rotation) {
+  findClosestNote(notes) {
     return notes
-      .filter(note => !note.slider)
-      .sort((a, b) => {
-        const distA = Math.abs(this.normalizeAngle(a.angle * CONFIG.ANGLE_MODIFIER) - this.normalizeAngle(rotation));
-        const distB = Math.abs(this.normalizeAngle(b.angle * CONFIG.ANGLE_MODIFIER) - this.normalizeAngle(rotation));
-        return distA - distB;
-      })
+      .filter(note => Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD && !note.isBeingHeld)
       .sort((a, b) => a.time - b.time)[0];
   }
 
   holdSlider(note) {
-    const currentTime = this.gameState.currentTime;
-    console.log(note.time - currentTime);
     note.isBeingHeld = true;
     note.wasEverHeld = true;
     note.element.style.opacity = '1';
+    this.createNoteAura(note)
   }
 
   releaseSlider(note) {
     note.isBeingHeld = false;
     const timeDiff = Math.abs(note.sliderEnd - (this.gameState.currentTime));
-
     if (Math.abs(timeDiff) <= CONFIG.ACCEPTANCE_THRESHOLD) {
       note.done = true;
-      const accuracy = this.gameState.scoringSystem.judge(note.sliderEnd);
-      if (accuracy !== 'miss') {
-        this.vibrate(2);
-        this.createHoldEffect(note);
-        note.element.parentElement.parentElement.parentElement.remove();
-      }
+      this.gameState.scoringSystem.judge(note.sliderEnd);
+      this.vibrate(2);
+      this.createHoldEffect(note);
+      note.element.parentElement.parentElement.parentElement.remove();
     } else {
       note.element.style.opacity = '0.5';
       note.element.style.scale = '1';
-      note.element.parentElement.parentElement.parentElement.remove();
     }
+
+    this.removeNoteAura(note);
   }
 
   hitNote(note, laneIndex) {
@@ -601,7 +638,6 @@ class InputSystem {
     }
 
     note.done = true;
-    note.element.parentElement.parentElement.parentElement.remove();
 
     if (note.hold && note.time < this.gameState.currentTime) {
       this.vibrate(3);
@@ -610,29 +646,68 @@ class InputSystem {
       this.createHoldEffect(note);
     }
 
-    this.createNoteAura(note);
+    this.createNoteAura(note).then(() => {
+      note.element.parentElement.parentElement.parentElement.remove();
+    });
   }
 
   createNoteAura(note) {
-    let indicator_parent = document.createElement('div');
-    indicator_parent.classList.add('indicator_parent');
-    indicator_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 135}deg`;
-    let indicator = document.createElement('div');
-    indicator.classList.add('indicator', note.slider ? 'hold' : 'hit');
-    indicator_parent.appendChild(indicator);
-    this.gameState.elements.container.appendChild(indicator_parent);
-    if (!note.slider) {
-      setTimeout(() => {
-        indicator_parent.remove();
-      }, 300);
-    }
+    return new Promise((resolve) => {
+      let indicator_parent = document.createElement('div');
+      indicator_parent.classList.add('indicator_parent');
+      indicator_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 135}deg`;
+
+      let indicator = document.createElement('div');
+      indicator.classList.add('indicator', note.slider ? 'actively_pressed' : 'was_hit');
+      indicator_parent.appendChild(indicator);
+
+      let indicator2 = document.createElement('div');
+      indicator2.classList.add('indicator', note.slider ? 'actively_pressed2' : 'was_hit2');
+      indicator_parent.appendChild(indicator2);
+
+      if (note.slider) {
+        let header_parent = document.createElement('div');
+        header_parent.classList.add('indicator_parent', 'dist');
+        header_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 135}deg`;
+
+        let header = document.createElement('div');
+        header.classList.add('header', 'end');
+        header_parent.appendChild(header);
+
+        this.gameState.elements.container.appendChild(header_parent);
+
+        note.aura_header = header_parent;
+      }
+
+      this.gameState.elements.container.appendChild(indicator_parent);
+      note.aura = indicator_parent;
+      if (!note.slider) {
+        note.element.classList.add('aura')
+        setTimeout(() => {
+          indicator_parent.remove();
+          resolve();
+        }, 500);
+      }
+    });
+  }
+
+  removeNoteAura(note) {
+    return
+    console.log(note.aura)
+    if (!note.aura) return;
+    note.aura.querySelectorAll('.indicator').forEach(indicator => {
+      indicator.style.scale = '0';
+      indicator.style.opacity = '0';
+    });
+    setTimeout(() => {
+      note.aura.remove();
+      note.aura = null;
+    }, 300);
   }
 
   startFlick(note, laneIndex) {
-    console.log('flcikk')
     note.flickStart = this.gameState.rawRotations[laneIndex];
     note.input = laneIndex;
-    console.log('set note input to ', laneIndex)
     note.flickMoment = this.gameState.currentTime;
     note.rotations = this.gameState.rawRotations;
     this.vibrate(4);
@@ -698,8 +773,8 @@ class InputSystem {
   }
 
   vibrate(kind) {
+    return
     if (!this.gameState.gamepad?.vibrationActuator) return;
-
     const vibrationSettings = {
       1: { startDelay: 0, duration: 100, weakMagnitude: 0.5, strongMagnitude: 0.7, leftTrigger: 1, rightTrigger: 1 },
       2: { startDelay: 0, duration: 50, weakMagnitude: 1, strongMagnitude: 1, leftTrigger: 1, rightTrigger: 1 },
@@ -766,8 +841,8 @@ class RenderingSystem {
 
     // Update both hover highlighting AND active press effects
     for (let i = 0; i < CONFIG.PREVIEW_COUNT; i++) {
-      const el = this.previewElements[i];
-      if (!el) continue;
+      const preview_segment = this.previewElements[i];
+      if (!preview_segment) continue;
 
       // Check if either cursor is in this sector (hover effect)
       const isHovered = (i === sectors[0] || i === sectors[1]);
@@ -778,16 +853,16 @@ class RenderingSystem {
 
       // Apply hover effect
       if (isHovered) {
-        el.classList.add('hovered');
+        preview_segment.classList.add('selected');
       } else {
-        el.classList.remove('hovered');
+        preview_segment.classList.remove('selected');
       }
 
       // Apply active press effect
       if (isActive) {
-        el.firstElementChild?.classList.add('hitKid');
+        preview_segment.firstElementChild?.classList.add('effect');
       } else {
-        el.firstElementChild?.classList.remove('hitKid');
+        preview_segment.firstElementChild?.classList.remove('effect');
       }
     }
   }
@@ -850,13 +925,23 @@ class RenderingSystem {
       noteElement.style.height = `${actualHeight + (CONFIG.NOTE_RADIUS / 2)}px`;
       noteElement.style.translate = `0px`;
 
+      noteElement.style.setProperty('--sliderHeight', `${actualHeight}px`);
+
       note.height = actualHeight;
 
       noteContainer.appendChild(noteElement);
       lane.appendChild(noteContainer);
       const header = document.createElement('div');
-      header.classList.add('header');
+      header.classList.add('header', 'start');
       noteElement.appendChild(header);
+
+      const frame = document.createElement('div');
+      frame.classList.add('header', 'midframe');
+      noteElement.appendChild(frame);
+
+      const header2 = document.createElement('div');
+      header2.classList.add('header', 'end');
+      noteElement.appendChild(header2);
     } else {
       noteElement.style.translate = `0px`;
 
@@ -870,6 +955,10 @@ class RenderingSystem {
       }
       if (note.flick) {
         noteElement.classList.add(`flick${note.flickDirection}`);
+      }
+
+      if (note.golden) {
+        noteElement.classList.add('golden');
       }
     }
   }
@@ -918,7 +1007,7 @@ class RenderingSystem {
   updateSliderPosition(note, currentTime, timing) {
     const sliderMaxHeight = CONFIG.CONTAINER_REAL_RADIUS / 2;
 
-    const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / timing.speed;
+    const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / (timing.speed || 1);
     const offset = timing.offset;
 
     const sliderStart = note.time;
@@ -926,7 +1015,7 @@ class RenderingSystem {
 
     let spentHeight;
 
-    if (timing.default) {
+    if (!offset) {
       spentHeight = (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight;
     } else {
       spentHeight = (((sliderEnd - (sliderStart + offset))) / previewDelay) * sliderMaxHeight;
@@ -948,13 +1037,14 @@ class RenderingSystem {
       let determinedLane = (this.gameState.keysPressed['w'] ? (this.inputSystem.findMatchingNotes(0, this.gameState.rotations[0]).indexOf(note) != -1) : false) || (this.gameState.keysPressed['s'] ? (this.inputSystem.findMatchingNotes(1, this.gameState.rotations[1]).indexOf(note) != -1) : false);
       if (!determinedLane) {
         note.isBeingHeld = false;
+        this.inputSystem.releaseSlider(note);
         return;
       }
       note.element.parentElement.classList.add('containerActive');
       note.element.style.opacity = '1';
       note.element.style.scale = '1';
     } else {
-      if (!note.wasEverHeld && this.gameState.currentTime - note.time > CONFIG.ACCEPTANCE_THRESHOLD) {
+      if (!note.wasEverHeld && this.gameState.currentTime - note.currentTime > CONFIG.ACCEPTANCE_THRESHOLD) {
         this.gameState.combo = 0;
         this.gameState.scoringSystem.updateComboDisplay();
         this.createFailedHoldEffect(note)
@@ -972,7 +1062,7 @@ class RenderingSystem {
   }
 
   updateRegularNotePosition(note, currentTime, timing) {
-    const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / (timing.speed || 1);
+    const previewDelay = CONFIG.NOTE_PREVIEW_DELAY;
     const offset = timing.offset || 0;
     const noteTime = note.time;
 
@@ -984,10 +1074,8 @@ class RenderingSystem {
       // (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight
       timeIntoPreview = ((noteTime - currentTime) / previewDelay) * noteTravelMax;
     } else {
-      timeIntoPreview = (noteTime - offset) - (noteTime - previewDelay);
+      timeIntoPreview = (-offset / previewDelay) * noteTravelMax;
     }
-
-    const noteTravel = Math.max(timeIntoPreview / previewDelay, 0) * noteTravelMax;
 
     const newTranslate = `0px ${timeIntoPreview * -1}px`;
     if (note.element.style.translate !== newTranslate) {
@@ -998,7 +1086,9 @@ class RenderingSystem {
   cleanupFailedNotes(currentTime) {
     this.gameState.sheet.forEach(note => {
       if (note.element && !note.done && this.hasFailed(note, currentTime)) {
-        note.element.parentElement.parentElement.parentElement.remove();
+        if (note.element) {
+          note.element.parentElement.parentElement.parentElement.remove();
+        }
         note.done = true;
 
         this.gameState.combo = 0;
@@ -1011,12 +1101,15 @@ class RenderingSystem {
 
   hasFailed(note, currentTime) {
     // Don't fail notes that are already done or haven't started yet
-    if (note.done || note.isBeingHeld) return false;
+    if (note.done) return false;
 
     // For sliders, they only fail if they end without being held
     if (note.slider) {
-      // Only fail if the slider has completely ended and was never held
-      return currentTime > (note.sliderEnd + CONFIG.ACCEPTANCE_THRESHOLD) && !note.wasEverHeld;
+      let failed = currentTime > (note.sliderEnd + CONFIG.ACCEPTANCE_THRESHOLD);
+      if (failed) {
+        this.inputSystem.releaseSlider(note);
+      }
+      return failed;
     }
 
     // For regular notes, check if they've passed the acceptance window
