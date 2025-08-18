@@ -692,13 +692,19 @@ class InputSystem {
   }
 
   removeNoteAura(note) {
+
     return
-    console.log(note.aura)
+    if (note.aura_header) {
+      note.aura_header.remove();
+      note.aura_header = null;
+    }
+
     if (!note.aura) return;
     note.aura.querySelectorAll('.indicator').forEach(indicator => {
       indicator.style.scale = '0';
       indicator.style.opacity = '0';
     });
+
     setTimeout(() => {
       note.aura.remove();
       note.aura = null;
@@ -1040,7 +1046,7 @@ class RenderingSystem {
         this.inputSystem.releaseSlider(note);
         return;
       }
-      note.element.parentElement.classList.add('containerActive');
+      note.element.parentElement.classList.add('actively_pressed_in');
       note.element.style.opacity = '1';
       note.element.style.scale = '1';
     } else {
@@ -1055,7 +1061,7 @@ class RenderingSystem {
           note.isBeingHeld = true;
         }
       }
-      note.element.parentElement.classList.remove('containerActive');
+      note.element.parentElement.classList.remove('actively_pressed_in');
       note.element.style.opacity = '0.5';
       note.element.style.scale = '1';
     }

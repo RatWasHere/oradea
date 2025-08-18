@@ -6,9 +6,10 @@
     </clipPath>
   </defs>
   <g clip-path="url(#clip_path_1)">
-    <g transform="translate(23 -252)">
-      <rect width="355" height="904" />
-      <path d="M355 0L0 0L0 904L355 904L355 0ZM52 852L52 52L303 52L303 852L52 852Z" fill="#FFFFFF" fill-rule="evenodd" />
+    <path d="M75.5 0C117.203 0 151 33.7968 151 75.5L151 539.5C151 581.203 117.203 615 75.5 615L75.5 615C33.7968 615 0 581.203 0 539.5L0 75.5C0 33.7968 33.7968 0 75.5 0Z" fill="#FFFFFF" transform="translate(125 -101)" />
+    <g transform="translate(0 -252)">
+      <rect width="400" height="904" />
+      <path d="M400 0L0 0L0 904L400 904L400 0ZM89 815L89 89L311 89L311 815L89 815Z" fill="#FFFFFF" fill-rule="evenodd" />
     </g>
   </g>
 </svg>

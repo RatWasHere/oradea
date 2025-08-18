@@ -7,7 +7,8 @@ body {
   --sr: 660px;
   --jo: 20px;
   --t: 750ms;
-  --d: 30px;
+  --d: 40px;
+  --dnr: 100px;
   /* JUDGEMENT OFFSET */
   --nr: 100px;
   --notePreviewDelay: 1650ms;
@@ -322,7 +323,7 @@ body {
 
 .header {
   width: var(--nr);
-  height: var(--nr);
+  height: calc(var(--nr) / 2);
   background-size: cover !important;
   background-repeat: no-repeat !important;
 }
@@ -338,7 +339,7 @@ body {
 
 .header.midframe {
   background: url(./Assets/Headers/Frame.svg);
-  height: calc(var(--sliderHeight) - (var(--nr)));
+  height: calc(var(--sliderHeight));
   background-size: var(--nr) var(--nr) !important;
   background-repeat: repeat-y !important;
 }
@@ -510,7 +511,7 @@ btn:active {
   transform: translateY(calc(var(--sr) / 2));
 }
 
-.containerActive {
+.actively_pressed_in {
   height: calc(50% + (var(--nr) / 4)) !important;
 }
 
@@ -660,19 +661,30 @@ btn:active {
 .indicator_parent {
   width: var(--s);
   height: var(--s);
-  margin-left: calc((var(--s) - var(--sr)));
-  margin-top: calc(((var(--sr) - var(--s))));
+  /* margin-left: var(--d);
+  margin-top: var(--d); */
   position: absolute;
 }
 
 .dist {
-  margin-left: calc((var(--s) - var(--sr)) + var(--d));
-  margin-top: calc(((var(--sr) - var(--s))) - var(--d));
+  /* margin-left: calc((var(--s) - var(--sr)) + var(--d) / 2);
+  margin-top: calc(((var(--sr) - var(--s))) - var(--d) / 2); */
 }
 
-.indicator_parent > .header.end {
+.indicator_parent>.header.end {
   rotate: 135deg;
-  width: var(--nr);
+  height: var(--nr);
+  background-size: contain !important;
+  background-repeat: no-repeat !important;
+
+  translate: var(--dnr) var(--dnr);
+}
+
+.indicator_parent:has(.header.end) {
+  height: var(--sr);
+  width: var(--sr);
+  margin-left: calc((var(--s) - var(--sr)) / 2);
+  margin-top: calc((var(--s) - var(--sr)) / 2);
 }
 
 .indicator {
@@ -680,7 +692,6 @@ btn:active {
   margin: auto;
   transition: all 0.2s ease;
 }
-
 
 .aura {
   animation: aura 0.5s ease;
@@ -717,6 +728,7 @@ btn:active {
   border: 15px solid #ffffff;
   box-shadow: 0px 0px 10px 10px #ffffff50 inset, 0px 0px 10px 10px #ffffff50;
   animation: hit 0.3s linear, rotate 0.45s ease;
+  translate: var(--d) var(--d);
 }
 
 .was_hit2 {
