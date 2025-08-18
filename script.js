@@ -583,7 +583,7 @@ class InputSystem {
       if (note.flickStart && note.input === laneIndex && !note.done) {
         this.releaseFlick(note);
       }
-      if (note.slider) {
+      if (note.slider && note.isBeingHeld) {
         this.releaseSlider(note);
       }
     }
