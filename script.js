@@ -601,7 +601,9 @@ class InputSystem {
 
   findClosestNote(notes) {
     return notes
-      .filter(note => Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD && !note.isBeingHeld)
+      .filter(note => note.slider ?
+        (((Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) || note.sliderEnd > this.gameState.currentTime) && !note.isBeingHeld && !note.done)
+      : (Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) && !note.done)
       .sort((a, b) => a.time - b.time)[0];
   }
 
@@ -703,9 +705,11 @@ class InputSystem {
       indicator.style.opacity = '0';
     });
 
+    let noteAura = note.aura;
+    note.aura = null;
+
     setTimeout(() => {
-      note.aura.remove();
-      note.aura = null;
+      noteAura.remove();
     }, 300);
   }
 
