@@ -654,39 +654,46 @@ class InputSystem {
       note.element.parentElement.parentElement.parentElement.remove();
     });
   }
-
   createNoteAura(note) {
     return new Promise((resolve) => {
-      let indicator_parent = document.createElement('div');
+      const frag = document.createDocumentFragment();
+
+      // Main indicator parent
+      const indicator_parent = document.createElement('div');
       indicator_parent.classList.add('indicator_parent');
       indicator_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 135}deg`;
 
-      let indicator = document.createElement('div');
+      const indicator = document.createElement('div');
       indicator.classList.add('indicator', note.slider ? 'actively_pressed' : 'was_hit');
       indicator_parent.appendChild(indicator);
 
-      let indicator2 = document.createElement('div');
+      const indicator2 = document.createElement('div');
       indicator2.classList.add('indicator', note.slider ? 'actively_pressed2' : 'was_hit2');
       indicator_parent.appendChild(indicator2);
 
+      // Optional slider header
       if (note.slider) {
-        let header_parent = document.createElement('div');
+        const header_parent = document.createElement('div');
         header_parent.classList.add('indicator_parent', 'dist');
         header_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 135}deg`;
 
-        let header = document.createElement('div');
+        const header = document.createElement('div');
         header.classList.add('header', 'end');
         header_parent.appendChild(header);
 
-        this.gameState.elements.container.appendChild(header_parent);
-
+        frag.appendChild(header_parent);
         note.aura_header = header_parent;
       }
 
-      this.gameState.elements.container.appendChild(indicator_parent);
+      frag.appendChild(indicator_parent);
+
+      // Append everything in one go
+      this.gameState.elements.container.appendChild(frag);
+
       note.aura = indicator_parent;
+
       if (!note.slider) {
-        note.element.classList.add('aura')
+        note.element.classList.add('aura');
         setTimeout(() => {
           indicator_parent.remove();
           resolve();
@@ -694,6 +701,7 @@ class InputSystem {
       }
     });
   }
+
 
   removeNoteAura(note) {
     if (note.aura_header) {
