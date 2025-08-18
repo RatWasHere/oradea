@@ -692,8 +692,6 @@ class InputSystem {
   }
 
   removeNoteAura(note) {
-
-    return
     if (note.aura_header) {
       note.aura_header.remove();
       note.aura_header = null;

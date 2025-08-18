@@ -8,7 +8,7 @@ body {
   --jo: 20px;
   --t: 750ms;
   --d: 40px;
-  --dnr: 100px;
+  --dnr: 10px;
   /* JUDGEMENT OFFSET */
   --nr: 100px;
   --notePreviewDelay: 1650ms;
@@ -512,7 +512,8 @@ btn:active {
 }
 
 .actively_pressed_in {
-  height: calc(50% + (var(--nr) / 4)) !important;
+  height: calc(50% - (var(--dnr))) !important;
+  border-radius: 0px !important;
 }
 
 .slider {
@@ -677,7 +678,11 @@ btn:active {
   background-size: contain !important;
   background-repeat: no-repeat !important;
 
-  translate: var(--dnr) var(--dnr);
+  --distance: calc(
+    ((var(--s) - var(--sr)) / 2) - (var(--d) / 2)
+    );
+
+  translate: var(--distance) var(--distance);
 }
 
 .indicator_parent:has(.header.end) {
