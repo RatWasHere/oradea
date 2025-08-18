@@ -70,7 +70,8 @@ class GameState {
       container: document.getElementById('noteContainer'),
       cursor1: document.getElementById('cursor1'),
       cursor2: document.getElementById('cursor2'),
-      comboDisplay: document.getElementById('comboDisplay')
+      comboDisplay: document.getElementById('comboDisplay'),
+      previewers: document.querySelectorAll('.previewer_parent')
     };
   }
 
@@ -195,7 +196,7 @@ class TimingSystem {
 
   applySegmentStyles(timingPoint) {
     if (timingPoint.style.segments) {
-      let previewers = document.querySelectorAll('.previewer_parent');
+      let previewers = this.gameState.previewers;
       previewers.forEach((previewer, index) => {
         const segmentStyle = timingPoint.style.segments[index];
         if (segmentStyle) {
@@ -577,14 +578,15 @@ class InputSystem {
     const rotation = this.gameState.rotations[laneIndex];
 
     const matchingNotes = this.findMatchingNotes(laneIndex, rotation);
-    matchingNotes.forEach(note => {
+    for (let i = 0; i < matchingNotes.length; i++) {
+      const note = matchingNotes[i];
       if (note.flickStart && note.input === laneIndex && !note.done) {
         this.releaseFlick(note);
       }
       if (note.slider) {
         this.releaseSlider(note);
       }
-    })
+    }
   }
 
   findMatchingNotes(laneIndex, rotation) {
@@ -603,7 +605,7 @@ class InputSystem {
     return notes
       .filter(note => note.slider ?
         (((Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) || note.sliderEnd > this.gameState.currentTime) && !note.isBeingHeld && !note.done)
-      : (Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) && !note.done)
+        : (Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) && !note.done)
       .sort((a, b) => a.time - b.time)[0];
   }
 
@@ -719,11 +721,11 @@ class InputSystem {
     note.flickMoment = this.gameState.currentTime;
     note.rotations = this.gameState.rawRotations;
     this.vibrate(4);
-    console.log(note)
   }
 
   releaseFlick(note) {
     if (note.done) {
+      this.createNoteAura(note)
       // note.element.classList.remove('flick1', 'flick2');
       note.element.parentElement.parentElement.classList.add('flicked_p');
       note.element.classList.add('flicked');
@@ -883,13 +885,12 @@ class RenderingSystem {
   createNewNoteElements(currentTime) {
     const relevantNotes = this.gameState.sheet.filter(note => ((currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.APPEARANCE_HASTE)) && !note.element));
 
-    relevantNotes.forEach(note => {
-      if (note.slider) {
-      }
+    for (let i = 0; i < relevantNotes.length; i++) {
+      const note = relevantNotes[i];
       if (!note.element) {
         this.createNoteElement(note);
       }
-    });
+    }
   }
 
   createNoteElement(note) {
@@ -926,6 +927,9 @@ class RenderingSystem {
   assembleNote(note, elements) {
     let { noteElement, lane, noteContainer } = elements;
 
+    // Create a fragment to batch DOM operations
+    const fragment = document.createDocumentFragment();
+
     if (note.slider) {
       noteElement.classList.add('slider');
       const actualHeight = ((note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2);
@@ -937,8 +941,7 @@ class RenderingSystem {
 
       note.height = actualHeight;
 
-      noteContainer.appendChild(noteElement);
-      lane.appendChild(noteContainer);
+      // Build sub-elements in memory
       const header = document.createElement('div');
       header.classList.add('header', 'start');
       noteElement.appendChild(header);
@@ -950,25 +953,34 @@ class RenderingSystem {
       const header2 = document.createElement('div');
       header2.classList.add('header', 'end');
       noteElement.appendChild(header2);
+
+      // Put assembled noteElement inside noteContainer
+      noteContainer.appendChild(noteElement);
     } else {
       noteElement.style.translate = `0px`;
 
-      noteContainer.appendChild(noteElement);
-      lane.appendChild(noteContainer);
       const header = document.createElement('div');
       header.classList.add('header');
       noteElement.appendChild(header);
+
       if (note.hold) {
         noteElement.classList.add('hold');
       }
       if (note.flick) {
         noteElement.classList.add(`flick${note.flickDirection}`);
       }
-
       if (note.golden) {
         noteElement.classList.add('golden');
       }
+
+      noteContainer.appendChild(noteElement);
     }
+
+    // Add noteContainer to fragment
+    fragment.appendChild(noteContainer);
+
+    // Append fragment into lane in one go
+    lane.appendChild(fragment);
   }
 
   updateNotePositions(currentTime) {
@@ -1092,7 +1104,9 @@ class RenderingSystem {
   }
 
   cleanupFailedNotes(currentTime) {
-    this.gameState.sheet.forEach(note => {
+    for (let i = 0; i < this.gameState.sheet.length; i++) {
+      const note = this.gameState.sheet[i];
+
       if (note.element && !note.done && this.hasFailed(note, currentTime)) {
         if (note.element) {
           note.element.parentElement.parentElement.parentElement.remove();
@@ -1104,7 +1118,7 @@ class RenderingSystem {
 
         this.createFailedHoldEffect(note);
       }
-    });
+    }
   }
 
   hasFailed(note, currentTime) {
