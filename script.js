@@ -11,6 +11,7 @@ const CONFIG = {
   NOTE_PREVIEW_DELAY: 750,
   APPEARANCE_HASTE: 100,
   CONTAINER_RADIUS: 660,
+  SNAP_EXTENSION: 20,
   CONTAINER_REAL_RADIUS: 660,
   BASELINE_OFFSET: -100, // Only applies to visuals.
   NOTE_RADIUS: 100,
@@ -196,7 +197,7 @@ class TimingSystem {
 
   applySegmentStyles(timingPoint) {
     if (timingPoint.style.segments) {
-      let previewers = this.gameState.previewers;
+      let previewers = game.gameState.elements.previewers;
       previewers.forEach((previewer, index) => {
         const segmentStyle = timingPoint.style.segments[index];
         if (segmentStyle) {
@@ -472,7 +473,7 @@ class InputSystem {
   extendedSnapAngle(angle, cursorIndex) {
     // Segment size is SNAP_INTERVAL (e.g., 45deg)
     const segmentSize = CONFIG.SNAP_INTERVAL;
-    const extension = 15; // degrees to extend on both sides
+    const extension = CONFIG.SNAP_EXTENSION; // degrees to extend on both sides
 
     // Calculate which segment the cursor is currently in
     const baseAngle = this.snapAngle(angle);
@@ -612,13 +613,14 @@ class InputSystem {
   holdSlider(note) {
     note.isBeingHeld = true;
     note.wasEverHeld = true;
-    note.element.style.opacity = '1';
+    note.element.parentElement.classList.add('actively_pressed_in');
     this.createNoteAura(note)
   }
 
   releaseSlider(note) {
     note.isBeingHeld = false;
     const timeDiff = Math.abs(note.sliderEnd - (this.gameState.currentTime));
+    note.element.parentElement.classList.remove('actively_pressed_in');
     if (Math.abs(timeDiff) <= CONFIG.ACCEPTANCE_THRESHOLD) {
       note.done = true;
       this.gameState.scoringSystem.judge(note.sliderEnd);
@@ -678,7 +680,7 @@ class InputSystem {
         header_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 135}deg`;
 
         const header = document.createElement('div');
-        header.classList.add('header', 'end');
+        header.classList.add('header', 'end', 'from_aura');
         header_parent.appendChild(header);
 
         frag.appendChild(header_parent);
@@ -951,7 +953,7 @@ class RenderingSystem {
 
       // Build sub-elements in memory
       const header = document.createElement('div');
-      header.classList.add('header', 'start');
+      header.classList.add('header', note.holdableStart ? 'holdable_start' : 'start');
       noteElement.appendChild(header);
 
       const frame = document.createElement('div');
@@ -959,7 +961,7 @@ class RenderingSystem {
       noteElement.appendChild(frame);
 
       const header2 = document.createElement('div');
-      header2.classList.add('header', 'end');
+      header2.classList.add('header', note.holdableEnd ? 'holdable_end' : 'end');
       noteElement.appendChild(header2);
 
       // Put assembled noteElement inside noteContainer
@@ -968,11 +970,15 @@ class RenderingSystem {
       noteElement.style.translate = `0px`;
 
       const header = document.createElement('div');
-      header.classList.add('header');
+      if (!note.flick) {
+        header.classList.add('header');
+      } else {
+        header.classList.add('flick_arrows')
+      }
       noteElement.appendChild(header);
 
-      if (note.hold) {
-        noteElement.classList.add('hold');
+      if (note.holdable) {
+        noteElement.classList.add('holdable');
       }
       if (note.flick) {
         noteElement.classList.add(`flick${note.flickDirection}`);
@@ -1028,6 +1034,12 @@ class RenderingSystem {
           }
         }
       }
+    } else if (note.holdable && note.time < currentTime) {
+      let isInArc0 = this.inputSystem.isInArc(note, this.gameState.rotations[0]);
+      let isInArc1 = this.inputSystem.isInArc(note, this.gameState.rotations[1]);
+      if ((isInArc0 && this.gameState.keysPressed['w']) || (isInArc1 && this.gameState.keysPressed['s'])) {
+        this.inputSystem.hitNote(note, isInArc0 ? 0 : 1);
+      }
     }
     this.updateRegularNotePosition(note, currentTime, noteTiming);
   }
@@ -1061,16 +1073,16 @@ class RenderingSystem {
 
 
   updateSliderHoldStatus(note) {
-    if (note.isBeingHeld) {
+    if (note.isBeingHeld || (note.holdableStart && this.gameState.currentTime >= note.time)) {
       let determinedLane = (this.gameState.keysPressed['w'] ? (this.inputSystem.findMatchingNotes(0, this.gameState.rotations[0]).indexOf(note) != -1) : false) || (this.gameState.keysPressed['s'] ? (this.inputSystem.findMatchingNotes(1, this.gameState.rotations[1]).indexOf(note) != -1) : false);
-      if (!determinedLane) {
-        note.isBeingHeld = false;
+      
+      if (!determinedLane && note.isBeingHeld) {
         this.inputSystem.releaseSlider(note);
         return;
       }
-      note.element.parentElement.classList.add('actively_pressed_in');
-      note.element.style.opacity = '1';
-      note.element.style.scale = '1';
+      if (!note.isBeingHeld && note.holdableStart && (determinedLane != false)) {
+        this.inputSystem.holdSlider(note);
+      }
     } else {
       if (!note.wasEverHeld && this.gameState.currentTime - note.currentTime > CONFIG.ACCEPTANCE_THRESHOLD) {
         this.gameState.combo = 0;
@@ -1083,9 +1095,6 @@ class RenderingSystem {
           note.isBeingHeld = true;
         }
       }
-      note.element.parentElement.classList.remove('actively_pressed_in');
-      note.element.style.opacity = '0.5';
-      note.element.style.scale = '1';
     }
   }
 
@@ -1188,7 +1197,7 @@ class ScoringSystem {
 
     let score = CONFIG.ACCURACY_SCORES[accuracy] || 0;
     this.increaseScore(score);
-
+    console.log(difference)
     if (affectCombo) {
       if (difference > 300 || isNaN(difference)) {
         this.gameState.combo = 0;
