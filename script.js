@@ -5,10 +5,11 @@ const fs = require('fs');
 // ============================================================================
 const CONFIG = {
   ACCEPTANCE_THRESHOLD: 500,
-  SNAP_INTERVAL: 45,
-  ANGLE_MODIFIER: 45,
-  NOTE_ARC_ANGLE: 20,
+  SNAP_INTERVAL: 60, // Changed from 45 to 60 for 6 segments (360/6)
+  ANGLE_MODIFIER: 0,
+  NOTE_ARC_ANGLE: 0,
   NOTE_PREVIEW_DELAY: 600,
+  ANGLE_START: 0,
   SCALE_DURATION: 300,
   APPEARANCE_HASTE: 200,
   CONTAINER_RADIUS: 660,
@@ -16,7 +17,7 @@ const CONFIG = {
   CONTAINER_REAL_RADIUS: 660,
   BASELINE_OFFSET: -100, // Only applies to visuals.
   NOTE_RADIUS: 150,
-  PREVIEW_COUNT: 8,
+  PREVIEW_COUNT: 6, // Already set to 6
   GAMEPAD_DEADZONE: 0.1,
   HOLD_WINDOW: 500,
   FLICK_THRESHOLD: 10,
@@ -542,7 +543,7 @@ class InputSystem {
   updateCursorRotation(index, angle) {
     const cursor = index === 0 ? this.gameState.elements.cursor1 : this.gameState.elements.cursor2;
     if (cursor) {
-      cursor.style.rotate = `${angle + 90}deg`;
+      cursor.style.rotate = `${angle + CONFIG.ANGLE_START}deg`;
     }
 
     this.gameState.rotations[index] = angle - 270;
@@ -756,7 +757,7 @@ class InputSystem {
 
   isInArc(note, rotation) {
     const normalizedRotation = this.normalizeAngle(rotation);
-    const noteStartAngle = this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + 90 - (CONFIG.NOTE_ARC_ANGLE / 2));
+    const noteStartAngle = this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + CONFIG.ANGLE_START - (CONFIG.NOTE_ARC_ANGLE / 2));
     const noteEndAngle = this.normalizeAngle(noteStartAngle + CONFIG.NOTE_ARC_ANGLE);
 
     if (noteStartAngle < noteEndAngle) {
@@ -857,8 +858,8 @@ class RenderingSystem {
 
   updatePreviewSectors() {
     const sectors = [
-      (Math.round(this.normalizeAngle(this.gameState.rotations[0] + 270) / 45) + 1) % CONFIG.PREVIEW_COUNT,
-      (Math.round(this.normalizeAngle(this.gameState.rotations[1] + 270) / 45) + 1) % CONFIG.PREVIEW_COUNT
+      (Math.round(this.normalizeAngle(this.gameState.rotations[0] + 270) / 60) + 1) % CONFIG.PREVIEW_COUNT,
+      (Math.round(this.normalizeAngle(this.gameState.rotations[1] + 270) / 60) + 1) % CONFIG.PREVIEW_COUNT
     ];
 
     this.gameState.sectors = sectors;

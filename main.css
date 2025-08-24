@@ -408,9 +408,9 @@ body {
 .previewer {
   --bg: rgba(0, 0, 0, 0.5);
   background: conic-gradient(var(--bg) 0deg,
-      var(--bg) 45deg,
-      transparent 45deg);
-  rotate: calc(var(--i) * 45deg + 22.5deg);
+      var(--bg) 60deg,
+      transparent 60deg);
+  rotate: calc(var(--i) * 60deg);
   width: var(--s);
   aspect-ratio: 1;
   position: absolute;
@@ -598,7 +598,7 @@ btn:active {
 .hitIndicator {
   --bg: #ffffff;
   background:
-    conic-gradient(var(--bg) 0deg, var(--bg) 45deg, #00000000 45deg);
+    conic-gradient(var(--bg) 0deg, var(--bg) 60deg, #00000000 60deg);
   width: var(--s);
   aspect-ratio: 1;
   position: absolute;
@@ -611,12 +611,12 @@ btn:active {
 .effects_containment {
   width: 100%;
   height: 100%;
-  --rotation: 67.5deg;
+  --rotation: 90deg; /* Changed from 67.5 to 90 for 6 segments (360/6 = 60, plus half = 90) */
   position: absolute;
   inset: 0;
   border-radius: 100%;
   pointer-events: none;
-  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 45deg, transparent 45deg);
+  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg);
   z-index: 1;
   background-size: var(--s);
   background-position: 600px 600px;
@@ -632,11 +632,11 @@ btn:active {
 .previewer:has(.effect)::after::after {
   content: "";
   border-radius: 100%;
-  --rotation: 67.5deg;
+  --rotation: 90deg;
   /* define the variable here */
-  rotate: -67.5deg;
+  rotate: -90deg;
   filter: blur(50px);
-  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 45deg, transparent 45deg);
+  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg);
   mask-composite: exclude;
   height: var(--s);
   display: block;
@@ -649,11 +649,11 @@ btn:active {
 .previewer::after {
   content: "";
   transition: all 0.15s cubic-bezier(0, .93, .68, 1.03);
-  --rotation: 67.5deg;
-  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 45deg, transparent 45deg) !important;
+  --rotation: 90deg;
+  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg) !important;
   scale: 1.2;
   opacity: 0;
-  rotate: -67.5deg;
+  rotate: -90deg;
   background: red;
   width: var(--s);
   height: var(--s);
@@ -815,7 +815,7 @@ btn:active {
   clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
   opacity: 0.4;
   filter: blur(12px);
-  mask: conic-gradient(white 0deg, white 45deg, transparent 45deg);
+  mask: conic-gradient(white 0deg, white 60deg, transparent 60deg);
   mask-repeat: no-repeat;
   mask-position: center;
   mask-size: cover;
@@ -963,7 +963,7 @@ btn:active {
   }
 
   100% {
-    rotate: 45deg;
+    rotate: 60deg;
   }
 }
 
