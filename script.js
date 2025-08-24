@@ -8,13 +8,14 @@ const CONFIG = {
   SNAP_INTERVAL: 45,
   ANGLE_MODIFIER: 45,
   NOTE_ARC_ANGLE: 20,
-  NOTE_PREVIEW_DELAY: 750,
-  APPEARANCE_HASTE: 100,
+  NOTE_PREVIEW_DELAY: 600,
+  SCALE_DURATION: 300,
+  APPEARANCE_HASTE: 200,
   CONTAINER_RADIUS: 660,
-  SNAP_EXTENSION: 20,
+  SNAP_EXTENSION: 12,
   CONTAINER_REAL_RADIUS: 660,
   BASELINE_OFFSET: -100, // Only applies to visuals.
-  NOTE_RADIUS: 100,
+  NOTE_RADIUS: 150,
   PREVIEW_COUNT: 8,
   GAMEPAD_DEADZONE: 0.1,
   HOLD_WINDOW: 500,
@@ -584,7 +585,9 @@ class InputSystem {
       if (note.flickStart && note.input === laneIndex && !note.done) {
         this.releaseFlick(note);
       }
-      if (note.slider && note.isBeingHeld) {
+      if (note.slider && note.isBeingHeld && !(
+        this.isInArc(note, this.gameState.rotations[isW ? 1 : 0]) && this.gameState.keysPressed[isW ? 's' : 'w']
+      )) {
         this.releaseSlider(note);
       }
     }
@@ -657,6 +660,7 @@ class InputSystem {
     });
   }
   createNoteAura(note) {
+    new Audio('./Assets/hit.mp3').play().catch(() => { });
     return new Promise((resolve) => {
       const frag = document.createDocumentFragment();
 
@@ -893,7 +897,7 @@ class RenderingSystem {
   }
 
   createNewNoteElements(currentTime) {
-    const relevantNotes = this.gameState.sheet.filter(note => ((currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.APPEARANCE_HASTE)) && !note.element));
+    const relevantNotes = this.gameState.sheet.filter(note => ((currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.APPEARANCE_HASTE + CONFIG.SCALE_DURATION)) && !note.element));
 
     for (let i = 0; i < relevantNotes.length; i++) {
       const note = relevantNotes[i];
@@ -1075,7 +1079,7 @@ class RenderingSystem {
   updateSliderHoldStatus(note) {
     if (note.isBeingHeld || (note.holdableStart && this.gameState.currentTime >= note.time)) {
       let determinedLane = (this.gameState.keysPressed['w'] ? (this.inputSystem.findMatchingNotes(0, this.gameState.rotations[0]).indexOf(note) != -1) : false) || (this.gameState.keysPressed['s'] ? (this.inputSystem.findMatchingNotes(1, this.gameState.rotations[1]).indexOf(note) != -1) : false);
-      
+
       if (!determinedLane && note.isBeingHeld) {
         this.inputSystem.releaseSlider(note);
         return;
@@ -1105,11 +1109,27 @@ class RenderingSystem {
 
     const noteTravelMax = CONFIG.CONTAINER_REAL_RADIUS / 2;  // Use CONTAINER_REAL_RADIUS
 
-    // Calculate travel distance based on how far we are into the preview window
     let timeIntoPreview;
     if (!offset) {
-      // (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight
-      timeIntoPreview = ((noteTime - currentTime) / previewDelay) * noteTravelMax;
+      let scale = 1; // default once scaling is done
+      let scaleStart = (noteTime + CONFIG.APPEARANCE_HASTE) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
+      let scaleEnd = (noteTime + CONFIG.APPEARANCE_HASTE) - CONFIG.NOTE_PREVIEW_DELAY;
+      if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
+        // progress from 0 → 1 during the scale duration
+        let progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
+        scale = game.timingSystem.applyEasing(progress, '[0.49,0.14,0.74,0.96]');
+      } else if (currentTime < scaleStart) {
+        scale = 0;
+      } else if (!note.endedScale && currentTime > scaleEnd) {
+        scale = 1;
+      }
+      note.element.style.transform = `scale(${scale})`;
+
+
+      timeIntoPreview = Math.min(
+        ((noteTime - currentTime) / previewDelay) * noteTravelMax,
+        noteTravelMax - (((CONFIG.APPEARANCE_HASTE) / previewDelay) * noteTravelMax)
+      );
     } else {
       timeIntoPreview = (-offset / previewDelay) * noteTravelMax;
     }

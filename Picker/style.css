@@ -48,11 +48,11 @@ body {
   margin-right: 0px;
   opacity: 1;
   border-radius: 5px;
-  transition: all 0.3s cubic-bezier(.17,.67,.21,1.43);
+  transition: all 0.3s cubic-bezier(.17, .67, .21, 1.43);
   transition-delay: 100ms;
 }
 
-.songTile.highlighted > .image {
+.songTile.highlighted>.image {
   opacity: 0;
   transition: all 0.2s ease;
   transition-delay: 0ms;
@@ -68,21 +68,9 @@ body {
   z-index: 5;
 }
 
-#song > div:first-child {
-  --fade-size: 50vh;
-  background-size: cover !important;
-  background-repeat: none !important;
-  backdrop-filter: blur(12px);
-  background: linear-gradient(to bottom,
-  #00000070 0%,
-  #00000000 25%,
-  #00000000 50%,
-  #00000090 100%
-      ) !important;
-}
 
 #song-cover {
-  transform-origin: left;
+  transform-origin: right;
   width: 20vw;
   height: 20vw;
   position: absolute;
@@ -93,7 +81,12 @@ body {
 }
 
 #song {
-  transition: all 0.5s cubic-bezier(1,-0.46,.47,1.34);
+  transition: all 0.5s cubic-bezier(1, -0.46, .47, 1.34);
+  width: 50vw;
+  height: 100vh;
+  margin-right: auto;
+  background-size: cover;
+  background-repeat: no-repeat;
 }
 
 #songs {
@@ -110,56 +103,83 @@ body {
   margin-top: calc(100vh - 120px);
 }
 
+#cover-overlay {
+  width: 80%;
+  height: 100%;
+  background-repeat: no-repeat;
+  backdrop-filter: blur(700px);
+  background: #00000050;
+}
+
+#cover-frame {
+  --baseline-size: 450px;
+  background: url('../Assets/SD.svg');
+  width: calc((var(--baseline-size) / 100) * 80);
+  height: var(--baseline-size);
+  background-size: cover;
+  margin-top: 50px;
+  margin-left: 50px;
+  border-radius: 10px;
+}
+#cover {
+  width: 81%;
+  height: 64.8%;
+  border-radius: 7%;
+  display: block;
+  top: 28.4% !important;
+  left: 9.5% !important;
+  background:#ffffff40;
+  position: relative;
+}
+
 .masked-overflow {
-    /* scroll bar width, for use in mask calculations */
-    --scrollbar-width: 8px;
+  /* scroll bar width, for use in mask calculations */
+  --scrollbar-width: 8px;
 
-    /* mask fade distance, for use in mask calculations */
-    --mask-height: 12px;
+  /* mask fade distance, for use in mask calculations */
+  --mask-height: 12px;
 
-    /* If content exceeds height of container, overflow! */
-    /* overflow-y: auto; */
+  /* If content exceeds height of container, overflow! */
+  /* overflow-y: auto; */
 
-    /* Our height limit */
-    height: 300px;
+  /* Our height limit */
+  height: 300px;
 
-    /* Need to make sure container has bottom space,
+  /* Need to make sure container has bottom space,
   otherwise content at the bottom is always faded out */
-    padding-bottom: var(--mask-height);
+  padding-bottom: var(--mask-height);
 
-    /* Keep some space between content and scrollbar */
-    padding-right: 20px;
+  /* Keep some space between content and scrollbar */
+  padding-right: 20px;
 
-    /* The CSS mask */
+  /* The CSS mask */
 
-    /* The content mask is a linear gradient from top to bottom */
-    --mask-image-content: linear-gradient(
-        to bottom,
-        transparent,
-        black var(--mask-height),
-        black calc(100% - var(--mask-height)),
-        transparent
-    );
+  /* The content mask is a linear gradient from top to bottom */
+  --mask-image-content: linear-gradient(to bottom,
+      transparent,
+      black var(--mask-height),
+      black calc(100% - var(--mask-height)),
+      transparent);
 
-    /* Here we scale the content gradient to the width of the container 
+  /* Here we scale the content gradient to the width of the container 
   minus the scrollbar width. The height is the full container height */
-    --mask-size-content: calc(100% - var(--scrollbar-width)) 100%;
+  --mask-size-content: calc(100% - var(--scrollbar-width)) 100%;
 
-    /* The scrollbar mask is a black pixel */
-    --mask-image-scrollbar: linear-gradient(black, black);
+  /* The scrollbar mask is a black pixel */
+  --mask-image-scrollbar: linear-gradient(black, black);
 
-    /* The width of our black pixel is the width of the scrollbar.
+  /* The width of our black pixel is the width of the scrollbar.
   The height is the full container height */
-    --mask-size-scrollbar: var(--scrollbar-width) 100%;
+  --mask-size-scrollbar: var(--scrollbar-width) 100%;
 
-    /* Apply the mask image and mask size variables */
-    mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
-    mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
+  /* Apply the mask image and mask size variables */
+  mask-image: var(--mask-image-content), var(--mask-image-scrollbar);
+  mask-size: var(--mask-size-content), var(--mask-size-scrollbar);
 
-    /* Position the content gradient in the top left, and the 
+  /* Position the content gradient in the top left, and the 
   scroll gradient in the top right */
-    mask-position: 0 0, 100% 0;
+  mask-position: 0 0, 100% 0;
 
-    /* We don't repeat our mask images */
-    mask-repeat: no-repeat, no-repeat;
+  /* We don't repeat our mask images */
+  mask-repeat: no-repeat, no-repeat;
 }

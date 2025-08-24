@@ -80,7 +80,7 @@ async function highlightSong(index) {
   const basePath = `${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}`;
 
   // Update UI elements
-  document.getElementById('song').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
+  // document.getElementById('song').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
   document.getElementById('song-cover').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
   document.getElementById('song-cover').style.scale = '1';
   document.getElementById('song-cover').style.opacity = '1';

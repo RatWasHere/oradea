@@ -10,7 +10,7 @@ body {
   --d: 40px;
   --dnr: -10px;
   /* JUDGEMENT OFFSET */
-  --nr: 100px;
+  --nr: 110px;
   --notePreviewDelay: 1650ms;
   view-transition-name: root;
 }
@@ -276,7 +276,7 @@ body {
   margin-right: auto;
   position: absolute;
   border-radius: 1000px;
-  opacity: 0.5;
+  opacity: 1;
   overflow: hidden;
   pointer-events: none;
 }
@@ -297,8 +297,6 @@ body {
   z-index: 500;
   pointer-events: auto;
   position: relative;
-  ;
-  backdrop-filter: blur(10px);
   /* animation: note_in_classic 100ms ease; */
 }
 
@@ -541,7 +539,7 @@ btn:active {
 
 .comeIn {
   animation: come-in 0.2s ease;
-  backdrop-filter: blur(50px);
+  backdrop-filter: blur(10px);
 }
 
 @keyframes come-in {
@@ -577,7 +575,7 @@ btn:active {
 }
 
 .center {
-  --size: calc(var(--nr) * 1.5);
+  --size: calc(var(--nr));
   width: var(--size);
   aspect-ratio: 1;
   border-radius: var(--size);
