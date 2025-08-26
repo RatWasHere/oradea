@@ -6,8 +6,8 @@ const fs = require('fs');
 const CONFIG = {
   ACCEPTANCE_THRESHOLD: 500,
   SNAP_INTERVAL: 60, // Changed from 45 to 60 for 6 segments (360/6)
-  ANGLE_MODIFIER: 0,
-  NOTE_ARC_ANGLE: 0,
+  ANGLE_MODIFIER: 60,
+  NOTE_ARC_ANGLE: 60,
   NOTE_PREVIEW_DELAY: 600,
   ANGLE_START: 90,
   SCALE_DURATION: 300,
@@ -80,6 +80,7 @@ class GameState {
 
   initializeAudio() {
     this.audio = new Audio(`./Beatmaps/${this.crossDetails.location}/audio.mp3`);
+    this.audio.playbackRate = 0.5;
     this.audio.play();
   }
 
@@ -330,40 +331,40 @@ class TimingSystem {
     const sampleCurveY = (t) => ((ay * t + by) * t + cy) * t;
     const sampleCurveDerivativeX = (t) => (3 * ax * t + 2 * bx) * t + cx;
 
-    let currentT = t;
+    let currentTime = t;
     for (let i = 0; i < 8; i++) {
-      const currentX = sampleCurveX(currentT) - t;
+      const currentX = sampleCurveX(currentTime) - t;
       if (Math.abs(currentX) < 1e-7) {
-        return sampleCurveY(currentT);
+        return sampleCurveY(currentTime);
       }
-      const currentSlope = sampleCurveDerivativeX(currentT);
+      const currentSlope = sampleCurveDerivativeX(currentTime);
       if (Math.abs(currentSlope) < 1e-7) {
         break;
       }
-      currentT -= currentX / currentSlope;
+      currentTime -= currentX / currentSlope;
     }
 
     let aT = 0;
     let bT = 1;
-    currentT = t;
+    currentTime = t;
 
-    if (currentT < aT) return sampleCurveY(aT);
-    if (currentT > bT) return sampleCurveY(bT);
+    if (currentTime < aT) return sampleCurveY(aT);
+    if (currentTime > bT) return sampleCurveY(bT);
 
     while (aT < bT) {
-      const currentX = sampleCurveX(currentT);
+      const currentX = sampleCurveX(currentTime);
       if (Math.abs(currentX - t) < 1e-7) {
-        return sampleCurveY(currentT);
+        return sampleCurveY(currentTime);
       }
       if (t > currentX) {
-        aT = currentT;
+        aT = currentTime;
       } else {
-        bT = currentT;
+        bT = currentTime;
       }
-      currentT = (bT - aT) * 0.5 + aT;
+      currentTime = (bT - aT) * 0.5 + aT;
     }
 
-    return sampleCurveY(currentT);
+    return sampleCurveY(currentTime);
   }
 
   processSpecialItem(iteration, currentValue) {
@@ -1055,18 +1056,54 @@ class RenderingSystem {
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / (timing.speed || 1);
     const offset = timing.offset;
 
-    const sliderStart = note.time;
     const sliderEnd = note.sliderEnd;
+    const sliderStart = note.time;
 
     let spentHeight;
 
+    function getProgress(value, min, max) {
+      return Math.max(0, (value - min) / (max - min));
+    }
+
+
     if (!offset) {
-      spentHeight = (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight;
+      let scale = 1; // default once scaling is done
+      let scaleStart = (sliderStart + CONFIG.APPEARANCE_HASTE) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
+      let scaleEnd = (sliderStart + CONFIG.APPEARANCE_HASTE) - CONFIG.NOTE_PREVIEW_DELAY;
+      if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
+        // progress from 0 → 1 during the scale duration
+        let progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
+        scale = game.timingSystem.applyEasing(progress, '[0.49,0.14,0.74,0.96]');
+      } else if (currentTime < scaleStart) {
+        scale = 0;
+      } else if (!note.endedScale && currentTime > scaleEnd) {
+        scale = 1;
+      }
+
+
+      note.element.getElementsByClassName('start')[0].style.transform = `scale(${scale})`;
+      note.element.getElementsByClassName('end')[0].style.transform = `scale(${scale})`;
+      // noteTravelMax - (((CONFIG.APPEARANCE_HASTE) / previewDelay) * noteTravelMax)
+      // ((noteTime - currentTime) / previewDelay) * noteTravelMax,
+
+      const maxHeight = ((sliderEnd - sliderStart) / previewDelay) * (sliderMaxHeight);
+
+      if ((currentTime + (CONFIG.APPEARANCE_HASTE)) <= (sliderEnd + CONFIG.SCALE_DURATION)) {
+        let currentHeight = getProgress(currentTime + (previewDelay), sliderStart, sliderEnd) * maxHeight;
+        note.element.style.setProperty('--sliderHeight', `${currentHeight}px`);
+        spentHeight = sliderMaxHeight - (((CONFIG.APPEARANCE_HASTE) / previewDelay) * sliderMaxHeight);
+      } else {
+        note.element.style.setProperty('--sliderHeight', `${maxHeight}px`);
+        spentHeight = ((sliderEnd - (currentTime + CONFIG.APPEARANCE_HASTE)) / previewDelay) * sliderMaxHeight; 
+      }
+      console.log(spentHeight)
+
+      // spentHeight = (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight; 
     } else {
       spentHeight = (((sliderEnd - (sliderStart + offset))) / previewDelay) * sliderMaxHeight;
     }
 
-    const newTranslate = `0px ${spentHeight * -1}px`;
+    const newTranslate = `0px ${(spentHeight) * -1}px`;
     if (note.element.style.translate !== newTranslate) {
       note.element.style.translate = newTranslate;
     }

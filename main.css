@@ -381,11 +381,13 @@ body {
 
 .header.end {
   background: url('./Assets/Headers/Bottom.svg');
+  transform-origin: top;
 }
 
 .header.start {
   background: url('./Assets/Headers/Top.svg');
   margin-top: auto;
+  transform-origin: bottom;
 }
 
 .header.midframe {
@@ -571,7 +573,7 @@ btn:active {
 
 .slider {
   background: none !important;
-  padding-bottom: calc(var(--nr) / 2);
+  /* bottom: calc((var(--nr) * 0.5) + var(--d) * 0.5); */
 }
 
 .center {
