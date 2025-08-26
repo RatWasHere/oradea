@@ -11,7 +11,7 @@ const CONFIG = {
   NOTE_PREVIEW_DELAY: 600,
   ANGLE_START: 90,
   SCALE_DURATION: 300,
-  APPEARANCE_HASTE: 200,
+  APPEARANCE_HASTE: 0,
   CONTAINER_RADIUS: 660,
   SNAP_EXTENSION: 12,
   CONTAINER_REAL_RADIUS: 660,
@@ -80,7 +80,7 @@ class GameState {
 
   initializeAudio() {
     this.audio = new Audio(`./Beatmaps/${this.crossDetails.location}/audio.mp3`);
-    this.audio.playbackRate = 0.1;
+    this.audio.playbackRate = 0.5;
     this.audio.play();
   }
 
@@ -1086,17 +1086,17 @@ class RenderingSystem {
       // noteTravelMax - (((CONFIG.APPEARANCE_HASTE) / previewDelay) * noteTravelMax)
       // ((noteTime - currentTime) / previewDelay) * noteTravelMax,
 
-      const maxHeight = ((sliderEnd - sliderStart) / previewDelay) * (sliderMaxHeight);
+      const maxHeight = ((sliderEnd - (sliderStart)) / previewDelay) * (sliderMaxHeight);
+      // ((note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2)
 
       if ((currentTime + previewDelay) <= sliderEnd) {
         let currentHeight = getProgress(currentTime + previewDelay, sliderStart, sliderEnd) * maxHeight;
         note.element.style.setProperty('--sliderHeight', `${currentHeight}px`);
-        spentHeight = sliderMaxHeight - (((CONFIG.APPEARANCE_HASTE) / previewDelay) * sliderMaxHeight);
+        spentHeight = sliderMaxHeight;
       } else {
         note.element.style.setProperty('--sliderHeight', `${maxHeight}px`);
-        spentHeight = ((sliderEnd - (currentTime + CONFIG.APPEARANCE_HASTE)) / previewDelay) * sliderMaxHeight; 
+        spentHeight = ((sliderEnd - (currentTime)) / previewDelay) * sliderMaxHeight; 
       }
-      console.log(spentHeight)
 
       // spentHeight = (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight; 
     } else {

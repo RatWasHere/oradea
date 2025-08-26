@@ -559,9 +559,9 @@ btn:active {
 .noteContainer {
   width: 100%;
   height: calc(50% + (var(--s) - var(--sr)));
-  border-radius: var(--nr);
   overflow: hidden;
-  transform: translateY(calc(var(--sr) / 2));
+  transform: translateY(calc((var(--s) + var(--d) *2) / 2));
+  padding-top: calc(var(--nr) / 3);
 }
 
 
