@@ -80,7 +80,7 @@ class GameState {
 
   initializeAudio() {
     this.audio = new Audio(`./Beatmaps/${this.crossDetails.location}/audio.mp3`);
-    this.audio.playbackRate = 0.5;
+    this.audio.playbackRate = 0.1;
     this.audio.play();
   }
 
@@ -1088,8 +1088,8 @@ class RenderingSystem {
 
       const maxHeight = ((sliderEnd - sliderStart) / previewDelay) * (sliderMaxHeight);
 
-      if ((currentTime + (CONFIG.APPEARANCE_HASTE)) <= (sliderEnd + CONFIG.SCALE_DURATION)) {
-        let currentHeight = getProgress(currentTime + (previewDelay), sliderStart, sliderEnd) * maxHeight;
+      if ((currentTime + previewDelay) <= sliderEnd) {
+        let currentHeight = getProgress(currentTime + previewDelay, sliderStart, sliderEnd) * maxHeight;
         note.element.style.setProperty('--sliderHeight', `${currentHeight}px`);
         spentHeight = sliderMaxHeight - (((CONFIG.APPEARANCE_HASTE) / previewDelay) * sliderMaxHeight);
       } else {
