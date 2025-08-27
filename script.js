@@ -5,6 +5,7 @@ const fs = require('fs');
 // ============================================================================
 const CONFIG = {
   ACCEPTANCE_THRESHOLD: 500,
+  TOLERANCE: 75,
   SNAP_INTERVAL: 60, // Changed from 45 to 60 for 6 segments (360/6)
   ANGLE_MODIFIER: 60,
   NOTE_ARC_ANGLE: 60,
@@ -12,8 +13,8 @@ const CONFIG = {
   ANGLE_START: 90,
   SCALE_DURATION: 300,
   APPEARANCE_HASTE: 0,
-  CONTAINER_RADIUS: 660,
   SNAP_EXTENSION: 12,
+  CONTAINER_RADIUS: 660,
   CONTAINER_REAL_RADIUS: 660,
   BASELINE_OFFSET: -100, // Only applies to visuals.
   NOTE_RADIUS: 150,
@@ -21,6 +22,8 @@ const CONFIG = {
   GAMEPAD_DEADZONE: 0.1,
   HOLD_WINDOW: 500,
   FLICK_THRESHOLD: 10,
+  ADJUSTED_MAX_TRAVEL: 0,
+  CREATE_AT_DISTANCE_OF: 100,
   ACCURACY_RANGES: {
     'perfect': [0, 100],
     'great': [100, 200],
@@ -36,6 +39,9 @@ const CONFIG = {
     'bad': 20,
   }
 };
+// translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
+// calc((var(--sr) / 2) - var(--tlr))
+CONFIG.ADJUSTED_MAX_TRAVEL = (CONFIG.CONTAINER_REAL_RADIUS / 2) - CONFIG.CREATE_AT_DISTANCE_OF;
 
 // ============================================================================
 // GAME STATE
@@ -80,7 +86,7 @@ class GameState {
 
   initializeAudio() {
     this.audio = new Audio(`./Beatmaps/${this.crossDetails.location}/audio.mp3`);
-    this.audio.playbackRate = 0.5;
+    // this.audio.playbackRate = 0.5;
     this.audio.play();
   }
 
@@ -1051,7 +1057,7 @@ class RenderingSystem {
   }
 
   updateSliderPosition(note, currentTime, timing) {
-    const sliderMaxHeight = CONFIG.CONTAINER_REAL_RADIUS / 2;
+    const sliderMaxHeight = CONFIG.ADJUSTED_MAX_TRAVEL;
 
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / (timing.speed || 1);
     const offset = timing.offset;
@@ -1068,8 +1074,8 @@ class RenderingSystem {
 
     if (!offset) {
       let scale = 1; // default once scaling is done
-      let scaleStart = (sliderStart + CONFIG.APPEARANCE_HASTE) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
-      let scaleEnd = (sliderStart + CONFIG.APPEARANCE_HASTE) - CONFIG.NOTE_PREVIEW_DELAY;
+      let scaleStart = (sliderStart) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
+      let scaleEnd = (sliderStart) - CONFIG.NOTE_PREVIEW_DELAY;
       if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
         // progress from 0 → 1 during the scale duration
         let progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
@@ -1102,7 +1108,7 @@ class RenderingSystem {
     } else {
       spentHeight = (((sliderEnd - (sliderStart + offset))) / previewDelay) * sliderMaxHeight;
     }
-
+    console.log(spentHeight, currentTime)
     const newTranslate = `0px ${(spentHeight) * -1}px`;
     if (note.element.style.translate !== newTranslate) {
       note.element.style.translate = newTranslate;
@@ -1145,7 +1151,7 @@ class RenderingSystem {
     const offset = timing.offset || 0;
     const noteTime = note.time;
 
-    const noteTravelMax = CONFIG.CONTAINER_REAL_RADIUS / 2;  // Use CONTAINER_REAL_RADIUS
+    const noteTravelMax = CONFIG.ADJUSTED_MAX_TRAVEL;  // Use CONTAINER_REAL_RADIUS
 
     let timeIntoPreview;
     if (!offset) {
@@ -1166,7 +1172,7 @@ class RenderingSystem {
 
       timeIntoPreview = Math.min(
         ((noteTime - currentTime) / previewDelay) * noteTravelMax,
-        noteTravelMax - (((CONFIG.APPEARANCE_HASTE) / previewDelay) * noteTravelMax)
+        noteTravelMax
       );
     } else {
       timeIntoPreview = (-offset / previewDelay) * noteTravelMax;
