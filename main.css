@@ -1,5 +1,6 @@
 body {
-  background: url('./Assets/bg.png');
+  /* background: url('./Assets/bg.png'); */
+  background: linear-gradient(130deg, #000000, #131313);
 }
 
 :root {
@@ -1014,4 +1015,17 @@ btn:active {
 .holdable_end,
 .holdable_start {
   background-size: cover !important;
+}
+
+.separator {
+  width: 100%;
+  height: 5px;
+  border-radius: 5px;
+  background-color: #FFFFFF40;
+  margin-bottom: 5px;
+}
+
+a {
+  color: #FFFFFF !important;
+  cursor: default !important;
 }

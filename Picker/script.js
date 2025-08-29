@@ -11,11 +11,13 @@ for (let i in files) {
     for (let index in information.difficulties) {
       beatmaps[index] = JSON.parse(fs.readFileSync(`./Beatmaps/${files[i]}/${information.difficulties[index]}`));
     }
-    levels.push({
-      beatmaps,
-      information: information,
-      location: files[i]
-    })
+    if (information.ratings) {
+      levels.push({
+        beatmaps,
+        information: information,
+        location: files[i]
+      })
+    }
   } catch (error) { console.log(error) }
 }
 
@@ -36,31 +38,35 @@ levelsDisplay.innerHTML = `
 `
 
 levels.forEach((level, index) => {
-  let difficulties = ``;
-  for (let i in level.information.difficulties) {
-    difficulties += `<btext style="padding: 2px; padding-left: 10px; padding-right: 10px; background: var(--difficulty-${i}); border-radius: 100px;">${difficultyMap[i]} - ${Math.round(level.information.duration / level.beatmaps[i]?.length * 10) / 10}NPS</btext> `;
-  }
-  let item = document.createElement('div');
-  item.className = 'songTile flexbox'
-  item.id = `level-${index}`
-  level.difficulties = difficulties;
-  item.innerHTML = `
-  <div>
-  <btextm>${level.information.name} <span class="small">${level.information.romanizedName || ""}</span></btextm><br>
-  <btext>${level.information.artist}</btext><br>
-  <div style="margin-bottom:  0px; width: auto;">${difficulties}</div>
+  try {
+    let difficulties = ``;
+    for (let i in level.information.difficulties) {
+      difficulties += `<div class="difficulty-dot flexbox ${difficultyMap[i].toLowerCase()}"><div style="margin: auto;">${level.information.ratings[i]}</div></div>`;
+    }
+    let item = document.createElement('div');
+    level.element = item;
+    item.className = 'songTile flexbox'
+    item.id = `level-${index}`
+    level.difficulties = difficulties;
+    item.innerHTML = `
+    <div class="cover-frame" style="width: 300px; display: block;"><div class="song-cover" style="background-image: url('${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}/${level.information.cover}')"></div></div>
+  <div class="song-details">
+    <btextm class="song_name">${level.information.name} <span class="small">${level.information.romanizedName || ""}</span></btextm>
+    <btextm class="song_artist" style="margin-bottom: auto;">${level.information.artist}</btextm>
+    <div class="flexbox" style="margin-top: 12px; width: fit-content; margin-right: auto;">${difficulties}</div>
   </div>
-  <div class="image" style="background-image: url('${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}/${level.information.cover}')"></div>
   `
-  levelsDisplay.appendChild(item)
+    levelsDisplay.appendChild(item)
+  } catch (error) { }
 });
-  levelsDisplay.innerHTML += `
+levelsDisplay.innerHTML += `
   <div style="height: 400px;"></div>
   `
 
 
 let currentAudio = null;
 let currentAudioStopTimer = null;
+let lastSelectedDifficulty = 0;
 
 async function highlightSong(index) {
   // Remove highlight from previous song
@@ -68,8 +74,8 @@ async function highlightSong(index) {
   // Add highlight to new song
   document.getElementById('level-' + index)?.classList.add('highlighted');
   document.getElementById('levels').scrollTo({
-    top: (document.getElementById('level-' + index).offsetTop - document.getElementById('level-' + index).getBoundingClientRect().height) - 50,
-    left: 0,
+    left: (document.getElementById('level-' + index).offsetLeft - document.getElementById('level-' + index).getBoundingClientRect().width) - 50,
+    top: 0,
     behavior: 'smooth'
   })
   console.log(document.getElementById('level-' + index).scrollTop)
@@ -81,13 +87,20 @@ async function highlightSong(index) {
 
   // Update UI elements
   // document.getElementById('song').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
+  document.getElementById('songs').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
   document.getElementById('song-cover').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
   document.getElementById('song-cover').style.scale = '1';
   document.getElementById('song-cover').style.opacity = '1';
-  document.getElementById('song-name').innerHTML = level.information.name;
-  document.getElementById('song-author').innerHTML = level.information.artist;
-  document.getElementById('song-difficulties').innerHTML = level.difficulties;
-
+  document.getElementById('song-title').innerText = level.information.name;
+  document.getElementById('song-credits').innerHTML = level.information.credits || "Unknown credits";
+  // document.getElementById('song-author').innerText = level.information.artist;
+  let difficulties = ``;
+  if (!level.information.difficulties[lastSelectedDifficulty]) lastSelectedDifficulty = Object.keys(level.information.difficulties)[0];
+  for (let i in level.information.difficulties) {
+    difficulties += `<div id="difficulty-${i}" onclick="selectDifficulty(${i})" class="difficulty-dot flexbox clickable ${difficultyMap[i].toLowerCase()} ${i == lastSelectedDifficulty ? 'highlighted' : ''}"><div style="margin: auto;">${difficultyMap[i]} - ${level.information.ratings[i]}</div></div>`;
+  }
+  document.getElementById('song-difficulties').innerHTML = difficulties;
+  return
   // Stop previous audio preview and cleanup
   stopCurrentPreview();
 
@@ -133,6 +146,13 @@ async function highlightSong(index) {
   });
 }
 
+function selectDifficulty(difficulty) {
+  let difficulties = document.getElementById('song-difficulties');
+  difficulties.querySelectorAll('.difficulty-dot').forEach(dot => dot.classList.remove('highlighted'));
+  difficulties.querySelector(`#difficulty-${difficulty}`).classList.add('highlighted');
+  lastSelectedDifficulty = difficulty;
+}
+
 function stopCurrentPreview() {
   if (currentAudioStopTimer) {
     clearTimeout(currentAudioStopTimer);
@@ -165,7 +185,7 @@ function play() {
   document.getElementById('level-' + chosenSong).classList.remove('highlighted');
 
   setTimeout(() => {
-    fs.writeFileSync('./crossdetails', JSON.stringify({ location: levels[chosenSong].location, difficulty: 2, map: levels[chosenSong].information.difficulties[2] }, null, 2));
+    fs.writeFileSync('./crossdetails', JSON.stringify({ location: levels[chosenSong].location, difficulty: lastSelectedDifficulty, map: levels[chosenSong].information.difficulties[lastSelectedDifficulty] }, null, 2));
     location.href = '../index.html'
   }, 400);
 }

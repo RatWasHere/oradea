@@ -5,13 +5,20 @@
 <body>
 
   <div class="flexbox" style="width: 100vw; height: 100vh;">
-    <div id="songs" style="width: 50vw; height: 100vh; background: #FFFFFF10; margin-right: auto; overflow-y: none; backdrop-filter: blur(32px);">
-      <btextm class="big" style="padding: 15px; display: block; height: 100px;">Levels <span id="amount"
+    <div id="songs" class="flexbox">
+      <btextm class="big" style="padding: 15px; display: block; height: 50px;">Levels <span id="amount"
           class="small"></span></btextm>
-      <div id="levels" class="masked-overflow" style="max-height: calc(100vh - 200px); overflow-y: auto;"></div>
+      <div id="levels" class="masked-overflow" style="overflow-x: auto;"></div>
     </div>
     <div id="song">
-      <div id="cover-frame"><div id="cover"></div></div>
+      <div id="song-cover" class="details-cover"></div>
+      <div id="song-details">
+        <btextm id="song-title">Song</btextm>
+        <btextm id="song-credits"></btextm><br>
+      </div>
+      <div style="margin-top: calc(100vh - (410px + 153px + 31px + 50px + 67px))"></div>
+      <div id="song-difficulties" class="flexbox"></div>
+      <btn id="play-button" onclick="play()"><btextm style="z-index: 1000; position: relative;">Play</btextm></btn>
     </div>
   </div>
 </body>

@@ -4,8 +4,10 @@ const app = electron.app;
 
 app.on('ready', () => {
   let window = new BrowserWindow({
-    width: 800,
-    height: 600,
+    width: 1000,
+    height: 800,
+    minHeight: 800,
+    minWidth: 1000,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false
