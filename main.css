@@ -8,7 +8,7 @@ body {
   --sr: 660px;
   --jo: 20px;
   --t: 750ms;
-  --d: 40px;
+  --d: 80px;
   --dnr: -10px;
   --tlr: 75px;
   /* JUDGEMENT OFFSET */
@@ -741,14 +741,16 @@ btn:active {
 }
 
 .indicator_parent>.header.from_aura {
-  rotate: 135deg;
   height: var(--nr);
   background-size: contain !important;
   background-repeat: no-repeat !important;
+  margin-left: auto;
+  margin-right: auto;
 
-  --distance: calc(((var(--s) - var(--sr)) / 2));
+  --distance: calc(var(--sr) - var(--nr) / 2);
 
-  translate: var(--distance) var(--distance);
+  translate: 0px var(--distance);
+  rotate: 0deg !important;
 }
 
 .indicator_parent:has(.header.end) {
@@ -762,6 +764,9 @@ btn:active {
   border: solid white 10px;
   margin: auto;
   transition: all 0.2s ease;
+    --distance: calc(var(--sr) - var(--nr) / 2);
+
+  translate: 0px var(--distance);
 }
 
 .aura {
@@ -1028,4 +1033,12 @@ btn:active {
 a {
   color: #FFFFFF !important;
   cursor: default !important;
+}
+
+.flickable_away {
+  background-image: url('./Assets/Headers/Top\ Flickable.svg') !important;
+}
+
+.holdable_flick {
+  background: none !important;
 }

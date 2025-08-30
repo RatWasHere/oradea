@@ -1,0 +1,59 @@
+#reactive_core {
+  width: 500px;
+  aspect-ratio: 843.39 / 128.48;
+  border-radius: 100%;
+  opacity: 0.5;
+  top: 50%;
+  translate: 0 -50%;
+  filter: blur(4px);
+  position: fixed;
+}
+
+#reactive_note_core {
+  width: 500px;
+  border-radius: 100%;
+  aspect-ratio: 843.39 / 128.48;
+  margin: auto;
+  position: fixed;
+  top: 50%;
+  translate: 0 -50%;
+  background-size: cover;
+}
+
+body {
+  background-size: cover;
+  margin: 0px !important;
+  transition: unset;
+  background-color: black;
+}
+
+.logo {
+  width: 200px;
+  aspect-ratio: 843.39 / 128.48;
+  margin: auto;
+  background: url('../Assets/Oradea.svg');
+  background-size: cover;
+  opacity: 0.5;
+}
+
+#bg-overlay {
+  transition: all 0.3s ease;
+}
+
+.exiting {
+  scale: 2 !important;
+  opacity: 0 !important;
+  transition: all 1s cubic-bezier(.58, -1.06, 0, 1.04);
+}
+
+btn.exiting {
+  scale: 0 !important;
+  transition-duration: 0.2s;
+  transition-timing-function: cubic-bezier(1, -0.09, .23, 1.32);
+}
+
+#bg-overlay>btn {
+  padding: 10px;
+  height: fit-content;
+  margin-top: calc(50vh + 50px)
+}

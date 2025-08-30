@@ -575,6 +575,7 @@ class InputSystem {
     const closestNote = this.findClosestNote(matchingNotes, rotation);
     if (closestNote) {
       if (closestNote.slider) {
+        if (!(closestNote.holdableStart ? game.gameState.currentTime >= closestNote.time : false)) return;
         this.holdSlider(closestNote);
         return
       }
@@ -616,8 +617,8 @@ class InputSystem {
   findClosestNote(notes) {
     return notes
       .filter(note => note.slider ?
-        (((Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) || note.sliderEnd > this.gameState.currentTime) && !note.isBeingHeld && !note.done)
-        : (Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) && !note.done)
+        (!note.isBeingHeld && !note.done && ((Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) || note.sliderEnd > this.gameState.currentTime))
+        : (Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD))
       .sort((a, b) => a.time - b.time)[0];
   }
 
@@ -668,7 +669,13 @@ class InputSystem {
     });
   }
   createNoteAura(note) {
-    new Audio('./Assets/hit.mp3').play().catch(() => { });
+    let audioToUse = !game.audios[0].ended && !game.audios[1].ended ? game.audios[0] : game.audios[0].ended ? game.audios[0] : game.audios[1];
+    if (audioToUse.ended) {
+      audioToUse.currentTime = 0;
+    } else {
+      audioToUse.play();
+    }
+
     return new Promise((resolve) => {
       const frag = document.createDocumentFragment();
 
@@ -689,7 +696,7 @@ class InputSystem {
       if (note.slider) {
         const header_parent = document.createElement('div');
         header_parent.classList.add('indicator_parent', 'dist');
-        header_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 135}deg`;
+        header_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 270}deg`;
 
         const header = document.createElement('div');
         header.classList.add('header', 'end', 'from_aura');
@@ -783,12 +790,8 @@ class InputSystem {
   }
 
   createHoldEffect(note, failed = false) {
-    const holdNote = document.createElement('div');
-    holdNote.classList.add('arc', 'held');
-    holdNote.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 270}deg`;
 
     if (failed) {
-      holdNote.style.boxShadow = 'red 0px -10px 1px 0px inset';
     } else if (note.flickDirection) {
       note.element.style.setProperty('--t', `${Math.max(100, this.gameState.currentTime - note.flickMoment)}ms`);
       note.element.classList.add('flicked');
@@ -800,8 +803,6 @@ class InputSystem {
       }, 500);
     }
 
-    this.gameState.elements.container.append(holdNote);
-    setTimeout(() => holdNote.remove(), 500);
   }
 
   vibrate(kind) {
@@ -965,15 +966,26 @@ class RenderingSystem {
 
       // Build sub-elements in memory
       const header = document.createElement('div');
-      header.classList.add('header', note.holdableStart ? 'holdable_start' : 'start');
+      header.classList.add('header', 'start');
       noteElement.appendChild(header);
+
 
       const frame = document.createElement('div');
       frame.classList.add('header', 'midframe');
       noteElement.appendChild(frame);
 
       const header2 = document.createElement('div');
-      header2.classList.add('header', note.holdableEnd ? 'holdable_end' : 'end');
+      header2.classList.add('header', 'end');
+      if (note.holdableStart) {
+        header2.classList.add('holdable_end');
+      }
+      if (note.holdableEnd) {
+        if (note.flickableAway) {
+          header.classList.add('flickable_away');
+        } else {
+          header.classList.add('holdable_start');
+        }
+      }
       noteElement.appendChild(header2);
 
       // Put assembled noteElement inside noteContainer
@@ -993,7 +1005,11 @@ class RenderingSystem {
         noteElement.classList.add('holdable');
       }
       if (note.flick) {
-        noteElement.classList.add(`flick${note.flickDirection}`);
+        if (note.holdable) {
+          noteElement.classList.add(`flick${note.flickDirection}`, 'holdable_flick');
+        } else {
+          noteElement.classList.add(`flick${note.flickDirection}`);
+        }
       }
       if (note.golden) {
         noteElement.classList.add('golden');
@@ -1101,7 +1117,7 @@ class RenderingSystem {
         spentHeight = sliderMaxHeight;
       } else {
         note.element.style.setProperty('--sliderHeight', `${maxHeight}px`);
-        spentHeight = ((sliderEnd - (currentTime)) / previewDelay) * sliderMaxHeight; 
+        spentHeight = ((sliderEnd - (currentTime)) / previewDelay) * sliderMaxHeight;
       }
 
       // spentHeight = (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight; 
@@ -1221,13 +1237,7 @@ class RenderingSystem {
   }
 
   createFailedHoldEffect(note) {
-    const holdNote = document.createElement('div');
-    holdNote.classList.add('arc', 'held');
-    holdNote.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 270}deg`;
-    holdNote.style.boxShadow = 'red 0px -10px 1px 0px inset';
 
-    this.gameState.elements.container.append(holdNote);
-    setTimeout(() => holdNote.remove(), 500);
   }
 
   normalizeAngle(deg) {
@@ -1312,6 +1322,8 @@ class RhythmGame {
 
       // (Global) Update global timing point
       this.timingSystem.updateGlobalTimingPoint(this.gameState.timeSheet, currentTime);
+
+      this.audios = [new Audio('./Assets/hit.mp3'), new Audio('./Assets/hit.mp3')];
       // Continue loop
       requestAnimationFrame(gameLoop);
     };

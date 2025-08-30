@@ -105,6 +105,21 @@
         ...additionalOptions
       });
     } else if (hitObject.type == "hold") {
+      let additionalOptions = {};
+      if (hitObject.hitSound.includes("finish") && hitObject.hitSound.includes("whistle")) {
+        additionalOptions.holdableEnd = true;
+        additionalOptions.flickableAway = true;
+        if (hitObject.hitSound.includes("clap")) {
+          additionalOptions.holdableStart = true;
+        }
+      } else if (hitObject.hitSound.includes("clap")) {
+        additionalOptions.holdableStart = true;
+      } else if (hitObject.hitSound.includes("whistle")) {
+        additionalOptions.golden = true;
+      } else if (hitObject.hitSound.includes("finish")) {
+        additionalOptions.holdableStart = true;
+        additionalOptions.holdableEnd = true;
+      }
       sheet.push({
         time: hitObject.time,
         angle: keyPositions[hitObject.x],

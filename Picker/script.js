@@ -34,14 +34,14 @@ let difficultyMap = {
 }
 
 levelsDisplay.innerHTML = `
-<div style="height: 400px;"></div>
+  <div class="songTile" style="min-width: 50vw"></div>
 `
 
 levels.forEach((level, index) => {
   try {
     let difficulties = ``;
     for (let i in level.information.difficulties) {
-      difficulties += `<div class="difficulty-dot flexbox ${difficultyMap[i].toLowerCase()}"><div style="margin: auto;">${level.information.ratings[i]}</div></div>`;
+      difficulties += `<div class="difficulty-dot flexbox ${difficultyMap[i].toLowerCase()}"><difficulty>${level.information.ratings[i]}</difficulty></div>`;
     }
     let item = document.createElement('div');
     level.element = item;
@@ -49,18 +49,19 @@ levels.forEach((level, index) => {
     item.id = `level-${index}`
     level.difficulties = difficulties;
     item.innerHTML = `
-    <div class="cover-frame" style="width: 300px; display: block;"><div class="song-cover" style="background-image: url('${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}/${level.information.cover}')"></div></div>
+    <div class="song-cover" style="background-image: url('${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}/${level.information.cover}')">
+      <div class="flexbox difficulties-preview">${difficulties}</div>
+    </div>
   <div class="song-details">
     <btextm class="song_name">${level.information.name} <span class="small">${level.information.romanizedName || ""}</span></btextm>
     <btextm class="song_artist" style="margin-bottom: auto;">${level.information.artist}</btextm>
-    <div class="flexbox" style="margin-top: 12px; width: fit-content; margin-right: auto;">${difficulties}</div>
   </div>
   `
     levelsDisplay.appendChild(item)
   } catch (error) { }
 });
 levelsDisplay.innerHTML += `
-  <div style="height: 400px;"></div>
+  <div class="songTile" style="min-width: 50vw"></div>
   `
 
 
@@ -73,11 +74,17 @@ async function highlightSong(index) {
   document.getElementById('level-' + chosenSong)?.classList.remove('highlighted');
   // Add highlight to new song
   document.getElementById('level-' + index)?.classList.add('highlighted');
-  document.getElementById('levels').scrollTo({
-    left: (document.getElementById('level-' + index).offsetLeft - document.getElementById('level-' + index).getBoundingClientRect().width) - 50,
+  const levelsContainer = document.getElementById('levels');
+  const selectedTile = document.getElementById('level-' + index);
+  const containerRect = levelsContainer.getBoundingClientRect();
+  const tileRect = selectedTile.getBoundingClientRect();
+  const scrollLeft = selectedTile.offsetLeft - (containerRect.width / 2) + (tileRect.width / 2);
+
+  levelsContainer.scrollTo({
+    left: scrollLeft,
     top: 0,
     behavior: 'smooth'
-  })
+  });
   console.log(document.getElementById('level-' + index).scrollTop)
 
   chosenSong = index;
@@ -86,9 +93,8 @@ async function highlightSong(index) {
   const basePath = `${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}`;
 
   // Update UI elements
-  // document.getElementById('song').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
-  document.getElementById('songs').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
   document.getElementById('song-cover').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
+  document.getElementById('songs').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
   document.getElementById('song-cover').style.scale = '1';
   document.getElementById('song-cover').style.opacity = '1';
   document.getElementById('song-title').innerText = level.information.name;
@@ -100,7 +106,6 @@ async function highlightSong(index) {
     difficulties += `<div id="difficulty-${i}" onclick="selectDifficulty(${i})" class="difficulty-dot flexbox clickable ${difficultyMap[i].toLowerCase()} ${i == lastSelectedDifficulty ? 'highlighted' : ''}"><div style="margin: auto;">${difficultyMap[i]} - ${level.information.ratings[i]}</div></div>`;
   }
   document.getElementById('song-difficulties').innerHTML = difficulties;
-  return
   // Stop previous audio preview and cleanup
   stopCurrentPreview();
 
@@ -112,6 +117,23 @@ async function highlightSong(index) {
   const playPreview = () => {
     // Ensure this is still the current audio (user hasn't clicked another song)
     if (audio !== currentAudio) return;
+      audio.volume = 0
+
+    setTimeout(() => {
+      audio.volume = 0.1
+    }, 120);
+    setTimeout(() => {
+      audio.volume = 0.2;
+    }, 150);
+    setTimeout(() => {
+      audio.volume = 0.5;
+    }, 190);
+    setTimeout(() => {
+      audio.volume = 0.7;
+    }, 210);
+    setTimeout(() => {
+      audio.volume = 1;
+    }, 250);
 
     // Play from the middle
     if (audio.duration) {
@@ -180,8 +202,8 @@ document.onkeydown = (event) => {
 }
 
 function play() {
-  document.getElementById('song').style.transform = 'translateX(50vw)';
-  document.getElementById('songs').style.transform = 'translateX(-50vw)';
+  document.getElementById('song').style.transform = 'translateX(500px)';
+  document.getElementById('songs').style.transform = 'translateX(-100vw)';
   document.getElementById('level-' + chosenSong).classList.remove('highlighted');
 
   setTimeout(() => {
