@@ -70,8 +70,15 @@ class GameState {
 
     this.lastFrameTime = 0;
 
+    // Web Audio
+    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    this.audioBuffer = null;
+    this.audioSource = null;
+    this.audioStartTime = 0; // audioContext.currentTime when playback started (seconds)
+    this.audioPauseOffset = 0; // ms offset to apply if needed
+
     this.initializeDOM();
-    this.initializeAudio();
+    // initializeAudio is now async and called from RhythmGame.init()
   }
 
   initializeDOM() {
@@ -84,14 +91,29 @@ class GameState {
     };
   }
 
-  initializeAudio() {
-    this.audio = new Audio(`./Beatmaps/${this.crossDetails.location}/audio.mp3`);
-    // this.audio.playbackRate = 0.5;
-    this.audio.play();
+  async initializeAudio() {
+    // Load beatmap audio into an AudioBuffer and start playback via AudioContext
+    const filePath = `./Beatmaps/${this.crossDetails.location}/audio.mp3`;
+    const fileBuf = fs.readFileSync(filePath);
+    const arrayBuffer = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.length);
+    // decodeAudioData returns a Promise on modern browsers; handle both signatures
+    this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+    // Create a source and start immediately
+    if (this.audioSource) {
+      try { this.audioSource.stop(); } catch (e) {}
+      this.audioSource.disconnect();
+    }
+    this.audioSource = this.audioContext.createBufferSource();
+    this.audioSource.buffer = this.audioBuffer;
+    this.audioSource.connect(this.audioContext.destination);
+    this.audioSource.start(0);
+    this.audioStartTime = this.audioContext.currentTime;
   }
 
   get currentTime() {
-    return this.audio.currentTime * 1000;
+    // return milliseconds since start of playback
+    if (!this.audioBuffer || !this.audioStartTime) return 0;
+    return ((this.audioContext.currentTime - this.audioStartTime) * 1000) + (this.audioPauseOffset || 0);
   }
 }
 // ============================================================================
@@ -575,7 +597,7 @@ class InputSystem {
     const closestNote = this.findClosestNote(matchingNotes, rotation);
     if (closestNote) {
       if (closestNote.slider) {
-        if (!(closestNote.holdableStart ? game.gameState.currentTime >= closestNote.time : false)) return;
+        if (!(closestNote.holdableStart ? game.gameState.currentTime >= closestNote.time : true)) return;
         this.holdSlider(closestNote);
         return
       }
@@ -616,7 +638,7 @@ class InputSystem {
 
   findClosestNote(notes) {
     return notes
-      .filter(note => note.slider ?
+      .filter(note => note.slider ? 
         (!note.isBeingHeld && !note.done && ((Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) || note.sliderEnd > this.gameState.currentTime))
         : (Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD))
       .sort((a, b) => a.time - b.time)[0];
@@ -669,13 +691,8 @@ class InputSystem {
     });
   }
   createNoteAura(note) {
-    let audioToUse = !game.audios[0].ended && !game.audios[1].ended ? game.audios[0] : game.audios[0].ended ? game.audios[0] : game.audios[1];
-    if (audioToUse.ended) {
-      audioToUse.currentTime = 0;
-    } else {
-      audioToUse.play();
-    }
-
+    // Replace HTMLAudio-based play with Web Audio play provided by game.playHitSound()
+    this.gameState.playHitSound();
     return new Promise((resolve) => {
       const frag = document.createDocumentFragment();
 
@@ -997,7 +1014,10 @@ class RenderingSystem {
       if (!note.flick) {
         header.classList.add('header');
       } else {
-        header.classList.add('flick_arrows')
+        header.classList.add('flick_arrows');
+        if (note.fromSlider) {
+          header.classList.add('from_slider');
+        }
       }
       noteElement.appendChild(header);
 
@@ -1124,7 +1144,6 @@ class RenderingSystem {
     } else {
       spentHeight = (((sliderEnd - (sliderStart + offset))) / previewDelay) * sliderMaxHeight;
     }
-    console.log(spentHeight, currentTime)
     const newTranslate = `0px ${(spentHeight) * -1}px`;
     if (note.element.style.translate !== newTranslate) {
       note.element.style.translate = newTranslate;
@@ -1307,7 +1326,43 @@ class RhythmGame {
     this.gameState.scoringSystem = this.scoringSystem;
     this.gameState.timingSystem = this.timingSystem;
 
+    // hit sound buffers
+    this.gameState.hitBuffer = [];
+
+    // initialize audio and then start loop
+    this.init();
+  }
+
+  async init() {
+    // Ensure audio for the beatmap is decoded and playing
+    await this.gameState.initializeAudio();
+
+    // Load hit sound(s) once
+    const hitPath = './Assets/hit.mp3';
+    try {
+      const hitFile = fs.readFileSync(hitPath);
+      const hitArray = hitFile.buffer.slice(hitFile.byteOffset, hitFile.byteOffset + hitFile.length);
+      const buf = await this.gameState.audioContext.decodeAudioData(hitArray);
+      this.gameState.hitBuffer = buf;
+    } catch (err) {
+      console.warn('Failed to load hit sound', err);
+      this.gameState.hitBuffer = undefined;
+    }
+
+    // Start game loop now that audio is ready
+    this.gameState.playHitSound = this.playHitSound.bind(this);
     this.startGameLoop();
+  }
+
+  playHitSound() {
+    console.log('atte')
+    if (!this.gameState.hitBuffer) return;
+    const ctx = this.gameState.audioContext;
+    const src = ctx.createBufferSource();
+    src.buffer = this.gameState.hitBuffer;
+    src.connect(ctx.destination);
+    src.start(0);
+    console.log('startex')
   }
 
   startGameLoop() {
@@ -1323,7 +1378,7 @@ class RhythmGame {
       // (Global) Update global timing point
       this.timingSystem.updateGlobalTimingPoint(this.gameState.timeSheet, currentTime);
 
-      this.audios = [new Audio('./Assets/hit.mp3'), new Audio('./Assets/hit.mp3')];
+
       // Continue loop
       requestAnimationFrame(gameLoop);
     };

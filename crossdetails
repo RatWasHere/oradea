@@ -1,5 +1,5 @@
 {
-  "location": "Parry",
-  "difficulty": 2,
-  "map": "map.json"
+  "location": "Automata",
+  "difficulty": 3,
+  "map": "expert.json"
 }

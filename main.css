@@ -287,6 +287,11 @@ body {
   scale: 1.2 !important;
 }
 
+.from_slider {
+  background-image: url('Assets/Headers/Slider\ Flick.svg') !important;
+}
+
+
 .item {
   width: var(--nr);
   height: var(--nr);
@@ -318,11 +323,11 @@ body {
 /* Left arrow border */
 
 .flick1>.flick_arrows {
-  background: url('./Assets/Headers/Flick\ Positive.svg') !important;
+  background: url('./Assets/Headers/Flick\ Positive.svg');
 }
 
 .flick2>.flick_arrows {
-  background: url('./Assets/Headers/Flick\ Negative.svg') !important;
+  background: url('./Assets/Headers/Flick\ Negative.svg');
 }
 
 .flick2>.flick_arrows,
@@ -374,6 +379,7 @@ body {
   height: calc(var(--nr) / 2);
   background-size: cover !important;
   background-repeat: no-repeat !important;
+  shape-rendering: geometricPrecision;
 }
 
 .flick_arrows {
@@ -384,12 +390,14 @@ body {
 .header.end {
   background: url('./Assets/Headers/Bottom.svg');
   transform-origin: top;
+  translate: 0px -1px;
 }
 
 .header.start {
   background: url('./Assets/Headers/Top.svg');
   margin-top: auto;
   transform-origin: bottom;
+  translate: 0px 1px;
 }
 
 .header.midframe {
@@ -1037,8 +1045,11 @@ a {
 
 .flickable_away {
   background-image: url('./Assets/Headers/Top\ Flickable.svg') !important;
+  shape-rendering: geometricPrecision;
 }
 
 .holdable_flick {
   background: none !important;
 }
+
+
