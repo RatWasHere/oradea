@@ -5,7 +5,9 @@ body {
 
 :root {
   --s: 740px;
-  --sr: 660px;
+  --sr: 600px;
+  --srr: 605px;
+  --ic: 200px; /* INNER CONTAINER */
   --jo: 20px;
   --t: 750ms;
   --d: 80px;
@@ -277,7 +279,6 @@ body {
   /* background: blue !important; */
   margin-right: auto;
   position: absolute;
-  border-radius: 1000px;
   opacity: 1;
   overflow: hidden;
   pointer-events: none;
@@ -295,7 +296,6 @@ body {
 .item {
   width: var(--nr);
   height: var(--nr);
-  border-radius: var(--nr);
   margin-top: calc((((var(--sr) - var(--nr)) / 2) + var(--jo)));
   background: url('./Assets/Headers/Note.svg');
   background-size: cover !important;
@@ -390,14 +390,14 @@ body {
 .header.end {
   background: url('./Assets/Headers/Bottom.svg');
   transform-origin: top;
-  translate: 0px -1px;
+  translate: 0px -0.3px;
 }
 
 .header.start {
   background: url('./Assets/Headers/Top.svg');
   margin-top: auto;
   transform-origin: bottom;
-  translate: 0px 1px;
+  translate: 0px 0.3px;
 }
 
 .header.midframe {
@@ -570,7 +570,7 @@ btn:active {
   width: 100%;
   height: calc(50% + var(--nr));
   overflow: hidden;
-  transform: translateY(calc(var(--sr) / 2));
+  transform: translateY(calc(var(--srr) / 2));
 }
 
 
@@ -715,12 +715,12 @@ btn:active {
 }
 
 .frame {
-  width: var(--sr);
-  height: var(--sr);
+  width: var(--ic);
+  height: var(--ic);
   background: url(./frame.svg);
   background-size: cover;
-  margin-left: calc((var(--s) - var(--sr)) / 2);
-  margin-top: calc((var(--s) - var(--sr)) / 2);
+  margin-left: calc((var(--s) - var(--ic)) / 2);
+  margin-top: calc((var(--s) - var(--ic)) / 2);
   position: absolute;
 }
 
@@ -1053,3 +1053,8 @@ a {
 }
 
 
+
+#noteContainer {
+  background: url('./frame.svg');
+  background-size: cover !important;
+}

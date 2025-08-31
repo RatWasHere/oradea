@@ -11,11 +11,12 @@ const CONFIG = {
   NOTE_ARC_ANGLE: 60,
   NOTE_PREVIEW_DELAY: 600,
   ANGLE_START: 90,
-  SCALE_DURATION: 300,
+  SCALE_DURATION: 0,
   APPEARANCE_HASTE: 0,
   SNAP_EXTENSION: 12,
-  CONTAINER_RADIUS: 660,
-  CONTAINER_REAL_RADIUS: 660,
+  CONTAINER_RADIUS: 600,
+  CONTAINER_REAL_RADIUS: 600,
+  INNER_CONTAINER: 100,
   BASELINE_OFFSET: -100, // Only applies to visuals.
   NOTE_RADIUS: 150,
   PREVIEW_COUNT: 6, // Already set to 6
@@ -23,7 +24,7 @@ const CONFIG = {
   HOLD_WINDOW: 500,
   FLICK_THRESHOLD: 10,
   ADJUSTED_MAX_TRAVEL: 0,
-  CREATE_AT_DISTANCE_OF: 100,
+  CREATE_AT_DISTANCE_OF: 160,
   ACCURACY_RANGES: {
     'perfect': [0, 100],
     'great': [100, 200],
@@ -41,7 +42,7 @@ const CONFIG = {
 };
 // translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
 // calc((var(--sr) / 2) - var(--tlr))
-CONFIG.ADJUSTED_MAX_TRAVEL = (CONFIG.CONTAINER_REAL_RADIUS / 2) - CONFIG.CREATE_AT_DISTANCE_OF;
+CONFIG.ADJUSTED_MAX_TRAVEL = (CONFIG.CONTAINER_REAL_RADIUS / 2);
 
 // ============================================================================
 // GAME STATE
@@ -81,6 +82,12 @@ class GameState {
     // initializeAudio is now async and called from RhythmGame.init()
   }
 
+  pauseAudio() {
+    if (this.audioSource) {
+      this.audioSource.stop();
+    }
+  }
+
   initializeDOM() {
     this.elements = {
       container: document.getElementById('noteContainer'),
@@ -111,6 +118,7 @@ class GameState {
   }
 
   get currentTime() {
+    return 1000;
     // return milliseconds since start of playback
     if (!this.audioBuffer || !this.audioStartTime) return 0;
     return ((this.audioContext.currentTime - this.audioStartTime) * 1000) + (this.audioPauseOffset || 0);
@@ -974,7 +982,7 @@ class RenderingSystem {
       noteElement.classList.add('slider');
       const actualHeight = ((note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2);
 
-      noteElement.style.height = `${actualHeight + (CONFIG.NOTE_RADIUS / 2)}px`;
+      noteElement.style.height = `${actualHeight + CONFIG.NOTE_RADIUS}px`;
       noteElement.style.translate = `0px`;
 
       noteElement.style.setProperty('--sliderHeight', `${actualHeight}px`);
@@ -1128,7 +1136,7 @@ class RenderingSystem {
       // noteTravelMax - (((CONFIG.APPEARANCE_HASTE) / previewDelay) * noteTravelMax)
       // ((noteTime - currentTime) / previewDelay) * noteTravelMax,
 
-      const maxHeight = ((sliderEnd - (sliderStart)) / previewDelay) * (sliderMaxHeight);
+      const maxHeight = (((sliderEnd - (sliderStart)) / previewDelay) * (sliderMaxHeight));
       // ((note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2)
 
       if ((currentTime + previewDelay) <= sliderEnd) {
@@ -1355,14 +1363,12 @@ class RhythmGame {
   }
 
   playHitSound() {
-    console.log('atte')
     if (!this.gameState.hitBuffer) return;
     const ctx = this.gameState.audioContext;
     const src = ctx.createBufferSource();
     src.buffer = this.gameState.hitBuffer;
     src.connect(ctx.destination);
     src.start(0);
-    console.log('startex')
   }
 
   startGameLoop() {
