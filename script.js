@@ -4,27 +4,39 @@ const fs = require('fs');
 // CONFIGURATION & CONSTANTS
 // ============================================================================
 const CONFIG = {
-  ACCEPTANCE_THRESHOLD: 500,
-  TOLERANCE: 75,
-  SNAP_INTERVAL: 60, // Changed from 45 to 60 for 6 segments (360/6)
+  // ===== ANGLES =====
+  ANGLE_OFFSET: 90,
   ANGLE_MODIFIER: 60,
+
   NOTE_ARC_ANGLE: 60,
-  NOTE_PREVIEW_DELAY: 600,
-  ANGLE_START: 90,
-  SCALE_DURATION: 0,
-  APPEARANCE_HASTE: 0,
-  SNAP_EXTENSION: 12,
-  CONTAINER_RADIUS: 600,
-  CONTAINER_REAL_RADIUS: 600,
-  INNER_CONTAINER: 100,
-  BASELINE_OFFSET: -100, // Only applies to visuals.
+  
+  // ===== VISUAL MODIFIERS =====
+
+  PREVIEW_COUNT: 6,
+  SNAP_INTERVAL: 60, // 360/6 = 6 (Segments)
+  SNAP_EXTENSION: 4, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
+  
   NOTE_RADIUS: 150,
-  PREVIEW_COUNT: 6, // Already set to 6
-  GAMEPAD_DEADZONE: 0.1,
-  HOLD_WINDOW: 500,
-  FLICK_THRESHOLD: 10,
+
+  SCALE_DURATION: 0,
+  
+  NOTE_PREVIEW_DELAY: 600,
+  CREATE_AT_DISTANCE_OF: 0,
+  
+  
+  // ===== CONTAINERS =====
+  CONTAINER_RADIUS: 610,
+  CONTAINER_REAL_RADIUS: 270,
   ADJUSTED_MAX_TRAVEL: 0,
-  CREATE_AT_DISTANCE_OF: 160,
+  
+  
+  // TIMING & INPUT
+  GAMEPAD_DEADZONE: 0.1,
+  
+  FLICK_THRESHOLD: 10,
+  
+  // SCORING
+  ACCEPTANCE_THRESHOLD: 500,
   ACCURACY_RANGES: {
     'perfect': [0, 100],
     'great': [100, 200],
@@ -42,7 +54,7 @@ const CONFIG = {
 };
 // translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
 // calc((var(--sr) / 2) - var(--tlr))
-CONFIG.ADJUSTED_MAX_TRAVEL = (CONFIG.CONTAINER_REAL_RADIUS / 2);
+CONFIG.ADJUSTED_MAX_TRAVEL = (CONFIG.CONTAINER_REAL_RADIUS / 2) - ((CONFIG.CREATE_AT_DISTANCE_OF / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2));
 
 // ============================================================================
 // GAME STATE
@@ -72,7 +84,7 @@ class GameState {
     this.lastFrameTime = 0;
 
     // Web Audio
-    this.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    this.audioContext = new window.AudioContext();
     this.audioBuffer = null;
     this.audioSource = null;
     this.audioStartTime = 0; // audioContext.currentTime when playback started (seconds)
@@ -118,10 +130,9 @@ class GameState {
   }
 
   get currentTime() {
-    return 1000;
     // return milliseconds since start of playback
     if (!this.audioBuffer || !this.audioStartTime) return 0;
-    return ((this.audioContext.currentTime - this.audioStartTime) * 1000) + (this.audioPauseOffset || 0);
+    return Math.min(((this.audioContext.currentTime - this.audioStartTime) * 1000) + (this.audioPauseOffset || 0), 1000);
   }
 }
 // ============================================================================
@@ -580,7 +591,7 @@ class InputSystem {
   updateCursorRotation(index, angle) {
     const cursor = index === 0 ? this.gameState.elements.cursor1 : this.gameState.elements.cursor2;
     if (cursor) {
-      cursor.style.rotate = `${angle + CONFIG.ANGLE_START}deg`;
+      cursor.style.rotate = `${angle + CONFIG.ANGLE_OFFSET}deg`;
     }
 
     this.gameState.rotations[index] = angle - 270;
@@ -796,7 +807,7 @@ class InputSystem {
 
   isInArc(note, rotation) {
     const normalizedRotation = this.normalizeAngle(rotation);
-    const noteStartAngle = this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + CONFIG.ANGLE_START - (CONFIG.NOTE_ARC_ANGLE / 2));
+    const noteStartAngle = this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + CONFIG.ANGLE_OFFSET - (CONFIG.NOTE_ARC_ANGLE / 2));
     const noteEndAngle = this.normalizeAngle(noteStartAngle + CONFIG.NOTE_ARC_ANGLE);
 
     if (noteStartAngle < noteEndAngle) {
@@ -809,9 +820,9 @@ class InputSystem {
   canBeHeld(note) {
     const currentTime = this.gameState.currentTime;
     if (note.slider) {
-      return note.time - CONFIG.HOLD_WINDOW < currentTime && currentTime <= note.sliderEnd;
+      return note.time - CONFIG.ACCEPTANCE_THRESHOLD < currentTime && currentTime <= note.sliderEnd;
     }
-    return note.time - CONFIG.HOLD_WINDOW < currentTime;
+    return note.time - CONFIG.ACCEPTANCE_THRESHOLD < currentTime;
   }
 
   createHoldEffect(note, failed = false) {
@@ -931,7 +942,7 @@ class RenderingSystem {
   }
 
   createNewNoteElements(currentTime) {
-    const relevantNotes = this.gameState.sheet.filter(note => ((currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.APPEARANCE_HASTE + CONFIG.SCALE_DURATION)) && !note.element));
+    const relevantNotes = this.gameState.sheet.filter(note => ((currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION)) && !note.element));
 
     for (let i = 0; i < relevantNotes.length; i++) {
       const note = relevantNotes[i];
@@ -1199,8 +1210,8 @@ class RenderingSystem {
     let timeIntoPreview;
     if (!offset) {
       let scale = 1; // default once scaling is done
-      let scaleStart = (noteTime + CONFIG.APPEARANCE_HASTE) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
-      let scaleEnd = (noteTime + CONFIG.APPEARANCE_HASTE) - CONFIG.NOTE_PREVIEW_DELAY;
+      let scaleStart = (noteTime) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
+      let scaleEnd = (noteTime) - CONFIG.NOTE_PREVIEW_DELAY;
       if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
         // progress from 0 → 1 during the scale duration
         let progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;

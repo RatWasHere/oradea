@@ -4,14 +4,15 @@ body {
 }
 
 :root {
-  --s: 740px;
-  --sr: 600px;
-  --srr: 605px;
-  --ic: 200px; /* INNER CONTAINER */
-  --jo: 20px;
-  --t: 750ms;
-  --d: 80px;
-  --dnr: -10px;
+  --raw-size: 740px;
+  --real-size: 615px;
+  --outer-container-note-distance: -50px; /* So that the notes start at the edge */
+  --inner-container-size: 200px;
+  --inner-container-note-distance: -50px; /* So that the notes end at the inner containers edge */
+  --gap: 20px;
+  --preview-delay: 750ms;
+  --distance-between-sizes: 80px;
+  --offset-for-distance-between-sizes: -10px;
   --tlr: 75px;
   /* JUDGEMENT OFFSET */
   --nr: 110px;
@@ -182,7 +183,7 @@ body {
 }
 
 .arc {
-  width: var(--s);
+  width: var(--raw-size);
   aspect-ratio: 1;
   position: absolute;
   border-radius: 100%;
@@ -271,9 +272,9 @@ body {
 }
 
 .lane {
-  height: var(--s);
+  height: var(--raw-size);
   width: var(--nr);
-  margin-left: calc((var(--s) / 2) - var(--nr) / 2);
+  margin-left: calc((var(--raw-size) / 2) - var(--nr) / 2);
   /* margin-top: var(--s); */
   /* padding: calc(var(--nr) / 2 * -1); */
   /* background: blue !important; */
@@ -296,7 +297,7 @@ body {
 .item {
   width: var(--nr);
   height: var(--nr);
-  margin-top: calc((((var(--sr) - var(--nr)) / 2) + var(--jo)));
+  margin-top: calc((((var(--real-size) - var(--nr)) / 2) + var(--gap)));
   background: url('./Assets/Headers/Note.svg');
   background-size: cover !important;
   background-repeat: no-repeat !important;
@@ -336,7 +337,7 @@ body {
   width: var(--nr);
   background-size: cover !important;
   background-repeat: repeat !important;
-  animation: flick_hint calc(var(--t) / 2) ease-in-out infinite;
+  animation: flick_hint calc(var(--preview-delay) / 2) ease-in-out infinite;
   transform-origin: top;
 }
 
@@ -423,7 +424,7 @@ body {
       var(--bg) 60deg,
       transparent 60deg);
   rotate: calc(var(--i) * 60deg);
-  width: var(--s);
+  width: var(--raw-size);
   aspect-ratio: 1;
   position: absolute;
   border-radius: 100%;
@@ -568,21 +569,30 @@ btn:active {
 
 .noteContainer {
   width: 100%;
-  height: calc(50% + var(--nr));
-  overflow: hidden;
-  transform: translateY(calc(var(--srr) / 2));
+  height: 50%;
+  /* overflow: hidden; */
+  /* scale: -1; */
+  /* transform: translateY(calc(
+    (var(--real-size) * -1) 
+    +
+    var(--inner-container-size)
+    +
+    var(--inner-container-note-distance)
+  )); */
+  transform: translateY(calc(
+      (var(--real-size) / 2)
+    ));
 }
 
 
 
 .actively_pressed_in {
-  height: calc(50% - (var(--dnr))) !important;
+  height: calc(50% - (var(--offset-for-distance-between-sizes))) !important;
   border-radius: 0px !important;
 }
 
 .slider {
   background: none !important;
-  /* bottom: calc((var(--nr) * 0.5) + var(--d) * 0.5); */
 }
 
 .center {
@@ -593,7 +603,7 @@ btn:active {
   z-index: 500;
   background: #000000;
   position: absolute;
-  translate: calc(var(--s) / 2 - var(--size) / 2) calc(var(--s) / 2 - var(--size) / 2);
+  translate: calc(var(--raw-size) / 2 - var(--size) / 2) calc(var(--raw-size) / 2 - var(--size) / 2);
 }
 
 #comboDisplay {
@@ -610,7 +620,7 @@ btn:active {
   --bg: #ffffff;
   background:
     conic-gradient(var(--bg) 0deg, var(--bg) 60deg, #00000000 60deg);
-  width: var(--s);
+  width: var(--raw-size);
   aspect-ratio: 1;
   position: absolute;
   border-radius: 100%;
@@ -630,7 +640,7 @@ btn:active {
   pointer-events: none;
   mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg);
   z-index: 1;
-  background-size: var(--s);
+  background-size: var(--raw-size);
   background-position: 600px 600px;
   rotate: calc(var(--rotation) * -1);
   transition: all 0.2s ease;
@@ -650,9 +660,9 @@ btn:active {
   filter: blur(50px);
   mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg);
   mask-composite: exclude;
-  height: var(--s);
+  height: var(--raw-size);
   display: block;
-  width: var(--s);
+  width: var(--raw-size);
   background: blue;
   z-index: 5000;
   position: absolute;
@@ -667,8 +677,8 @@ btn:active {
   opacity: 0;
   rotate: -90deg;
   background: red;
-  width: var(--s);
-  height: var(--s);
+  width: var(--raw-size);
+  height: var(--raw-size);
   display: block;
   border-radius: 50px;
 }
@@ -677,7 +687,7 @@ btn:active {
   filter: blur(50px);
   scale: 1;
   opacity: 1;
-  border-radius: var(--s);
+  border-radius: var(--raw-size);
 }
 
 .effect {
@@ -710,31 +720,24 @@ btn:active {
 .previewer_parent {
   position: absolute;
   scale: 1;
-  width: var(--s);
-  height: var(--s);
+  width: var(--raw-size);
+  height: var(--raw-size);
 }
 
 .frame {
-  width: var(--ic);
-  height: var(--ic);
+  width: var(--inner-container-size);
+  height: var(--inner-container-size);
   background: url(./frame.svg);
   background-size: cover;
-  margin-left: calc((var(--s) - var(--ic)) / 2);
-  margin-top: calc((var(--s) - var(--ic)) / 2);
+  margin-left: calc((var(--raw-size) - var(--inner-container-size)) / 2);
+  margin-top: calc((var(--raw-size) - var(--inner-container-size)) / 2);
   position: absolute;
 }
 
 .indicator_parent {
-  width: var(--s);
-  height: var(--s);
-  /* margin-left: var(--d);
-  margin-top: var(--d); */
+  width: var(--raw-size);
+  height: var(--raw-size);
   position: absolute;
-}
-
-.dist {
-  /* margin-left: calc((var(--s) - var(--sr)) + var(--d) / 2);
-  margin-top: calc(((var(--sr) - var(--s))) - var(--d) / 2); */
 }
 
 .indicator_parent>.header.end {
@@ -743,7 +746,7 @@ btn:active {
   background-size: contain !important;
   background-repeat: no-repeat !important;
 
-  --distance: calc(((var(--s) - var(--sr)) / 2) - (var(--d) / 2));
+  --distance: calc(((var(--raw-size) - var(--real-size)) / 2) - (var(--distance-between-sizes) / 2));
 
   translate: var(--distance) var(--distance);
 }
@@ -755,24 +758,24 @@ btn:active {
   margin-left: auto;
   margin-right: auto;
 
-  --distance: calc(var(--sr) - var(--nr) / 2);
+  --distance: calc(var(--real-size) - var(--nr) / 2);
 
   translate: 0px var(--distance);
   rotate: 0deg !important;
 }
 
 .indicator_parent:has(.header.end) {
-  height: var(--sr);
-  width: var(--sr);
-  margin-left: calc((var(--s) - var(--sr)) / 2);
-  margin-top: calc((var(--s) - var(--sr)) / 2);
+  height: var(--real-size);
+  width: var(--real-size);
+  margin-left: calc((var(--raw-size) - var(--real-size)) / 2);
+  margin-top: calc((var(--raw-size) - var(--real-size)) / 2);
 }
 
 .indicator {
   border: solid white 10px;
   margin: auto;
   transition: all 0.2s ease;
-    --distance: calc(var(--sr) - var(--nr) / 2);
+    --distance: calc(var(--real-size) - var(--nr) / 2);
 
   translate: 0px var(--distance);
 }
@@ -794,7 +797,7 @@ btn:active {
     /* border-radius: 0px; */
     /* rotate: 360deg; */
     opacity: 0;
-    translate: 0px calc(var(--sr) / -2);
+    translate: 0px calc(var(--real-size) / -2);
     filter: blur(12px);
     scale: 0.5;
   }
@@ -812,7 +815,7 @@ btn:active {
   border: 15px solid #ffffff;
   box-shadow: 0px 0px 10px 10px #ffffff50 inset, 0px 0px 10px 10px #ffffff50;
   animation: hit 0.3s linear, rotate 0.45s ease;
-  translate: var(--d) var(--d);
+  translate: var(--distance-between-sizes) var(--distance-between-sizes);
 }
 
 .was_hit2 {
@@ -851,7 +854,7 @@ btn:active {
 
   100% {
     /* opacity: 0; */
-    translate: 0px calc(var(--sr) / -2);
+    translate: 0px calc(var(--real-size) / -2);
     height: var(--nr);
     margin-left: calc(var(--nr) / 2);
     width: var(--nr);
@@ -1057,4 +1060,5 @@ a {
 #noteContainer {
   background: url('./frame.svg');
   background-size: cover !important;
+  scale: 1.2;
 }
