@@ -5,15 +5,18 @@ body {
 
 :root {
   --raw-size: 740px;
-  --real-size: 615px;
-  --outer-container-note-distance: -50px; /* So that the notes start at the edge */
+  /* --real-size: 400px; */
+  /* --real-size: 410px; this is what youre looking for */
+  --outer-container-note-distance: -50px;
+  /* So that the notes start at the edge */
   --inner-container-size: 200px;
-  --inner-container-note-distance: -50px; /* So that the notes end at the inner containers edge */
-  --gap: 20px;
+  /* --inner-container-note-distance: -40px; */
+  --gap: 0px;
+  /* --gap: 270px; */
   --preview-delay: 750ms;
-  --distance-between-sizes: 80px;
+  --distance-between-sizes: 190px;
   --offset-for-distance-between-sizes: -10px;
-  --tlr: 75px;
+  --slider-hold-offset: 85px;
   /* JUDGEMENT OFFSET */
   --nr: 110px;
   --notePreviewDelay: 1650ms;
@@ -40,7 +43,6 @@ body {
 .note_child {
   width: 20px;
   margin: auto;
-  background: red;
   text-align: center;
   height: 20px;
 }
@@ -570,25 +572,16 @@ btn:active {
 .noteContainer {
   width: 100%;
   height: 50%;
-  /* overflow: hidden; */
-  /* scale: -1; */
-  /* transform: translateY(calc(
-    (var(--real-size) * -1) 
-    +
-    var(--inner-container-size)
-    +
-    var(--inner-container-note-distance)
-  )); */
-  transform: translateY(calc(
-      (var(--real-size) / 2)
-    ));
+  overflow: hidden;
+  scale: -1;
+  transform: translateY(-100%);
+  /* transform: translateY(100%); */
+  transition: all 0.2s ease;
 }
 
-
-
-.actively_pressed_in {
-  height: calc(50% - (var(--offset-for-distance-between-sizes))) !important;
-  border-radius: 0px !important;
+.noteContainer.actively_pressed_in {
+  /* mask the top var(--slider-hold-offset) px */
+  mask-image: linear-gradient(to bottom, black calc(100% - var(--slider-hold-offset)), transparent 0);
 }
 
 .slider {
@@ -676,7 +669,6 @@ btn:active {
   scale: 1.2;
   opacity: 0;
   rotate: -90deg;
-  background: red;
   width: var(--raw-size);
   height: var(--raw-size);
   display: block;
@@ -758,7 +750,7 @@ btn:active {
   margin-left: auto;
   margin-right: auto;
 
-  --distance: calc(var(--real-size) - var(--nr) / 2);
+  --distance: calc(var(--inner-container-size) + var(--nr));
 
   translate: 0px var(--distance);
   rotate: 0deg !important;
@@ -775,7 +767,7 @@ btn:active {
   border: solid white 10px;
   margin: auto;
   transition: all 0.2s ease;
-    --distance: calc(var(--real-size) - var(--nr) / 2);
+  --distance: calc(var(--real-size) - var(--nr) / 2);
 
   translate: 0px var(--distance);
 }

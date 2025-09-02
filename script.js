@@ -1,5 +1,7 @@
 const fs = require('fs');
-
+const steamworks = require('steamworks.js');
+// let app = steamworks.init(3994990);
+// app.input.init();
 // ============================================================================
 // CONFIGURATION & CONSTANTS
 // ============================================================================
@@ -9,32 +11,32 @@ const CONFIG = {
   ANGLE_MODIFIER: 60,
 
   NOTE_ARC_ANGLE: 60,
-  
+
   // ===== VISUAL MODIFIERS =====
 
   PREVIEW_COUNT: 6,
   SNAP_INTERVAL: 60, // 360/6 = 6 (Segments)
   SNAP_EXTENSION: 4, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
-  
+
   NOTE_RADIUS: 150,
 
   SCALE_DURATION: 0,
-  
+
   NOTE_PREVIEW_DELAY: 600,
   CREATE_AT_DISTANCE_OF: 0,
-  
-  
+
   // ===== CONTAINERS =====
-  CONTAINER_RADIUS: 610,
-  CONTAINER_REAL_RADIUS: 270,
+  CONTAINER_RADIUS: 210,
+  // CONTAINER_REAL_RADIUS: 400,
+  CONTAINER_REAL_RADIUS: 570,
   ADJUSTED_MAX_TRAVEL: 0,
-  
-  
+  START_OFFSET: 0,
+
   // TIMING & INPUT
   GAMEPAD_DEADZONE: 0.1,
-  
+
   FLICK_THRESHOLD: 10,
-  
+
   // SCORING
   ACCEPTANCE_THRESHOLD: 500,
   ACCURACY_RANGES: {
@@ -50,11 +52,21 @@ const CONFIG = {
     'good': 60,
     'ok': 40,
     'bad': 20,
-  }
+  },
+
+  // AUTOPLAY
+  AUTOPLAY: false,             // set true to enable autoplay
+  AUTOPLAY_INTERVAL: 10       // ms between autoplay ticks
 };
 // translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
 // calc((var(--sr) / 2) - var(--tlr))
-CONFIG.ADJUSTED_MAX_TRAVEL = (CONFIG.CONTAINER_REAL_RADIUS / 2) - ((CONFIG.CREATE_AT_DISTANCE_OF / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2));
+CONFIG.CONTAINER_REAL_RADIUS = CONFIG.CONTAINER_REAL_RADIUS
+CONFIG.ADJUSTED_MAX_TRAVEL = (CONFIG.CONTAINER_REAL_RADIUS / 2);
+var sheet = document.styleSheets[0];
+// sheet.insertRule(`:root{--real-size: ${CONFIG.CONTAINER_REAL_RADIUS}px}`);
+
+sheet.insertRule(`:root { --real-size: ${CONFIG.CONTAINER_REAL_RADIUS}px }`);
+sheet.insertRule(`:root { --inner-container-note-distance: ${CONFIG.START_OFFSET}px }`);
 
 // ============================================================================
 // GAME STATE
@@ -119,7 +131,7 @@ class GameState {
     this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
     // Create a source and start immediately
     if (this.audioSource) {
-      try { this.audioSource.stop(); } catch (e) {}
+      try { this.audioSource.stop(); } catch (e) { }
       this.audioSource.disconnect();
     }
     this.audioSource = this.audioContext.createBufferSource();
@@ -132,7 +144,7 @@ class GameState {
   get currentTime() {
     // return milliseconds since start of playback
     if (!this.audioBuffer || !this.audioStartTime) return 0;
-    return Math.min(((this.audioContext.currentTime - this.audioStartTime) * 1000) + (this.audioPauseOffset || 0), 1000);
+    return ((this.audioContext.currentTime - this.audioStartTime) * 1000) + (this.audioPauseOffset || 0)
   }
 }
 // ============================================================================
@@ -667,6 +679,7 @@ class InputSystem {
     note.isBeingHeld = true;
     note.wasEverHeld = true;
     note.element.parentElement.classList.add('actively_pressed_in');
+    console.log(note.element.parentElement)
     this.createNoteAura(note)
   }
 
@@ -870,6 +883,123 @@ class InputSystem {
 }
 
 // ============================================================================
+// AUTOPLAY SYSTEM
+// ============================================================================
+class AutoPlaySystem {
+  constructor(gameState, inputSystem) {
+    this.gameState = gameState;
+    this.inputSystem = inputSystem;
+    this.interval = null;
+    this.pendingReleases = new Set();
+    this.busyLanes = new Set();
+  }
+
+  start() {
+    if (this.interval) return;
+    this.interval = setInterval(() => this.tick(), CONFIG.AUTOPLAY_INTERVAL);
+  }
+
+  stop() {
+    if (!this.interval) return;
+    clearInterval(this.interval);
+    this.interval = null;
+    // clear any scheduled releases
+    this.pendingReleases.forEach(id => clearTimeout(id));
+    this.pendingReleases.clear();
+  }
+
+  // NEW: deterministic autoplay based on notes currently on-screen
+  tick() {
+    const now = this.gameState.currentTime;
+    // consider notes that have an element and are not done
+    const visibleNotes = this.gameState.sheet.filter(n => n.element && !n.done && n.time < now);
+
+    for (const note of visibleNotes) {
+      // avoid scheduling the same note multiple times
+      if (note._autoPlaying) continue;
+
+      // choose lane: use requiredInput if present, otherwise pick 0
+      const lane = this.busyLanes.has(0) ? 1 : 0;
+      // compute note's hit arc start/end and midpoint (normalized)
+      const noteStart = this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + CONFIG.ANGLE_OFFSET - (CONFIG.NOTE_ARC_ANGLE / 2));
+      const noteEnd = this.normalizeAngle(noteStart + CONFIG.NOTE_ARC_ANGLE);
+      let mid;
+      if (noteStart < noteEnd) {
+        mid = (noteStart + noteEnd) / 2;
+      } else {
+        // wrap case
+        const span = ((noteEnd + 360) - noteStart) / 2;
+        mid = this.normalizeAngle(noteStart + span);
+      }
+
+      // position cursor so rotations[lane] equals the normalized midpoint
+      this.inputSystem.updateCursorRotation(lane, mid + 270);
+      this.gameState.rawRotations[lane] = mid;
+
+      // SLIDER: hold from start until sliderEnd
+      if (note.slider) {
+        if (now >= note.time && now <= (note.sliderEnd)) {
+          const key = lane == 0 ? 's' : 'w';
+          this.busyLanes.add(lane);
+          note._autoPlaying = true;
+          // press / hold
+          if (!this.gameState.keysPressed[key]) {
+            this.gameState.keysPressed[key] = true;
+            this.inputSystem.processNoteHold(key);
+          }
+          // schedule release around slider end
+          const releaseAfter = Math.max(10, (note.sliderEnd - now) + 20);
+          const id = setTimeout(() => {
+            this.gameState.keysPressed[key] = false;
+            this.inputSystem.processNoteRelease(key);
+            note._autoPlaying = false;
+            this.pendingReleases.delete(id);
+          }, releaseAfter);
+          this.pendingReleases.add(id);
+        }
+        continue;
+      }
+
+      // REGULAR / FLICK: if it's within the acceptance window, tap (or simulate flick)
+      if (now >= note.time - CONFIG.ACCEPTANCE_THRESHOLD) {
+        const key = lane === 0 ? 'w' : 's';
+        note._autoPlaying = true;
+        // press
+        this.gameState.keysPressed[key] = true;
+        this.inputSystem.processNoteHold(key);
+
+        if (note.flick) {
+          // simulate flick: initiate then quickly change rotation to exceed threshold and release
+          this.inputSystem.startFlick(note, lane);
+          const delta = CONFIG.FLICK_THRESHOLD + 20;
+          const id = setTimeout(() => {
+            this.gameState.rawRotations[lane] = this.normalizeAngle(this.gameState.rawRotations[lane] + delta);
+            this.inputSystem.releaseFlick(note);
+            this.gameState.keysPressed[key] = false;
+            note._autoPlaying = false;
+            this.pendingReleases.delete(id);
+          }, 30);
+          this.pendingReleases.add(id);
+        } else {
+          // short tap release for regular notes
+          const id = setTimeout(() => {
+            this.gameState.keysPressed[key] = false;
+            this.inputSystem.processNoteRelease(key);
+            note._autoPlaying = false;
+            this.pendingReleases.delete(id);
+          }, 40);
+          this.pendingReleases.add(id);
+        }
+      }
+    }
+  }
+
+  normalizeAngle(deg) {
+    return ((parseFloat(deg) % 360) + 360) % 360;
+  }
+}
+
+// ============================================================================
 // RENDERING SYSTEM
 // ============================================================================
 class RenderingSystem {
@@ -981,6 +1111,9 @@ class RenderingSystem {
     // Set note reference
     note.element = noteElement;
     noteElement.style.setProperty('--r', rotation + 'deg');
+
+    // register displayed note so autoplay can act on visible notes
+    this.gameState.displayedNotes.push(note);
   }
 
   assembleNote(note, elements) {
@@ -1309,7 +1442,6 @@ class ScoringSystem {
 
     let score = CONFIG.ACCURACY_SCORES[accuracy] || 0;
     this.increaseScore(score);
-    console.log(difference)
     if (affectCombo) {
       if (difference > 300 || isNaN(difference)) {
         this.gameState.combo = 0;
@@ -1347,6 +1479,12 @@ class RhythmGame {
 
     // hit sound buffers
     this.gameState.hitBuffer = [];
+
+    // Autoplay system
+    this.autoPlaySystem = new AutoPlaySystem(this.gameState, this.inputSystem);
+    if (CONFIG.AUTOPLAY) {
+      this.autoPlaySystem.start();
+    }
 
     // initialize audio and then start loop
     this.init();
