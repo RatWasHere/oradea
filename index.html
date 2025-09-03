@@ -1,8 +1,9 @@
 <html>
 <link rel="stylesheet" href="main.css">
 <div style="margin-left: calc(50vw - var(--raw-size) / 2); margin-top: calc(50vh - var(--raw-size) / 2);">
-  <div style="width: var(--raw-size); height: var(--raw-size); border-radius: 100%;" id="noteContainer"
+  <div id="noteContainer"
     class="comeIn">
+    <div id="noteContainerFrame"></div>
     <div id="cursor1" class="cursor" style="width: var(--raw-size); height: var(--raw-size); position: absolute; scale: 1.1;">
       <div id="cursor" style="background: red; margin-left: auto; margin-right: auto;">
       </div>
@@ -17,7 +18,7 @@
     <div class="previewer_parent"><div id="previewer3" class="previewer" style="--i: 3;"><div class="hitAlready"></div></div></div>
     <div class="previewer_parent"><div id="previewer4" class="previewer" style="--i: 4;"><div class="hitAlready"></div></div></div>
     <div class="previewer_parent"><div id="previewer5" class="previewer" style="--i: 5;"><div class="hitAlready"></div></div></div>
-    <div class="frame"></div>
+    <div class="frame" id="centerContainer"></div>
     <div class="center flexbox" style="--i: 0;">
       <div style="margin: auto;">
         <btextm class="small">Combo</btextm>

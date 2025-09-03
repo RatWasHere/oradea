@@ -40,23 +40,19 @@ const CONFIG = {
   // SCORING
   ACCEPTANCE_THRESHOLD: 500,
   ACCURACY_RANGES: {
-    'perfect': [0, 100],
-    'great': [100, 200],
-    'good': [200, 300],
-    'ok': [300, 400],
-    'bad': [400, 500],
+    'perfect': [0, 52.8],
+    'great': [52.8, 90.8],
+    'good': [90.8, 110],
+    'ok': [110, 150],
+    'bad': [150, 160],
   },
   ACCURACY_SCORES: {
-    'perfect': 100,
-    'great': 80,
-    'good': 60,
+    'perfect': 200,
+    'great': 170,
+    'good': 130,
     'ok': 40,
     'bad': 20,
   },
-
-  // AUTOPLAY
-  AUTOPLAY: false,             // set true to enable autoplay
-  AUTOPLAY_INTERVAL: 10       // ms between autoplay ticks
 };
 // translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
 // calc((var(--sr) / 2) - var(--tlr))
@@ -726,25 +722,28 @@ class InputSystem {
     // Replace HTMLAudio-based play with Web Audio play provided by game.playHitSound()
     this.gameState.playHitSound();
     return new Promise((resolve) => {
+      document.getElementById('noteContainerFrame').style.animation = 'none';
+      document.getElementById('noteContainerFrame').offsetWidth;
+      document.getElementById('noteContainerFrame').style.animation = null;
       const frag = document.createDocumentFragment();
 
       // Main indicator parent
       const indicator_parent = document.createElement('div');
-      indicator_parent.classList.add('indicator_parent');
-      indicator_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 135}deg`;
+      indicator_parent.classList.add('indicator_parent', 'sfx');
+      indicator_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 270}deg`;
 
       const indicator = document.createElement('div');
-      indicator.classList.add('indicator', note.slider ? 'actively_pressed' : 'was_hit');
+      indicator.classList.add('indicator', note.slider ? 'sfx_particle_1' : 'sfx_particle_hold_1');
       indicator_parent.appendChild(indicator);
 
       const indicator2 = document.createElement('div');
-      indicator2.classList.add('indicator', note.slider ? 'actively_pressed2' : 'was_hit2');
+      indicator2.classList.add('indicator', note.slider ? 'sfx_particle_2' : 'sfx_particle_hold_2');
       indicator_parent.appendChild(indicator2);
 
       // Optional slider header
       if (note.slider) {
         const header_parent = document.createElement('div');
-        header_parent.classList.add('indicator_parent', 'dist');
+        header_parent.classList.add('indicator_parent', 'sfx');
         header_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 270}deg`;
 
         const header = document.createElement('div');
@@ -883,123 +882,6 @@ class InputSystem {
 }
 
 // ============================================================================
-// AUTOPLAY SYSTEM
-// ============================================================================
-class AutoPlaySystem {
-  constructor(gameState, inputSystem) {
-    this.gameState = gameState;
-    this.inputSystem = inputSystem;
-    this.interval = null;
-    this.pendingReleases = new Set();
-    this.busyLanes = new Set();
-  }
-
-  start() {
-    if (this.interval) return;
-    this.interval = setInterval(() => this.tick(), CONFIG.AUTOPLAY_INTERVAL);
-  }
-
-  stop() {
-    if (!this.interval) return;
-    clearInterval(this.interval);
-    this.interval = null;
-    // clear any scheduled releases
-    this.pendingReleases.forEach(id => clearTimeout(id));
-    this.pendingReleases.clear();
-  }
-
-  // NEW: deterministic autoplay based on notes currently on-screen
-  tick() {
-    const now = this.gameState.currentTime;
-    // consider notes that have an element and are not done
-    const visibleNotes = this.gameState.sheet.filter(n => n.element && !n.done && n.time < now);
-
-    for (const note of visibleNotes) {
-      // avoid scheduling the same note multiple times
-      if (note._autoPlaying) continue;
-
-      // choose lane: use requiredInput if present, otherwise pick 0
-      const lane = this.busyLanes.has(0) ? 1 : 0;
-      // compute note's hit arc start/end and midpoint (normalized)
-      const noteStart = this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + CONFIG.ANGLE_OFFSET - (CONFIG.NOTE_ARC_ANGLE / 2));
-      const noteEnd = this.normalizeAngle(noteStart + CONFIG.NOTE_ARC_ANGLE);
-      let mid;
-      if (noteStart < noteEnd) {
-        mid = (noteStart + noteEnd) / 2;
-      } else {
-        // wrap case
-        const span = ((noteEnd + 360) - noteStart) / 2;
-        mid = this.normalizeAngle(noteStart + span);
-      }
-
-      // position cursor so rotations[lane] equals the normalized midpoint
-      this.inputSystem.updateCursorRotation(lane, mid + 270);
-      this.gameState.rawRotations[lane] = mid;
-
-      // SLIDER: hold from start until sliderEnd
-      if (note.slider) {
-        if (now >= note.time && now <= (note.sliderEnd)) {
-          const key = lane == 0 ? 's' : 'w';
-          this.busyLanes.add(lane);
-          note._autoPlaying = true;
-          // press / hold
-          if (!this.gameState.keysPressed[key]) {
-            this.gameState.keysPressed[key] = true;
-            this.inputSystem.processNoteHold(key);
-          }
-          // schedule release around slider end
-          const releaseAfter = Math.max(10, (note.sliderEnd - now) + 20);
-          const id = setTimeout(() => {
-            this.gameState.keysPressed[key] = false;
-            this.inputSystem.processNoteRelease(key);
-            note._autoPlaying = false;
-            this.pendingReleases.delete(id);
-          }, releaseAfter);
-          this.pendingReleases.add(id);
-        }
-        continue;
-      }
-
-      // REGULAR / FLICK: if it's within the acceptance window, tap (or simulate flick)
-      if (now >= note.time - CONFIG.ACCEPTANCE_THRESHOLD) {
-        const key = lane === 0 ? 'w' : 's';
-        note._autoPlaying = true;
-        // press
-        this.gameState.keysPressed[key] = true;
-        this.inputSystem.processNoteHold(key);
-
-        if (note.flick) {
-          // simulate flick: initiate then quickly change rotation to exceed threshold and release
-          this.inputSystem.startFlick(note, lane);
-          const delta = CONFIG.FLICK_THRESHOLD + 20;
-          const id = setTimeout(() => {
-            this.gameState.rawRotations[lane] = this.normalizeAngle(this.gameState.rawRotations[lane] + delta);
-            this.inputSystem.releaseFlick(note);
-            this.gameState.keysPressed[key] = false;
-            note._autoPlaying = false;
-            this.pendingReleases.delete(id);
-          }, 30);
-          this.pendingReleases.add(id);
-        } else {
-          // short tap release for regular notes
-          const id = setTimeout(() => {
-            this.gameState.keysPressed[key] = false;
-            this.inputSystem.processNoteRelease(key);
-            note._autoPlaying = false;
-            this.pendingReleases.delete(id);
-          }, 40);
-          this.pendingReleases.add(id);
-        }
-      }
-    }
-  }
-
-  normalizeAngle(deg) {
-    return ((parseFloat(deg) % 360) + 360) % 360;
-  }
-}
-
-// ============================================================================
 // RENDERING SYSTEM
 // ============================================================================
 class RenderingSystem {
@@ -1049,7 +931,6 @@ class RenderingSystem {
       // Check if this sector is being actively pressed
       const isActive = (i === sectors[0] && this.gameState.keysPressed['w']) ||
         (i === sectors[1] && this.gameState.keysPressed['s']);
-
       // Apply hover effect
       if (isHovered) {
         preview_segment.classList.add('selected');
@@ -1059,9 +940,9 @@ class RenderingSystem {
 
       // Apply active press effect
       if (isActive) {
-        preview_segment.firstElementChild?.classList.add('effect');
+        preview_segment.classList.add('effect');
       } else {
-        preview_segment.firstElementChild?.classList.remove('effect');
+        preview_segment.classList.remove('effect');
       }
     }
   }
@@ -1112,7 +993,6 @@ class RenderingSystem {
     note.element = noteElement;
     noteElement.style.setProperty('--r', rotation + 'deg');
 
-    // register displayed note so autoplay can act on visible notes
     this.gameState.displayedNotes.push(note);
   }
 
@@ -1443,7 +1323,7 @@ class ScoringSystem {
     let score = CONFIG.ACCURACY_SCORES[accuracy] || 0;
     this.increaseScore(score);
     if (affectCombo) {
-      if (difference > 300 || isNaN(difference)) {
+      if (difference > 150 || isNaN(difference)) {
         this.gameState.combo = 0;
       } else {
         this.gameState.combo++;
@@ -1456,8 +1336,12 @@ class ScoringSystem {
 
   updateComboDisplay() {
     const comboText = `${this.gameState.combo}`;
-    if (this.gameState.elements.comboDisplay.innerText !== comboText) {
-      this.gameState.elements.comboDisplay.innerText = comboText;
+    if (this.gameState.elements.comboDisplay.innerHTML !== comboText) {
+      this.gameState.elements.comboDisplay.style.animation = 'none';
+      this.gameState.elements.comboDisplay.innerHTML = comboText;
+      setTimeout(() => {
+        this.gameState.elements.comboDisplay.style.animation = null;
+      }, 20);
     }
   }
 }
@@ -1480,11 +1364,6 @@ class RhythmGame {
     // hit sound buffers
     this.gameState.hitBuffer = [];
 
-    // Autoplay system
-    this.autoPlaySystem = new AutoPlaySystem(this.gameState, this.inputSystem);
-    if (CONFIG.AUTOPLAY) {
-      this.autoPlaySystem.start();
-    }
 
     // initialize audio and then start loop
     this.init();
