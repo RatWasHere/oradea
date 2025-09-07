@@ -16,7 +16,7 @@ const CONFIG = {
 
   PREVIEW_COUNT: 6,
   SNAP_INTERVAL: 60, // 360/6 = 6 (Segments)
-  SNAP_EXTENSION: 4, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
+  SNAP_EXTENSION: 30, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
 
   NOTE_RADIUS: 150,
 
@@ -35,7 +35,8 @@ const CONFIG = {
   // TIMING & INPUT
   GAMEPAD_DEADZONE: 0.1,
 
-  FLICK_THRESHOLD: 10,
+  FLICK_THRESHOLD: 30,
+  FLICK_OFFSET: 20,
 
   // SCORING
   ACCEPTANCE_THRESHOLD: 500,
@@ -82,6 +83,7 @@ class GameState {
 
     this.rotations = [0, 0];
     this.rawRotations = [0, 0];
+    this.centerDistance = [0, 0];
     this.sectors = [1, 1];
     this.snapToInterval = true;
 
@@ -138,6 +140,7 @@ class GameState {
   }
 
   get currentTime() {
+    // return 1000
     // return milliseconds since start of playback
     if (!this.audioBuffer || !this.audioStartTime) return 0;
     return ((this.audioContext.currentTime - this.audioStartTime) * 1000) + (this.audioPauseOffset || 0)
@@ -475,6 +478,14 @@ class InputSystem {
 
     const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
     const angleDegrees = angle * (180 / Math.PI);
+    const distanceFromCenter = Math.sqrt(Math.pow(event.clientX - centerX, 2) + Math.pow(event.clientY - centerY, 2));
+
+    const normalized = Math.min(distanceFromCenter / (CONFIG.ADJUSTED_MAX_TRAVEL || 1), 1);
+
+    this.gameState.centerDistance[0] = normalized;
+    this.gameState.centerDistance[1] = normalized;
+
+
 
     this.updateRotations(angleDegrees, angleDegrees);
   }
@@ -502,7 +513,9 @@ class InputSystem {
     if (Math.abs(x1) > CONFIG.GAMEPAD_DEADZONE || Math.abs(y1) > CONFIG.GAMEPAD_DEADZONE) {
       const angle1 = Math.atan2(y1, x1) * (180 / Math.PI);
 
-      // Extended snapping for controllers
+      const mag1 = Math.min(Math.sqrt(x1 * x1 + y1 * y1), 1);
+      this.gameState.centerDistance[0] = mag1;
+
       const extendedSnap1 = this.extendedSnapAngle(angle1, 0);
       if (extendedSnap1 !== null) {
         this.gameState.rawRotations[0] = angle1;
@@ -515,6 +528,10 @@ class InputSystem {
     const y2 = gamepad.axes[3];
     if (Math.abs(x2) > CONFIG.GAMEPAD_DEADZONE || Math.abs(y2) > CONFIG.GAMEPAD_DEADZONE) {
       const angle2 = Math.atan2(y2, x2) * (180 / Math.PI);
+
+      const mag2 = Math.min(Math.sqrt(x2 * x2 + y2 * y2), 1);
+      this.gameState.centerDistance[1] = mag2;
+
       const extendedSnap2 = this.extendedSnapAngle(angle2, 1);
       if (extendedSnap2 !== null) {
         this.gameState.rawRotations[1] = angle2;
@@ -665,7 +682,7 @@ class InputSystem {
 
   findClosestNote(notes) {
     return notes
-      .filter(note => note.slider ? 
+      .filter(note => note.slider ?
         (!note.isBeingHeld && !note.done && ((Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) || note.sliderEnd > this.gameState.currentTime))
         : (Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD))
       .sort((a, b) => a.time - b.time)[0];
@@ -700,7 +717,7 @@ class InputSystem {
   hitNote(note, laneIndex) {
     this.gameState.scoringSystem.judge(note.time);
 
-    if (note.flick) {
+    if (note.flick || note.startLargeFlick) {
       this.startFlick(note, laneIndex);
       return;
     }
@@ -740,19 +757,35 @@ class InputSystem {
       indicator2.classList.add('indicator', note.slider ? 'sfx_particle_2' : 'sfx_particle_hold_2');
       indicator_parent.appendChild(indicator2);
 
+      const sparkles = document.createElement('div');
+      sparkles.classList.add('indicator', 'sfx_sparkles_1');
+      indicator_parent.appendChild(sparkles);
+
+      const sparkles2 = document.createElement('div');
+      sparkles2.classList.add('indicator', 'sfx_sparkles_2');
+      indicator_parent.appendChild(sparkles2);
+
+
+      const sparkles_reverse = document.createElement('div');
+      sparkles_reverse.classList.add('indicator', 'sfx_sparkles_1', 'reversed_sparkles');
+      indicator_parent.appendChild(sparkles_reverse);
+
+      const sparkles_reverse2 = document.createElement('div');
+      sparkles_reverse2.classList.add('indicator', 'sfx_sparkles_2', 'reversed_sparkles_2');
+      indicator_parent.appendChild(sparkles_reverse2);
+
       // Optional slider header
-      if (note.slider) {
-        const header_parent = document.createElement('div');
-        header_parent.classList.add('indicator_parent', 'sfx');
-        header_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 270}deg`;
+      const header_parent = document.createElement('div');
+      note.element.classList.add('is_being_held');
+      header_parent.classList.add('indicator_parent', 'sfx');
+      header_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 270}deg`;
 
-        const header = document.createElement('div');
-        header.classList.add('header', 'end', 'from_aura');
-        header_parent.appendChild(header);
+      const header = document.createElement('div');
+      header.classList.add('header', 'end', 'from_aura', note.slider ? 'from_slider' : 'from_note');
+      header_parent.appendChild(header);
 
-        frag.appendChild(header_parent);
-        note.aura_header = header_parent;
-      }
+      frag.appendChild(header_parent);
+      note.aura_header = header_parent;
 
       frag.appendChild(indicator_parent);
 
@@ -765,6 +798,7 @@ class InputSystem {
         note.element.classList.add('aura');
         setTimeout(() => {
           indicator_parent.remove();
+          header_parent.remove();
           resolve();
         }, 500);
       }
@@ -807,6 +841,12 @@ class InputSystem {
       note.element.parentElement.parentElement.classList.add('flicked_p');
       note.element.classList.add('flicked');
       note.element.parentElement.parentElement.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + (note.flickDirection == "2" ? -50 : 50) + 270}deg`;
+      game.gameState.scoringSystem.judge(note.time);
+      if (note.largeFlick) {
+        game.gameState.scoringSystem.judge(note.flickEnd);
+      }
+      note.traceParent.remove();
+      
       setTimeout(() => {
         note.element.parentElement.parentElement.parentElement.remove();
       }, 500);
@@ -1067,6 +1107,19 @@ class RenderingSystem {
         noteElement.classList.add('golden');
       }
 
+      if (note.largeFlick) {
+        let traceParent = document.createElement('div');
+        traceParent.classList.add('trace-parent');
+        traceParent.style.rotate = (note.angle * CONFIG.ANGLE_MODIFIER) + 270;
+        let tracePath = document.createElement('div');
+        let traceType = Math.abs(note.direction);
+        tracePath.classList.add('traceable', `trace-${Number(note.direction) > 0 ? "positive" : "negative"}`, `trace-${traceType}`);
+        traceParent.appendChild(tracePath)
+        note.traceParent = traceParent;
+        note.tracePath = tracePath;
+        this.gameState.elements.container.appendChild(traceParent);
+      }
+
       noteContainer.appendChild(noteElement);
     }
 
@@ -1092,18 +1145,22 @@ class RenderingSystem {
 
     if (note.slider) {
       return this.updateSliderPosition(note, currentTime, noteTiming);
-    } else if (note.flick) {
+    } else if (note.flick || note.largeFlick) {
       if (note.rotations) {
+
+        if (note.largeFlick) {
+          this.inputSystem.normalizeAngle(this.inputSystem.normalizeAngle(((Number(note.angle) + Number(note.direction)) * CONFIG.ANGLE_MODIFIER)))
+        }
         const input = note.input;
-        const flickDiff = Math.abs(note.flickStart - this.gameState.rawRotations[input]);
+        const desiredFlickOffset = note.largeFlick ? Number(note.direction) * CONFIG.ANGLE_MODIFIER : (CONFIG.FLICK_OFFSET * (note.flickDirection == "2" ? 1 : -1));
+        const desiredAngle = note.flickStart + desiredFlickOffset;
+        const currentAngle = this.inputSystem.normalizeAngle(this.gameState.rawRotations[input]);
+        const flickDiff = currentAngle - desiredAngle;
+        const desiredThreshold = CONFIG.FLICK_THRESHOLD;
 
-        if (!note.lastFlickCheck || this.gameState.currentTime - note.lastFlickCheck > 16) {
-          note.lastFlickCheck = this.gameState.currentTime;
-
-          if (flickDiff > CONFIG.FLICK_THRESHOLD) {
-            note.done = true;
-            this.inputSystem.releaseFlick(note);
-          }
+        if (Math.abs(flickDiff) < desiredThreshold && (note.largeFlick ? this.gameState.centerDistance[input] > 0.93 : true)) {
+          note.done = true;
+          this.inputSystem.releaseFlick(note);
         }
       } else {
         if (note.holdable) {
@@ -1113,6 +1170,12 @@ class RenderingSystem {
             this.inputSystem.startFlick(note, laneIndex);
           }
         }
+      }
+      if (note.largeFlick && note.tracePath) {
+        let diff = (note.flickEnd - note.time);
+        let remainingTime = (currentTime + diff) - note.time;
+        let progress = 1 - Math.max(Math.min((diff / remainingTime), 1), 0);
+        note.tracePath.style.setProperty('--progression', progress)
       }
     } else if (note.holdable && note.time < currentTime) {
       let isInArc0 = this.inputSystem.isInArc(note, this.gameState.rotations[0]);
@@ -1259,6 +1322,10 @@ class RenderingSystem {
         if (note.element) {
           note.element.parentElement.parentElement.parentElement.remove();
         }
+        if (note.traceParent) {
+          note.traceParent.remove();
+        }
+
         note.done = true;
 
         this.gameState.combo = 0;
@@ -1283,7 +1350,7 @@ class RenderingSystem {
     }
 
     // For regular notes, check if they've passed the acceptance window
-    const failTime = note.failTime || note.time;
+    const failTime = note.flickEnd || note.failTime || note.time;
     return (currentTime - failTime) > CONFIG.ACCEPTANCE_THRESHOLD;
   }
 
