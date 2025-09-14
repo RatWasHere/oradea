@@ -31,12 +31,14 @@ const CONFIG = {
   CONTAINER_REAL_RADIUS: 570,
   ADJUSTED_MAX_TRAVEL: 0,
   START_OFFSET: 0,
+  CREATION_ANTIDELAY: 5000,
 
   // TIMING & INPUT
   GAMEPAD_DEADZONE: 0.1,
 
   FLICK_THRESHOLD: 30,
   FLICK_OFFSET: 20,
+  LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD: 0.96,
 
   // SCORING
   ACCEPTANCE_THRESHOLD: 500,
@@ -72,9 +74,11 @@ class GameState {
   constructor() {
     this.crossDetails = JSON.parse(fs.readFileSync('./crossdetails', 'utf8'));
     this.sheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/${this.crossDetails.map}`, 'utf8'));
+    this.information = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/information.json`, 'utf8'));
     try {
       this.timeSheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/time_${this.crossDetails.map}`, 'utf8'));
     } catch (error) { }
+    // document.body.style.backgroundImage = `url('./Beatmaps/${this.crossDetails.location}/${this.information.cover}') no-repeat center center fixed`;
 
     this.combo = 0;
     this.score = 0;
@@ -116,8 +120,20 @@ class GameState {
       cursor1: document.getElementById('cursor1'),
       cursor2: document.getElementById('cursor2'),
       comboDisplay: document.getElementById('comboDisplay'),
-      previewers: document.querySelectorAll('.previewer_parent')
+      previewers: document.querySelectorAll('.previewer_parent'),
+      noteContainerFrame: document.getElementById('noteContainerFrame'),
     };
+
+    const rect = this.elements.container.getBoundingClientRect();
+    const centerX = rect.x + (rect.width / 2);
+    const centerY = rect.y + (rect.height / 2);
+    this.cachedRects = { rect, centerX, centerY };
+    window.addEventListener('resize', () => {
+      const rect = this.elements.container.getBoundingClientRect();
+      const centerX = rect.x + (rect.width / 2);
+      const centerY = rect.y + (rect.height / 2);
+      this.cachedRects = { rect, centerX, centerY };
+    });
   }
 
   async initializeAudio() {
@@ -140,10 +156,8 @@ class GameState {
   }
 
   get currentTime() {
-    // return 1000
-    // return milliseconds since start of playback
     if (!this.audioBuffer || !this.audioStartTime) return 0;
-    return ((this.audioContext.currentTime - this.audioStartTime) * 1000) + (this.audioPauseOffset || 0)
+    return ((this.audioContext.currentTime - this.audioStartTime) * 1000)
   }
 }
 // ============================================================================
@@ -472,9 +486,9 @@ class InputSystem {
   handleMouseMove(event) {
     if (this.gameState.gamepad) return;
 
-    const rect = this.gameState.elements.container.getBoundingClientRect();
-    const centerX = rect.x + (rect.width / 2);
-    const centerY = rect.y + (rect.height / 2);
+    const rect = this.gameState.cachedRects.rect;
+    const centerX = this.gameState.cachedRects.centerX;
+    const centerY = this.gameState.cachedRects.centerY;
 
     const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
     const angleDegrees = angle * (180 / Math.PI);
@@ -736,12 +750,14 @@ class InputSystem {
     });
   }
   createNoteAura(note) {
-    // Replace HTMLAudio-based play with Web Audio play provided by game.playHitSound()
-    this.gameState.playHitSound();
-    return new Promise((resolve) => {
-      document.getElementById('noteContainerFrame').style.animation = 'none';
-      document.getElementById('noteContainerFrame').offsetWidth;
-      document.getElementById('noteContainerFrame').style.animation = null;
+    return new Promise(resolve => {
+      this.gameState.playHitSound();
+      const frameEl = this.gameState.elements.noteContainerFrame;
+      if (frameEl) {
+        frameEl.style.animation = 'none';
+        // restore on next frame (no offsetWidth read)
+        requestAnimationFrame(() => { frameEl.style.animation = null; });
+      }
       const frag = document.createDocumentFragment();
 
       // Main indicator parent
@@ -832,6 +848,9 @@ class InputSystem {
     note.flickMoment = this.gameState.currentTime;
     note.rotations = this.gameState.rawRotations;
     this.vibrate(4);
+    if (note.largeFlick) {
+      note.traceParent.style.opacity = 1;
+    }
   }
 
   releaseFlick(note) {
@@ -844,9 +863,9 @@ class InputSystem {
       game.gameState.scoringSystem.judge(note.time);
       if (note.largeFlick) {
         game.gameState.scoringSystem.judge(note.flickEnd);
+        note.traceParent.remove();
       }
-      note.traceParent.remove();
-      
+
       setTimeout(() => {
         note.element.parentElement.parentElement.parentElement.remove();
       }, 500);
@@ -993,7 +1012,7 @@ class RenderingSystem {
   }
 
   createNewNoteElements(currentTime) {
-    const relevantNotes = this.gameState.sheet.filter(note => ((currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION)) && !note.element));
+    const relevantNotes = this.gameState.sheet.filter(note => ((currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION + CONFIG.CREATION_ANTIDELAY)) && !note.element));
 
     for (let i = 0; i < relevantNotes.length; i++) {
       const note = relevantNotes[i];
@@ -1110,10 +1129,11 @@ class RenderingSystem {
       if (note.largeFlick) {
         let traceParent = document.createElement('div');
         traceParent.classList.add('trace-parent');
-        traceParent.style.rotate = (note.angle * CONFIG.ANGLE_MODIFIER) + 270;
+        traceParent.style.rotate = ((note.angle * CONFIG.ANGLE_MODIFIER) + 300 + 120) + 'deg';
         let tracePath = document.createElement('div');
         let traceType = Math.abs(note.direction);
         tracePath.classList.add('traceable', `trace-${Number(note.direction) > 0 ? "positive" : "negative"}`, `trace-${traceType}`);
+        tracePath.style.setProperty('--duration', `${note.flickEnd - note.time}ms`)
         traceParent.appendChild(tracePath)
         note.traceParent = traceParent;
         note.tracePath = tracePath;
@@ -1158,7 +1178,7 @@ class RenderingSystem {
         const flickDiff = currentAngle - desiredAngle;
         const desiredThreshold = CONFIG.FLICK_THRESHOLD;
 
-        if (Math.abs(flickDiff) < desiredThreshold && (note.largeFlick ? this.gameState.centerDistance[input] > 0.93 : true)) {
+        if (Math.abs(flickDiff) < desiredThreshold && (note.largeFlick ? this.gameState.centerDistance[input] > CONFIG.LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD : true)) {
           note.done = true;
           this.inputSystem.releaseFlick(note);
         }
@@ -1172,10 +1192,17 @@ class RenderingSystem {
         }
       }
       if (note.largeFlick && note.tracePath) {
-        let diff = (note.flickEnd - note.time);
-        let remainingTime = (currentTime + diff) - note.time;
-        let progress = 1 - Math.max(Math.min((diff / remainingTime), 1), 0);
-        note.tracePath.style.setProperty('--progression', progress)
+        let duration = note.flickEnd - note.time;
+
+        // time passed since the flick started
+        const elapsed = currentTime - note.time;
+
+        // clamp between 0 and 1
+        const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+        if (note.lastProgress !== progress) {
+          note.traceParent.style.setProperty('--progression', 1 - progress);
+          note.lastProgress = progress;
+        }
       }
     } else if (note.holdable && note.time < currentTime) {
       let isInArc0 = this.inputSystem.isInArc(note, this.gameState.rotations[0]);
@@ -1341,8 +1368,8 @@ class RenderingSystem {
     if (note.done) return false;
 
     // For sliders, they only fail if they end without being held
-    if (note.slider) {
-      let failed = currentTime > (note.sliderEnd + CONFIG.ACCEPTANCE_THRESHOLD);
+    if (note.slider || note.traceParent) {
+      let failed = currentTime > ((note.sliderEnd || note.flickEnd) + CONFIG.ACCEPTANCE_THRESHOLD);
       if (failed) {
         this.inputSystem.releaseSlider(note);
       }

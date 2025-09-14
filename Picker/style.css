@@ -9,6 +9,8 @@
 body {
   margin-top: 0px;
   margin-left: 0px;
+  background: linear-gradient(130deg, #000000, #131313) !important;
+  background-repeat: none !important;
 }
 
 #levels {

@@ -1,0 +1,11 @@
+.settingsWindow {
+  display: block;
+  position: absolute;
+  border-radius: 5px;
+  background: #00000050;
+  backdrop-filter: blur(12px);
+  height: 400px;
+  width: 600px;
+  margin-top: calc(100vh - 200px);
+  margin-left: calc(100vw - 300px);
+}
