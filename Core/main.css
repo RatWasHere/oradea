@@ -4,7 +4,6 @@ body {
 
 @keyframes bgmodify {
   0% {
-<<<<<<< HEAD:Core/main.css
     background-image: url('../Assets/bg.png');
   }
 
@@ -14,17 +13,6 @@ body {
 
   100% {
     background-image: url('../Assets/bg.png');
-=======
-    background-image: url('./Assets/bg.png');
-  }
-
-  50% {
-    background-image: url('./Assets/bg2.png');
-  }
-
-  100% {
-    background-image: url('./Assets/bg.png');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   }
 }
 
@@ -250,19 +238,11 @@ body {
 }
 
 .flick1 {
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/Headers/Flick\ Base\ Positive.svg') !important;
 }
 
 .flick2 {
   background: url('../Assets/Headers/Flick\ Base\ Negative.svg') !important;
-=======
-  background: url('./Assets/Headers/Flick\ Base\ Positive.svg') !important;
-}
-
-.flick2 {
-  background: url('./Assets/Headers/Flick\ Base\ Negative.svg') !important;
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
 }
 
 
@@ -332,11 +312,7 @@ body {
   width: var(--note-radius);
   height: var(--note-radius);
   margin-top: calc((((var(--real-size) - var(--note-radius)) / 2) + var(--gap)));
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/Headers/Note.svg');
-=======
-  background: url('./Assets/Headers/Note.svg');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   background-size: cover !important;
   background-repeat: no-repeat !important;
   background-position: center !important;
@@ -362,20 +338,12 @@ body {
 /* Left arrow border */
 
 .flick1>.flick_arrows {
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/Headers/Flick\ Positive.svg');
-=======
-  background: url('./Assets/Headers/Flick\ Positive.svg');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   --direction: -10px;
 }
 
 .flick2>.flick_arrows {
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/Headers/Flick\ Negative.svg');
-=======
-  background: url('./Assets/Headers/Flick\ Negative.svg');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   --direction: 10px;
 }
 
@@ -476,11 +444,7 @@ body {
       /* top-right point */
     );
   shape-rendering: geometricPrecision;
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/Playfield/segment\ even.svg');
-=======
-  background: url('./Assets/Playfield/segment\ even.svg');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   /* background: linear-gradient(0deg, #142b5270, #420d7470); */
   rotate: calc((var(--i) * 60deg));
   width: var(--raw-size);
@@ -498,11 +462,7 @@ body {
 .previewer:nth-of-type(3),
 .previewer:nth-of-type(5),
 .previewer:nth-of-type(7) {
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/Playfield/segment even.svg');
-=======
-  background: url('./Assets/Playfield/segment even.svg');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   rotate: calc((var(--i) * 60deg) + 60deg);
 }
 
@@ -806,11 +766,7 @@ btn:active {
   --frame-size: calc(var(--inner-container-size) + var(--frame-tolerance));
   width: var(--frame-size);
   height: var(--frame-size);
-<<<<<<< HEAD:Core/main.css
   background: url(../Assets/Playfield/frame.svg);
-=======
-  background: url(./frame.svg);
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   background-size: cover;
   margin-left: calc((var(--raw-size) - var(--frame-size)) / 2);
   margin-top: calc((var(--raw-size) - var(--frame-size)) / 2);
@@ -913,11 +869,7 @@ btn:active {
 .sfx_sparkles_1 {
   width: var(--note-radius);
   height: var(--note-radius);
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/SFX/Sparkles\ Layer\ 1.svg');
-=======
-  background: url('./Assets/SFX/Sparkles\ Layer\ 1.svg');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   background-size: cover;
   translate: calc(var(--real-size) / 2 - (var(--note-radius) / 2)) calc(var(--real-size)) !important;
   animation: sparkles 0.5s ease !important;
@@ -933,11 +885,7 @@ btn:active {
 .sfx_sparkles_2 {
   width: var(--note-radius);
   height: var(--note-radius);
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/SFX/Sparkles\ Layer\ 2.svg');
-=======
-  background: url('./Assets/SFX/Sparkles\ Layer\ 2.svg');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   background-size: cover;
   translate: calc(var(--real-size) / 2 - (var(--note-radius) / 2)) calc(var(--real-size)) !important;
   animation: sparkles 0.4s ease !important;
@@ -1228,11 +1176,7 @@ a {
   width: var(--raw-size);
   height: var(--raw-size);
 
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/Playfield/frame.svg');
-=======
-  background: url('./frame.svg');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   background-size: cover !important;
   position: fixed;
 
@@ -1258,11 +1202,7 @@ a {
 }
 
 #centerContainer {
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/Playfield/frame_in.svg');
-=======
-  background: url('./Assets/Playfield/frame_in.svg');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   background-size: cover !important;
 }
 
@@ -1275,11 +1215,7 @@ a {
   display: block;
   top: 0;
   left: 0;
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/Headers/Frame.svg');
-=======
-  background: url('./Assets/Headers/Frame.svg');
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
   background-size: var(--note-radius) var(--note-radius) !important;
   background-repeat: repeat-y !important;
   animation: flickeryGlow 0.3s cubic-bezier(.05, 1.34, 1, 0) infinite;
@@ -1379,18 +1315,11 @@ a {
 
 .trace-2 {
   /* --progression: 0; */
-<<<<<<< HEAD:Core/main.css
   background: url('../Assets/Headers/Short\ Flick\ Straight.svg') no-repeat;
   /* clip-path: inset(calc(var(--progression) * 100%) 0 0 0); */
   height: calc(var(--progression) * 100%);
   will-change: height;
     /* mask: linear-gradient(to to p, black calc(var(--progression) * 1%), transparent 0%) no-repeat cover; */
-=======
-  background: url('./Assets/Headers/Short\ Flick\ Straight.svg') no-repeat;
-  /* clip-path: inset(calc(var(--progression) * 100%) 0 0 0); */
-  height: calc(var(--progression) * 100%)
-  /* mask: linear-gradient(to to p, black calc(var(--progression) * 1%), transparent 0%) no-repeat cover; */
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
 }
 
 @keyframes fade_in {
@@ -1424,7 +1353,6 @@ a {
 
 .quickLink {
   display: inline-block;
-<<<<<<< HEAD:Core/main.css
 } */
 
 #perfectionIndicator {
@@ -1455,6 +1383,3 @@ a {
     scale: 0.8;
   }
 }
-=======
-} */
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477:main.css
