@@ -1,6 +1,7 @@
 <html>
-<link rel="stylesheet" href="../main.css">
+<link rel="stylesheet" href="../Core/main.css">
 <link rel="stylesheet" href="./style.css">
+<link rel="stylesheet" href="./settings.css">
 
 <body>
   <div class="flexbox" id="bg-overlay" style="width: 100vw; height: 100vh; backdrop-filter: blur(100px); background: #00000090;">
@@ -11,10 +12,12 @@
       <div class="image logo"></div>
     </div>
     <btn onclick="fadeThisOut('./Picker/LevelPicker.html')" style="margin-right: 10px;">Play</btn>
-    <btn>Settings</btn>
+    <btn onclick="openSettings()">Settings</btn>
+    <btn style="opacity: 0.5; pointer-events: none; margin-left: 10px;">PREVIEW. NOT FINAL. CONNECT YOUR CONTROLLER.</btn>
   </div>
 </body>
 
 <script src="./home.js"></script>
+<script src="./settings.js"></script>
 
 </html>

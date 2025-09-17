@@ -1,13 +1,55 @@
 {
   "dependencies": {
-    "electron": "^36.4.0",
     "oceanic.js": "^1.12.0",
     "onframe": "^0.1.0",
     "osu-mania-parser": "^1.0.0",
     "steamworks.js": "^0.4.0"
   },
-  "scripts": {
-    "start": "electron ."
+  "devDependencies": {
+    "electron": "^38.1.0"
   },
-  "main": "main.js"
+  "scripts": {
+    "start": "electron .",
+    "pack": "electron-builder --dir"
+  },
+  "name": "oradea",
+  "author": {
+    "name": "Rat",
+    "email": "ratwashere@proton.me"
+  },
+  "version": "1.0.0",
+  "build": {
+    "appId": "com.rat.oradea",
+    "icon": "icon.png",
+    "win": {
+      "icon": "./Asssets/logo.png",
+      "target": [
+        {
+          "target": "nsis",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "linux": {
+      "icon": "logo.png",
+      "target": [
+        {
+          "target": "AppImage",
+          "arch": [
+            "x64"
+          ]
+        }
+      ]
+    },
+    "nsis": {
+      "oneClick": true,
+      "uninstallDisplayName": "Uninstall Bot Maker For Discord"
+    },
+    "directories": {
+      "output": "Release/${platform}"
+    }
+  },
+  "main": "./Core/main.js"
 }

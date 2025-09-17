@@ -69,11 +69,11 @@
 </head>
 <body>
 
-  <a href="./index.html">back</a>
+  <a href="../index.html">back</a>
 </body>
 <script>
   let parser = require('osu-mania-parser');
-  let beatmap = parser.parseFileSync('./beatmap.osu');
+  let beatmap = parser.parseFileSync('./Misc/beatmap.osu');
   let sheet = [];
   function swap(json){
   var ret = {};
@@ -129,6 +129,6 @@
     }
   });
 
-  require('fs').writeFileSync('./map.json', JSON.stringify(sheet, null, 2));
+  require('fs').writeFileSync('./Misc/map.json', JSON.stringify(sheet, null, 2));
 </script>
 </html>

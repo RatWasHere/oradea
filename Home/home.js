@@ -31,7 +31,6 @@ document.body.style.backgroundImage = `url('${basePath}/${randomLevel.informatio
 let reactiveCore = document.getElementById('reactive_core');
 let reactiveNoteCore = document.getElementById('reactive_note_core');
 let killModifications = false;
-
 // create an audio and then make the reactive core react to the volume
 let audio = new Audio(`../Beatmaps/${randomLevel.location}/audio.mp3`);
 audio.addEventListener('play', () => {
@@ -59,6 +58,10 @@ audio.addEventListener('play', () => {
     lastScale = scaleAmount;
     reactiveCore.style.transform = `scaleX(${scaleAmount})`;
     reactiveNoteCore.style.transform = `scaleX(${scaleAmount})`;
+    try {
+      let gamepad = navigator.getGamepads()[0];
+      // gamepad.vibrationActuator.playEffect("dual-rumble", { startDelay: 0, duration: 100, weakMagnitude: Math.min(scaleAmount / 5, 1), strongMagnitude: 0 })
+    } catch (error) { }
     // let supposedNewTransform = lastTransform + (((elapsedTime - lastTime) * scale * 5));
     // if (supposedNewTransform - lastTransform > 100) {
     //   lastTransform = supposedNewTransform;
@@ -74,7 +77,6 @@ audio.addEventListener('play', () => {
   }
 
   let notes = Object.values(randomLevel.beatmaps)[Object.keys(randomLevel.beatmaps).length - 1];
-  console.log(randomLevel.beatmaps, notes, Object.values(randomLevel.beatmaps));
   // animate based on note times too
   function animateNotes() {
     if (killModifications) return;
@@ -91,6 +93,9 @@ audio.addEventListener('play', () => {
           setTimeout(() => {
             reactiveNoteCore.style.transition = `all ${Math.min(distanceUntilNextNote, 250)}ms ease`;
             reactiveNoteCore.style.scale = `${lastScale * ((Math.random() + 1.5) / 2)} 1`;
+            let gamepad = navigator.getGamepads()[0];
+            gamepad.vibrationActuator.playEffect("dual-rumble", { startDelay: 0, duration: Math.min(distanceUntilNextNote, 1500) - 50, weakMagnitude: 0.3, strongMagnitude: 0.3 })
+
           }, 30);
         }
       }
@@ -141,8 +146,9 @@ function fadeThisOut() {
     audio.volume = 0;
   }, 1500);
   setTimeout(() => {
-    document.body.style.backgroundPositionY = '';
-    document.body.style.backgroundImage = ''
+    document.body.style.animation = 'none';
+    document.body.style.backgroundPositionY = '0px';
+    document.body.style.backgroundImage = 'linear-gradient(130deg, #000000, #131313)'
   }, 1800);
   setTimeout(() => {
     document.getElementById('bg-overlay').style.opacity = '0'

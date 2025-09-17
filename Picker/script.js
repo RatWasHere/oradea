@@ -207,7 +207,7 @@ function play() {
   document.getElementById('level-' + chosenSong).classList.remove('highlighted');
 
   setTimeout(() => {
-    fs.writeFileSync('./crossdetails', JSON.stringify({ location: levels[chosenSong].location, difficulty: lastSelectedDifficulty, map: levels[chosenSong].information.difficulties[lastSelectedDifficulty] }, null, 2));
+    fs.writeFileSync('./Core/crossdetails', JSON.stringify({ location: levels[chosenSong].location, difficulty: lastSelectedDifficulty, map: levels[chosenSong].information.difficulties[lastSelectedDifficulty] }, null, 2));
     location.href = '../index.html'
   }, 400);
 }
