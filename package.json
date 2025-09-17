@@ -1,5 +1,9 @@
 {
   "dependencies": {
+<<<<<<< HEAD
+=======
+    "electron": "^38.1.0",
+>>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477
     "oceanic.js": "^1.12.0",
     "onframe": "^0.1.0",
     "osu-mania-parser": "^1.0.0",

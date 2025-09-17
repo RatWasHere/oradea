@@ -1,6 +1,7 @@
 <svg width="750" height="750" viewBox="0 0 750 750" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_56_28)">
 <g filter="url(#filter0_d_56_28)">
+<<<<<<< HEAD
 <path d="M355.5 17.0322C367.378 10.1744 381.97 10.0664 393.933 16.71L394.5 17.0322L675.26 179.129C687.326 186.096 694.76 198.97 694.76 212.903V537.097C694.76 551.03 687.326 563.905 675.26 570.872L394.5 732.968C382.622 739.826 368.03 739.934 356.067 733.29L355.5 732.968L74.7402 570.872C62.6736 563.905 55.2403 551.03 55.2402 537.097V212.903C55.2403 198.97 62.6738 186.096 74.7402 179.129L355.5 17.0322Z" stroke="url(#paint0_linear_56_28)" stroke-width="10"/>
 </g>
 </g>
@@ -10,11 +11,26 @@
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset/>
 <feGaussianBlur stdDeviation="2.95"/>
+=======
+<path d="M364 17.124C370.594 13.317 378.671 13.1984 385.357 16.7676L386 17.124L679.43 186.536C686.236 190.466 690.43 197.729 690.43 205.589V544.411C690.43 552.271 686.236 559.534 679.43 563.464L386 732.876C379.406 736.683 371.329 736.802 364.643 733.232L364 732.876L70.5703 563.464C63.7637 559.534 59.5703 552.271 59.5703 544.411V205.589C59.5703 197.729 63.7637 190.466 70.5703 186.536L364 17.124Z" stroke="url(#paint0_linear_56_28)" stroke-width="10"/>
+</g>
+</g>
+<defs>
+<filter id="filter0_d_56_28" x="41.5706" y="-3.82312" width="666.859" height="757.646" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<feFlood flood-opacity="0" result="BackgroundImageFix"/>
+<feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
+<feOffset/>
+<feGaussianBlur stdDeviation="6.5"/>
+>>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477
 <feColorMatrix type="matrix" values="0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 0.6 0"/>
 <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_56_28"/>
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_56_28" result="shape"/>
 </filter>
+<<<<<<< HEAD
 <linearGradient id="paint0_linear_56_28" x1="375" y1="0" x2="375" y2="750" gradientUnits="userSpaceOnUse">
+=======
+<linearGradient id="paint0_linear_56_28" x1="375" y1="5" x2="375" y2="745" gradientUnits="userSpaceOnUse">
+>>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477
 <stop stop-color="white" stop-opacity="0.5"/>
 <stop offset="0.495192" stop-color="white" stop-opacity="0.8"/>
 <stop offset="1" stop-color="white" stop-opacity="0.5"/>
