@@ -45,20 +45,12 @@ const CONFIG = {
   ACCURACY_RANGES: {
     'perfect': [0, 52.8],
     'great': [52.8, 90.8],
-<<<<<<< HEAD
-=======
-    'good': [90.8, 110],
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477
     'ok': [110, 150],
     'bad': [150, 160],
   },
   ACCURACY_SCORES: {
     'perfect': 200,
     'great': 170,
-<<<<<<< HEAD
-=======
-    'good': 130,
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477
     'ok': 40,
     'bad': 20,
   },
@@ -128,10 +120,7 @@ class GameState {
       comboDisplay: document.getElementById('comboDisplay'),
       previewers: document.querySelectorAll('.previewer_parent'),
       noteContainerFrame: document.getElementById('noteContainerFrame'),
-<<<<<<< HEAD
       perfectionIndicator: document.getElementById('perfectionIndicator'),
-=======
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477
     };
 
     const rect = this.elements.container.getBoundingClientRect();
@@ -503,16 +492,6 @@ class InputSystem {
     const angle = Math.atan2(event.clientY - centerY, event.clientX - centerX);
     const angleDegrees = angle * (180 / Math.PI);
     const distanceFromCenter = Math.sqrt(Math.pow(event.clientX - centerX, 2) + Math.pow(event.clientY - centerY, 2));
-<<<<<<< HEAD
-=======
-
-    const normalized = Math.min(distanceFromCenter / (CONFIG.ADJUSTED_MAX_TRAVEL || 1), 1);
-
-    this.gameState.centerDistance[0] = normalized;
-    this.gameState.centerDistance[1] = normalized;
-
-
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477
 
     const normalized = Math.min(distanceFromCenter / (CONFIG.ADJUSTED_MAX_TRAVEL || 1), 1);
 
@@ -1219,11 +1198,8 @@ class RenderingSystem {
 
         // clamp between 0 and 1
         const progress = Math.min(Math.max(elapsed / duration, 0), 1);
-<<<<<<< HEAD
         // const preprogress = Math.min(Math.max((elapsed + duration) / duration, 0), 1);
         // note.traceParent.style.opacity = preprogress;
-=======
->>>>>>> 37517aa2f7a9fa66de3402d097360cab46a9e477
         if (note.lastProgress !== progress) {
           note.traceParent.style.setProperty('--progression', 1 - progress);
           note.lastProgress = progress;
