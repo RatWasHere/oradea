@@ -14,7 +14,7 @@ app.on('ready', () => {
     }
   });
   
-  window.loadFile('index.html');
+  window.loadFile('./Playfield/playfield.html');
   
   window.once('ready-to-show', () => {
     window.webContents.openDevTools();
