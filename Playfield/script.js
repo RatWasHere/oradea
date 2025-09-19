@@ -16,7 +16,7 @@ const CONFIG = {
 
   PREVIEW_COUNT: 6,
   SNAP_INTERVAL: 60, // 360/6 = 6 (Segments)
-  SNAP_EXTENSION: 30, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
+  SNAP_EXTENSION: 12.5, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
 
   NOTE_RADIUS: 150,
 
@@ -498,8 +498,6 @@ class InputSystem {
     this.gameState.centerDistance[0] = normalized;
     this.gameState.centerDistance[1] = normalized;
 
-
-    
     this.updateRotations(angleDegrees, angleDegrees);
   }
 
@@ -616,14 +614,54 @@ class InputSystem {
   }
 
   updateRotations(angle1, angle2) {
-    this.gameState.rawRotations[0] = angle1;
-    this.gameState.rawRotations[1] = angle2;
+    angle1 = this.normalizeAngle(angle1);
+    angle2 = this.normalizeAngle(angle2);
+    let minRotationToSnapToPreviousAngleForAngle1 = this.normalizeAngle(this.gameState.rotations[0] - (CONFIG.SNAP_EXTENSION + (CONFIG.SNAP_INTERVAL / 2)));
+    let minRotationToSnapToNextAngleForAngle1 = this.normalizeAngle(this.gameState.rotations[0] + (CONFIG.SNAP_EXTENSION + (CONFIG.SNAP_INTERVAL / 2)));
 
+
+    this.gameState.rawRotations[0] = this.normalizeAngle(angle1 - 270);
+    this.gameState.rawRotations[1] = this.normalizeAngle(angle2 - 270);
+
+
+    // let prevAngleConditionMet = !(this.gameState.rawRotations[0] > minRotationToSnapToPreviousAngleForAngle1);
+    // let nextAngleConditionMet = !(this.gameState.rawRotations[0] < minRotationToSnapToNextAngleForAngle1);
+
+    // if (!prevAngleConditionMet && !nextAngleConditionMet) return
+    console.log(this.gameState.rawRotations[0], minRotationToSnapToNextAngleForAngle1, minRotationToSnapToPreviousAngleForAngle1)
+    // console.log(this.angleDiff(this.gameState.rawRotations[0], minRotationToSnapToNextAngleForAngle1), this.angleDiff(this.gameState.rawRotations[0], minRotationToSnapToPreviousAngleForAngle1))
+    if (!this.isAngleBetween(
+      this.gameState.rawRotations[0],
+      minRotationToSnapToNextAngleForAngle1,
+      minRotationToSnapToPreviousAngleForAngle1
+    )) return
     const snapped1 = this.gameState.snapToInterval ? this.snapAngle(angle1) : angle1;
     const snapped2 = this.gameState.snapToInterval ? this.snapAngle(angle2) : angle2;
 
     this.updateCursorRotation(0, snapped1);
     this.updateCursorRotation(1, snapped2);
+  }
+
+  angleDiff(a, b) {
+    a = this.normalizeAngle(a);
+    b = this.normalizeAngle(b);
+    let d = a - b;
+    d = (d + 180) % 360 - 180;
+    return d;
+  }
+
+  isAngleBetween(angle, start, end) {
+    angle = (angle + 360) % 360;
+    start = (start + 360) % 360;
+    end = (end + 360) % 360;
+
+    if (start <= end) {
+      // Normal interval
+      return angle >= start && angle <= end;
+    } else {
+      // Wrapped interval (e.g. 350 -> 10)
+      return angle >= start || angle <= end;
+    }
   }
 
   updateCursorRotation(index, angle) {
@@ -632,7 +670,7 @@ class InputSystem {
       cursor.style.rotate = `${angle + CONFIG.ANGLE_OFFSET}deg`;
     }
 
-    this.gameState.rotations[index] = angle - 270;
+    this.gameState.rotations[index] = this.normalizeAngle(angle - 270);
   }
 
   snapAngle(angle) {
@@ -1114,7 +1152,7 @@ class RenderingSystem {
       if (note.holdable) {
         noteElement.classList.add('holdable');
       }
-      if (note.flick) {
+      if (note.flick && !note.largeFlick) {
         if (note.holdable) {
           noteElement.classList.add(`flick${note.flickDirection}`, 'holdable_flick');
         } else {
@@ -1137,6 +1175,7 @@ class RenderingSystem {
         note.traceParent = traceParent;
         note.tracePath = tracePath;
         this.gameState.elements.container.appendChild(traceParent);
+        noteElement.classList.add('flick_large_starter')
       }
 
       noteContainer.appendChild(noteElement);
@@ -1168,7 +1207,7 @@ class RenderingSystem {
       if (note.rotations) {
 
         if (note.largeFlick) {
-          this.inputSystem.normalizeAngle(this.inputSystem.normalizeAngle(((Number(note.angle) + Number(note.direction)) * CONFIG.ANGLE_MODIFIER)))
+          // this.inputSystem.normalizeAngle(this.inputSystem.normalizeAngle(((Number(note.angle) + Number(note.direction)) * CONFIG.ANGLE_MODIFIER)))
         }
         const input = note.input;
         const desiredFlickOffset = note.largeFlick ? Number(note.direction) * CONFIG.ANGLE_MODIFIER : (CONFIG.FLICK_OFFSET * (note.flickDirection == "2" ? 1 : -1));
@@ -1198,8 +1237,9 @@ class RenderingSystem {
 
         // clamp between 0 and 1
         const progress = Math.min(Math.max(elapsed / duration, 0), 1);
-        // const preprogress = Math.min(Math.max((elapsed + duration) / duration, 0), 1);
-        // note.traceParent.style.opacity = preprogress;
+        duration = Math.max(duration, CONFIG.NOTE_PREVIEW_DELAY);
+        const preprogress = Math.min(Math.max((elapsed + duration) / duration, 0), 1);
+        note.traceParent.style.opacity = preprogress;
         if (note.lastProgress !== progress) {
           note.traceParent.style.setProperty('--progression', 1 - progress);
           note.lastProgress = progress;
@@ -1428,7 +1468,7 @@ class ScoringSystem {
 
     this.gameState.elements.perfectionIndicator.style.backgroundImage = `url('./Assets/Scoring/${accuracy}.svg')`;
     this.gameState.elements.perfectionIndicator.style.animationName = 'none'
-    requestAnimationFrame(() => {this.gameState.elements.perfectionIndicator.style.animationName = null})
+    requestAnimationFrame(() => { this.gameState.elements.perfectionIndicator.style.animationName = null })
     return accuracy;
   }
 

@@ -208,7 +208,7 @@ function play() {
 
   setTimeout(() => {
     fs.writeFileSync('./Core/crossdetails', JSON.stringify({ location: levels[chosenSong].location, difficulty: lastSelectedDifficulty, map: levels[chosenSong].information.difficulties[lastSelectedDifficulty] }, null, 2));
-    location.href = '../index.html'
+    location.href = '../Playfield/playfield.html'
   }, 400);
 }
 

@@ -245,6 +245,9 @@ body {
   background: url('../Assets/Headers/Flick\ Base\ Negative.svg') !important;
 }
 
+.flick_large_starter {
+  background: url('../Assets/Headers/Large\ Flick\ Starter.svg') !important;
+}
 
 @keyframes held {
   0% {
