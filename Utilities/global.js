@@ -8,3 +8,8 @@ function dismissContent(content) {
 function isDismissed(content) {
   return settingsFS.existsSync(`./Dismissed Content/${content}`, () => { })
 }
+
+window.onresize = () => {
+  window.innerWidth;
+  window.innerHeight;
+}

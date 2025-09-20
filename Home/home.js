@@ -146,16 +146,11 @@ function fadeThisOut() {
     audio.volume = 0;
   }, 1500);
   setTimeout(() => {
-    document.body.style.animation = 'none';
-    document.body.style.backgroundPositionY = '0px';
-    document.body.style.backgroundImage = 'linear-gradient(130deg, #000000, #131313)'
-  }, 1800);
-  setTimeout(() => {
     document.getElementById('bg-overlay').style.opacity = '0'
-  }, 2300);
+  }, 1800);
 
 
   setTimeout(() => {
     window.location.href = '../Picker/LevelPicker.html';
-  }, 2500);
+  }, 1800);
 }

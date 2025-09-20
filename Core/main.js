@@ -10,9 +10,10 @@ app.on('ready', () => {
     minWidth: 1000,
     webPreferences: {
       nodeIntegration: true,
-      contextIsolation: false
-    }
+      contextIsolation: false,
+    },
   });
+  
   
   window.loadFile('./Playfield/playfield.html');
   

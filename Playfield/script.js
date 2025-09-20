@@ -16,7 +16,7 @@ const CONFIG = {
 
   PREVIEW_COUNT: 6,
   SNAP_INTERVAL: 60, // 360/6 = 6 (Segments)
-  SNAP_EXTENSION: 12.5, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
+  SNAP_EXTENSION: 17.5, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
 
   NOTE_RADIUS: 150,
 
@@ -36,7 +36,7 @@ const CONFIG = {
   // TIMING & INPUT
   GAMEPAD_DEADZONE: 0.1,
 
-  FLICK_THRESHOLD: 30,
+  FLICK_THRESHOLD: 20,
   FLICK_OFFSET: 20,
   LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD: 0.96,
 
@@ -54,6 +54,17 @@ const CONFIG = {
     'ok': 40,
     'bad': 20,
   },
+
+  SHORT_ANIMATION: 100, // ms
+  LONG_ANIMATION: 300,
+  LONGER_ANIMATION: 500,
+
+  DIFFICULTY_MAP: {
+    1: "Easy",
+    2: "Normal",
+    3: "Hard",
+    4: "Expert",
+  }
 };
 // translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
 // calc((var(--sr) / 2) - var(--tlr))
@@ -76,10 +87,16 @@ class GameState {
     try {
       this.timeSheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/time_${this.crossDetails.map}`, 'utf8'));
     } catch (error) { }
-    // document.body.style.backgroundImage = `url('./Beatmaps/${this.crossDetails.location}/${this.information.cover}') no-repeat center center fixed`;
-
+    document.getElementById('songArt').style.backgroundImage = `url('../Beatmaps/${this.crossDetails.location}/${this.information.cover}')`;
+    document.getElementById('songName').innerHTML = this.information.name;
+    document.getElementById('songArtist').innerHTML = this.information.artist;
+    document.getElementById('difficulty').innerHTML = `${CONFIG.DIFFICULTY_MAP[this.crossDetails.difficulty]} - ${this.information.ratings[this.crossDetails.difficulty]}`;
+    document.getElementById('difficultyTag').classList.add(CONFIG.DIFFICULTY_MAP[this.crossDetails.difficulty].toLowerCase());
     this.combo = 0;
     this.score = 0;
+
+    let lastNote = this.sheet[this.sheet.length - 1];
+    this.endsAt = lastNote.time + (lastNote.duration || (lastNote.time - lastNote.flickEnd) || (lastNote.time - lastNote.endsAt) || 0) + CONFIG.ACCEPTANCE_THRESHOLD;
 
     this.keysPressed = {};
 
@@ -90,6 +107,14 @@ class GameState {
     this.snapToInterval = true;
 
     this.displayedNotes = [];
+
+    this.scoringPad = {
+      perfect: [],
+      great: [],
+      ok: [],
+      bad: [],
+      miss: []
+    }
 
     this.gamepad = null;
 
@@ -121,6 +146,16 @@ class GameState {
       previewers: document.querySelectorAll('.previewer_parent'),
       noteContainerFrame: document.getElementById('noteContainerFrame'),
       perfectionIndicator: document.getElementById('perfectionIndicator'),
+      pauseButton: document.getElementById('pauseButton'),
+      scoreText: document.getElementById('scoreText'),
+      scoreNumber: document.getElementById('scoreNumber'),
+      songName: document.getElementById('songName'),
+      songArtist: document.getElementById('songArtist'),
+      songData: document.getElementById('songData'),
+      songArt: document.getElementById('songArt'),
+      backButton: document.getElementById('backButton'),
+      restartButton: document.getElementById('restartButton'),
+      controls: document.getElementById('controls'),
     };
 
     const rect = this.elements.container.getBoundingClientRect();
@@ -152,6 +187,7 @@ class GameState {
     this.audioSource.connect(this.audioContext.destination);
     this.audioSource.start(0);
     this.audioStartTime = this.audioContext.currentTime;
+    this.paused = false;
   }
 
   get currentTime() {
@@ -628,7 +664,6 @@ class InputSystem {
     // let nextAngleConditionMet = !(this.gameState.rawRotations[0] < minRotationToSnapToNextAngleForAngle1);
 
     // if (!prevAngleConditionMet && !nextAngleConditionMet) return
-    console.log(this.gameState.rawRotations[0], minRotationToSnapToNextAngleForAngle1, minRotationToSnapToPreviousAngleForAngle1)
     // console.log(this.angleDiff(this.gameState.rawRotations[0], minRotationToSnapToNextAngleForAngle1), this.angleDiff(this.gameState.rawRotations[0], minRotationToSnapToPreviousAngleForAngle1))
     if (!this.isAngleBetween(
       this.gameState.rawRotations[0],
@@ -1211,12 +1246,12 @@ class RenderingSystem {
         }
         const input = note.input;
         const desiredFlickOffset = note.largeFlick ? Number(note.direction) * CONFIG.ANGLE_MODIFIER : (CONFIG.FLICK_OFFSET * (note.flickDirection == "2" ? 1 : -1));
-        const desiredAngle = note.flickStart + desiredFlickOffset;
+        const desiredAngle = this.inputSystem.normalizeAngle(note.flickStart + desiredFlickOffset);
         const currentAngle = this.inputSystem.normalizeAngle(this.gameState.rawRotations[input]);
         const flickDiff = currentAngle - desiredAngle;
         const desiredThreshold = CONFIG.FLICK_THRESHOLD;
 
-        if (Math.abs(flickDiff) < desiredThreshold && (note.largeFlick ? this.gameState.centerDistance[input] > CONFIG.LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD : true)) {
+        if (Math.abs(flickDiff) > desiredThreshold && (note.largeFlick ? this.gameState.centerDistance[input] > CONFIG.LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD : true)) {
           note.done = true;
           this.inputSystem.releaseFlick(note);
         }
@@ -1468,7 +1503,8 @@ class ScoringSystem {
 
     this.gameState.elements.perfectionIndicator.style.backgroundImage = `url('./Assets/Scoring/${accuracy}.svg')`;
     this.gameState.elements.perfectionIndicator.style.animationName = 'none'
-    requestAnimationFrame(() => { this.gameState.elements.perfectionIndicator.style.animationName = null })
+    requestAnimationFrame(() => { this.gameState.elements.perfectionIndicator.style.animationName = null });
+    this.gameState.scoringPad[accuracy].push(noteTime - currentTime);
     return accuracy;
   }
 
@@ -1539,7 +1575,9 @@ class RhythmGame {
 
   startGameLoop() {
     const gameLoop = (timestamp) => {
+      if (this.gameState.paused || this.gameState.ended) return;
       const currentTime = this.gameState.currentTime;
+      if (currentTime > this.gameState.endsAt) return this.endGame();
 
       // Update gamepad input
       this.inputSystem.updateGamepadInput();
@@ -1557,6 +1595,87 @@ class RhythmGame {
 
     requestAnimationFrame(gameLoop);
   }
+
+  pauseGame() {
+    if (this.gameState.paused) return this.unpauseGame();
+    this.gameState.audioContext.suspend();
+    this.gameState.paused = true;
+    this.gameState.elements.noteContainerFrame.parentElement.parentElement.style.opacity = 0;
+    this.gameState.elements.noteContainerFrame.parentElement.style.scale = 0.9;
+    this.gameState.elements.pauseButton.firstElementChild.classList.remove('pause');
+    this.gameState.elements.pauseButton.firstElementChild.classList.add('play');
+    this.gameState.elements.songData.style.scale = 2;
+    this.gameState.elements.songArt.classList.add('viewing');
+    this.gameState.elements.backButton.classList.remove('hiddenButton');
+    this.gameState.elements.restartButton.classList.remove('hiddenButton');
+  }
+
+  unpauseGame(force) {
+    if (!force && this.gameState.ended) return;
+    this.gameState.audioContext.resume();
+    this.gameState.paused = false;
+    this.gameState.elements.noteContainerFrame.parentElement.parentElement.style.opacity = 1;
+    this.gameState.elements.noteContainerFrame.parentElement.style.scale = 1;
+    this.gameState.elements.pauseButton.firstElementChild.classList.remove('play');
+    this.gameState.elements.pauseButton.firstElementChild.classList.add('pause');
+    this.gameState.elements.songData.style.scale = 1;
+    this.gameState.elements.songArt.classList.remove('viewing');
+    this.gameState.elements.backButton.classList.add('hiddenButton');
+    this.gameState.elements.restartButton.classList.add('hiddenButton');
+    this.startGameLoop();
+  }
+
+  endGame() {
+    this.gameState.elements.controls.style.opacity = 0;
+    this.gameState.elements.controls.style.scale = 0.9;
+    this.gameState.ended = true;
+    this.gameState.elements.noteContainerFrame.parentElement.parentElement.style.opacity = 0;
+    setTimeout(() => {
+      document.getElementById('buttons').remove();
+      this.gameState.elements.controls.classList.add('end_controls');
+      this.gameState.elements.songArt.classList.add('viewing');
+      document.getElementById('gradeParent').classList.add('end_gradeParent');
+    }, CONFIG.LONG_ANIMATION);
+    setTimeout(() => {
+      this.gameState.elements.controls.style.opacity = 1;
+      this.gameState.elements.controls.style.scale = 1;
+      this.gameState.elements.scoreText.classList.add('end_scoreText');
+      this.gameState.elements.scoreNumber.classList.add('end_scoreNumber');
+      let scoreStats = document.getElementById('scoreStats');
+      let totalNotesHit = this.gameState.scoringPad.perfect.length + this.gameState.scoringPad.great.length + this.gameState.scoringPad.ok.length + this.gameState.scoringPad.bad.length;
+      let totalNotes = this.gameState.sheet.length;
+      scoreStats.innerHTML = `
+        <div class="scoreIndicator perfect"><span>PERFECT</span>${this.gameState.scoringPad.perfect.length} </div>
+        <div class="scoreIndicator great"><span>GREAT</span>${this.gameState.scoringPad.great.length} <span>${this.gameState.scoringPad.great.filter(note => note < 0).length} early, ${this.gameState.scoringPad.great.filter(note => note > 0).length} late</span></div>
+        <div class="scoreIndicator okay"><span>OKAY</span>${this.gameState.scoringPad.ok.length} <span>${this.gameState.scoringPad.ok.filter(note => note < 0).length} early, ${this.gameState.scoringPad.ok.filter(note => note > 0).length} late</span></div>
+        <div class="scoreIndicator bad"><span>BAD</span>${this.gameState.scoringPad.bad.length} <span>${this.gameState.scoringPad.bad.filter(note => note < 0).length} early, ${this.gameState.scoringPad.bad.filter(note => note > 0).length} late</span></div>
+        <div class="scoreIndicator miss"><span>MISS</span>${this.gameState.scoringPad.miss.length}</div>
+      `
+      document.getElementById('grade').innerHTML = `
+      <btext><span>Max Combo</span> Unknown</btext><br>
+      <btext><span>${(totalNotesHit / totalNotes) * 100}%</span> ${totalNotesHit}/${totalNotes}</btext>
+      <btextm style="color: var(--perfect); border-color: var(--perfect);">A</btextm>
+      `
+      
+      document.getElementById('songProcedureControls').innerHTML = `
+      <btn>Replay</btn>
+      <btn onclick="location.href = '../Picker/LevelPicker.html'">Home</btn>
+      `
+    }, CONFIG.LONG_ANIMATION * 2);
+  }
+
+  uninitializeGame(callback) {
+    document.body.style.backgroundRepeat = 'no-repeat';
+    document.body.style.backgroundColor = 'black';
+    document.body.style.backgroundPositionY = '100vh';
+    this.gameState.elements.controls.style.opacity = 0;
+    document.body.style.animation = 'none';
+    setTimeout(() => {
+      if (callback) callback();
+      window.location.href = '../Picker/LevelPicker.html'
+    }, 500);
+  }
+
 }
 
 // ============================================================================

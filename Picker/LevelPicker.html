@@ -4,25 +4,31 @@
 
 <body>
 
-  <div class="flexbox" style="width: 100vw; height: 100vh;">
+  <div class="flexbox" id="picker-overlay">
     <div id="songs" class="flexbox">
       <btextm class="big" style="padding: 15px; display: block; height: 50px;">Levels <span id="amount"
           class="small"></span></btextm>
       <div id="levels" class="masked-overflow" style="overflow-x: auto;"></div>
     </div>
-    <div id="song">
-      <div id="song-cover" class="details-cover"></div>
-      <div id="song-details">
-        <btextm id="song-title">Song</btextm>
-        <btextm id="song-credits"></btextm><br>
+    <div id="song" class="flexbox">
+      <div class="song-details-container">
+        <div id="song-cover" class="details-cover"></div>
+        <div id="song-details">
+          <btextm id="song-title">Song</btextm>
+          <btextm id="song-credits"></btextm><br>
+        </div>
       </div>
-      <div style="margin-top: calc(100vh - (410px + 153px + 31px + 50px + 82px))"></div>
-      <div id="song-difficulties" class="flexbox"></div>
-      <btn id="play-button" onclick="play()"><btextm style="z-index: 1000; position: relative;">Play</btextm></btn>
+      <div class="song-details-container" style="width: 100%; padding-bottom: 20px; margin: auto; margin-bottom: 0px;">
+        <div id="song-difficulties" class="flexbox"></div>
+        <btn id="play-button" onclick="play()">
+          <btextm style="z-index: 1000; position: relative;">Play</btextm>
+        </btn>
+      </div>
     </div>
   </div>
 </body>
 
 <script src="./script.js"></script>
+<script src="../Utilities/global.js"></script>
 
 </html>

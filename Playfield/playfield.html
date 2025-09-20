@@ -1,66 +1,102 @@
 <html>
 <link rel="stylesheet" href="../Core/main.css">
-<div id="overlay">
-  <div style="margin-left: calc(50vw - var(--raw-size) / 2); margin-top: calc(50vh - var(--raw-size) / 2);">
-    <div id="noteContainer" class="comeIn">
-      <div id="noteContainerFrame"></div>
-      <div id="cursor1" class="cursor"
-        style="width: var(--raw-size); height: var(--raw-size); position: absolute; scale: 1.1;">
-        <div id="cursor" style="background: red; margin-left: auto; margin-right: auto;">
-        </div>
-      </div>
-      <div id="cursor2" class="cursor"
-        style="width: var(--raw-size); height: var(--raw-size); position: absolute; scale: 1.2;">
-        <div id="cursor" style="background: blue; margin-left: auto; margin-right: auto;">
-        </div>
-      </div>
-      <div class="previewer_parent">
-        <div id="previewer0" class="previewer" style="--i: 0;">
-          <div class="hitAlready"></div>
-        </div>
-      </div>
-      <div class="previewer_parent">
-        <div id="previewer1" class="previewer" style="--i: 1;">
-          <div class="hitAlready"></div>
-        </div>
-      </div>
-      <div class="previewer_parent">
-        <div id="previewer2" class="previewer" style="--i: 2;">
-          <div class="hitAlready"></div>
-        </div>
-      </div>
-      <div class="previewer_parent">
-        <div id="previewer3" class="previewer" style="--i: 3;">
-          <div class="hitAlready"></div>
-        </div>
-      </div>
-      <div class="previewer_parent">
-        <div id="previewer4" class="previewer" style="--i: 4;">
-          <div class="hitAlready"></div>
-        </div>
-      </div>
-      <div class="previewer_parent">
-        <div id="previewer5" class="previewer" style="--i: 5;">
-          <div class="hitAlready"></div>
-        </div>
-      </div>
-      <div class="frame" id="centerContainer"></div>
-      <div class="center flexbox" style="--i: 0;">
-        <div style="margin: auto;">
-          <btextm class="small">Combo</btextm>
-          <btextm id="comboDisplay">0</btextm>
-        </div>
-      </div>
-    </div>
 
+<body>
+  <div id="controls" class="flexbox">
+    <div id="buttons">
+      <btn id="pauseButton" onclick="game.pauseGame()">
+        <div class="image pause" style="width: 50px; aspect-ratio: 1/1;"></div>
+      </btn>
+      <btn id="restartButton" class="hiddenButton" onclick="game.restart()">
+        <div class="image reset" style="width: 50px; aspect-ratio: 1/1;"></div>
+      </btn>
+      <btn id="backButton" class="hiddenButton" onclick="game.uninitializeGame()">
+        <div class="image back" style="width: 50px; aspect-ratio: 1/1;"></div>
+      </btn>
+    </div>
+    <div style="width: fit-content; margin-right: auto; display: block;" id="gradeParent">
+      <div id="grade" style="width: fit-content; height: fit-content;"></div>
+
+      <btextm id="scoreText">SCORE</btextm>
+      <btextm id="scoreNumber" class="flexbox">
+        <div id="unusedScoreNumbers">00000</div>
+        <div id="usedScoreNumbers">0</div>
+      </btextm>
+      <div id="scoreStats" style="width: fit-content; height: fit-content;"></div>
+    </div>
+    <btextm id="songData">
+      <div class="flexbox" style="width: fit-content;">
+        <div id="songName"></div>
+        <span id="difficultyTag" class="difficulty-dot wideDot flexbox ${difficultyMap[i].toLowerCase()}">
+          <difficulty id="difficulty"></difficulty>
+        </span>
+      </div>
+      <div id="songArtist"></div>
+      <div id="songArt" class="image"></div>
+      <div id="songProcedureControls" style="position: absolute;"></div>
+    </btextm>
   </div>
-  <div id="perfectionIndicator"></div>
-  <a class="comeIn" href="../Home/homescreen.html">homes</a>
-  <a class="comeIn" href="../Misc/waccastyle.html">wacca</a>
-  <a class="comeIn" onclick="game.gameState.pauseAudio()">pause</a>
-</div>
+  <div id="overlay">
+    <div id="topLevelContainer">
+      <div id="noteContainer">
+        <div id="noteContainerFrame"></div>
+        <div id="cursor1" class="cursor">
+          <div id="cursor">
+          </div>
+        </div>
+        <div id="cursor2" class="cursor">
+          <div id="cursor">
+          </div>
+        </div>
+        <div class="previewer_parent">
+          <div id="previewer0" class="previewer" style="--i: 0;">
+            <div class="hitAlready"></div>
+          </div>
+        </div>
+        <div class="previewer_parent">
+          <div id="previewer1" class="previewer" style="--i: 1;">
+            <div class="hitAlready"></div>
+          </div>
+        </div>
+        <div class="previewer_parent">
+          <div id="previewer2" class="previewer" style="--i: 2;">
+            <div class="hitAlready"></div>
+          </div>
+        </div>
+        <div class="previewer_parent">
+          <div id="previewer3" class="previewer" style="--i: 3;">
+            <div class="hitAlready"></div>
+          </div>
+        </div>
+        <div class="previewer_parent">
+          <div id="previewer4" class="previewer" style="--i: 4;">
+            <div class="hitAlready"></div>
+          </div>
+        </div>
+        <div class="previewer_parent">
+          <div id="previewer5" class="previewer" style="--i: 5;">
+            <div class="hitAlready"></div>
+          </div>
+        </div>
+        <div class="frame" id="centerContainer"></div>
+        <div class="center flexbox" style="--i: 0;">
+          <div style="margin: auto;">
+            <btextm id="comboText" class="small">Combo</btextm>
+            <btextm id="comboDisplay">0</btextm>
+          </div>
+        </div>
+      </div>
+
+    </div>
+    <div id="perfectionIndicator"></div>
+    <!-- <a class="comeIn" href="../Home/homescreen.html">homes</a>
+    <a class="comeIn" href="../Home/homescreen.html">wacca</a>
+    <a class="comeIn" onclick="game.gameState.pauseAudio()">pause</a> -->
+  </div>
+</body>
 <script src="script.js"></script>
 <script src="../wacca.js"></script>
+<script src="../Utilities/global.js"></script>
 <!-- <script src="../waccam.js"></script> -->
 
 </html>
