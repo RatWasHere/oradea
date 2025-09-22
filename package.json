@@ -3,6 +3,7 @@
     "oceanic.js": "^1.12.0",
     "onframe": "^0.1.0",
     "osu-mania-parser": "^1.0.0",
+    "slim-select": "^2.12.1",
     "steamworks.js": "^0.4.0"
   },
   "devDependencies": {

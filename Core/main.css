@@ -1718,7 +1718,7 @@ difficulty {
   font-family: 'Mono';
   position: fixed;
   margin-top: 300px;
-  width: 400px;
+  width: 340px;
   text-align: right;
 }
 
@@ -1786,3 +1786,37 @@ difficulty {
   margin-right: -20px;
 }
 
+
+
+input {
+  border: none !important;
+  outline: none !important;
+  font-size: 20px;
+  border-radius: 3px;
+  padding: 6px;
+  background-color: #00000070;
+  color: #FFFFFF;
+}
+::selection {
+  background: #000000;
+  color: #FFFFFF;
+}
+
+.dark-btn {
+  background: #00000050;
+}
+
+.dark-btn:hover {
+  background: #00000090;
+}
+
+.dark-btn:active {
+  background: #00000030;
+}
+
+select {
+  outline: none !important;
+  width: 100%;
+  display: block;
+  font-size: 20px;
+}

@@ -334,7 +334,8 @@ body {
   margin-left: 0px;
   font-size: 12px;
 }
-.difficulty-dot.clickable > div {
+
+.difficulty-dot.clickable>div {
   white-space: nowrap;
 }
 
@@ -416,7 +417,59 @@ body {
   0% {
     background: #000000;
   }
+
   100% {
     background: #00000000;
   }
+}
+
+#song-controls {
+  width: 100%;
+  position: fixed;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 15px;
+  margin-top: calc(100vh - 62px);
+  margin-bottom: 10px;
+}
+
+#song-controls > #search-parent > #search {
+  background: none !important;
+  padding: 0px;
+  width: calc(100% - 37px);
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: 8px;
+  display: block;
+}
+
+#song-controls> #search-parent > .image.search {
+  height: 25px;
+  width: 25px;
+  margin: 0px;
+  margin-top: auto;
+  margin-bottom: auto;
+  opacity: 0.5;
+  display: block;
+  background: url(../Assets/Misc/search.svg);
+}
+
+#song-controls > #search-parent {
+  height: 27px;
+  width: 250px;
+  margin-right: auto;
+  border-radius: 5px;;
+  padding: 4px !important;
+  align-items: start;
+  background: #00000050;
+}
+
+#amount {
+  opacity: 0.5;
+  font-size: 20px;
+  font-family: 'Mono';
+  margin-left: 15px;
+  margin-top: 10px;
+  text-align: left;
+  margin-right: auto;
 }

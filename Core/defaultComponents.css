@@ -1,0 +1,234 @@
+
+.dropdown_option {
+  width: calc(100% - 7.5px);
+
+  font-size: 20px;
+  padding-left: 24px;
+  padding-bottom: 4px;
+  padding-top: 4px;
+
+  z-index: 4;
+
+  display: flex;
+  flex-direction: column;
+
+  margin-left: -16px;
+  margin-top: 0px;
+  margin-bottom: 0px;
+
+  background: #00000023;
+  box-shadow: inset 0 0 2px var(--main-color);
+
+  color: #ffffff90;
+  text-align: left;
+  overflow: auto;
+  cursor: var(--pointer);
+
+  transition: all var(--fastAnimation) var(--ease-strong);
+}
+
+.dropdown > .scaleInY {
+  border-top: solid 2px #ffffff40 !important;
+  display: block;
+  margin-left: -12px;
+  padding-left: 12px;
+  height: 25px;
+  margin-top: 5px;
+  background: #00000020;
+  border-top-left-radius: var(--round-intense);
+  border-top-right-radius: var(--round-intense);
+  overflow: hidden;
+  /* width: calc(100% + 12px) !important; */
+}
+
+.dropdown_option:has(+ .scaleInY) {
+  border-bottom-left-radius: var(--round-intense);
+  border-bottom-right-radius: var(--round-intense);
+}
+
+.scaleIn
+
+.dropdown_option:hover {
+  color: #ffffff90;
+  background: #ffffff05;
+}
+
+.dropdown_option:active {
+  color: #ffffff80;
+  background: #00000030;
+}
+
+.selectBar {
+  width: var(--width-in-editor);
+  ;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  margin-left: auto;
+  margin-right: auto;
+  font-size: 18px;
+  padding-left: 24px;
+  box-shadow: inset 0 0 2px var(--main-color);
+
+  padding-right: -24px;
+  background: var(--main-color);
+  margin-top: -6px;
+  animation-name: selectbarnmt;
+  animation-duration: 0.5s;
+  border-radius: var(--round-intense);
+  cursor: text;
+  color: #ffffff90;
+  border-top-left-radius: 0px;
+  border-top-right-radius: 0px;
+  transition: all 0.3s ease;
+  overflow-x: auto !important;
+}
+
+.selectBar:hover {
+  background: var(--hover-color);
+}
+
+.selectBar:active {
+  background: var(--hover-color) !important;
+}
+
+
+.dropdown {
+  width: calc(var(--width-in-editor) - var(--dropdown-left));
+  text-align: left;
+  border-radius: var(--round-normal);
+
+  border-bottom-left-radius: 0px;
+  border-bottom-right-radius: 0px;
+
+  border-bottom: solid 2px #ffffff40;
+
+  padding-bottom: 3px;
+  padding-top: 3px;
+  padding-right: 0px;
+  padding-left: var(--dropdown-left);
+
+  margin-left: auto;
+  margin-right: auto;
+
+  display: flex;
+  flex-direction: column;
+
+  font-size: 20px;
+  color: var(--text);
+  cursor: var(--pointer) !important;
+
+  box-shadow: inset 0 0 2px #ffffff10;
+  background: var(--secondary-main);
+  backdrop-filter: blur(12px);
+  z-index: 100;
+
+  position: relative;
+
+  transition: all 0.1s ease;
+  animation-timing-function: var(--ease-strong);
+  animation-duration: var(--commonAnimation) !important;
+}
+
+.dropdown:hover:not(:has(.dropdown_option)) {
+  background: var(--secondary-hover);
+}
+
+.dropdown:has(.dropdown_option) {
+  background: var(--primary);
+}
+
+.dropdown:active {
+  background: var(--secondary-active);
+}
+
+
+.toggle {
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: center;
+  box-shadow: inset 0 0 2px #ffffff10 !important;
+  background: var(--secondary-main);
+  transition: all 0.06s ease;
+  cursor: var(--pointer);
+  width: calc(var(--width-in-editor) - 6px);
+  margin-left: auto;
+  margin-right: auto;
+  padding: 3px;
+  padding-top: 7.5px;
+  padding-bottom: 7.5px;
+  border-radius: var(--round-normal);
+  margin-bottom: 6px;
+  margin-top: 6px;
+}
+
+.toggle:hover {
+  background: var(--secondary-hover) !important;
+}
+
+.toggle:active {
+  background: var(--secondary-active) !important;
+}
+
+.toggle:hover>.toggle_bar>.toggle_button_true {
+  transform: scaleX(1.2) translateX(2px);
+}
+
+.toggle:hover>.toggle_bar>.toggle_button_false {
+  transform: scaleX(1.2) translateX(-2px);
+}
+
+.toggle:active>.toggle_bar>.toggle_button_false {
+  transform: scaleX(1.4) translateX(-3px);
+}
+
+.toggle:active>.toggle_bar>.toggle_button_true {
+  transform: scaleX(1.4) translateX(4px);
+}
+
+.toggle_bar {
+  width: var(--toggle-bar-width);
+  height: var(--toggle-bar-height);
+  background: var(--main-color);
+  border-radius: var(--round-normal);
+  margin-left: 6px;
+  margin-right: 6px;
+}
+
+.toggle_tail {
+  height: var(--toggle-button-width);
+  cursor: pointer;
+  margin-top: var(--toggle-button-top);
+  width: var(--toggle-button-width);
+  background: #FFFFFF25;
+  border-radius: var(--round-normal);
+  backdrop-filter: blur(12px);
+  /* This is here because you can see the bar without it. */
+  cursor: default !important;
+}
+
+.toggle_button_false_pre {
+  margin-left: var(--toggle-button-marginLeft);
+  scale: 0.9;
+}
+
+.toggle_button_true_pre {
+  margin-left: var(--toggle-button-marginRight);
+  scale: 0.9;
+}
+
+.toggle_tail_animation_true_to_false {
+  scale: 1;
+}
+
+.toggle_tail_animation_false_to_true {
+  scale: 1;
+}
+
+.toggle_button_false {
+  scale: 1;
+}
+
+.toggle_button_true {
+  scale: 1;
+}

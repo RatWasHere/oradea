@@ -1,0 +1,156 @@
+:root {
+  --difficulty-1: #9dff0050;
+  --difficulty-2: #fffb0050;
+  --difficulty-3: #ff000050;
+  --difficulty-4: #ff00ff50;
+
+}
+
+body {
+  background: linear-gradient(130deg, #000000, #131313) !important;
+  background-repeat: none !important;
+  animation: none !important;
+  margin-left: 0px;
+  margin-top: 0px;
+  width: 100vw;
+}
+
+#search {
+  width: 100%;
+  background: #ffffff20;
+}
+
+#titlebar {
+  background-color: #FFFFFF10;
+  padding: 5px;
+}
+
+#titlebar>btext {
+  font-size: 25px;
+  font-family: 'Modern';
+  line-height: 30px !important;
+  display: block;
+  margin-right: auto;
+  margin-left: 10px;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+#titlebar>btext>span {
+  opacity: 0.5;
+  font-size: 14px;
+}
+
+#titlebar>btn {
+  font-size: 20px;
+  font-family: 'Moderno';
+  padding: 5px;
+  width: fit-content;
+}
+
+#workshop_container {
+  height: calc(100% - 38px);
+  width: 100%;
+}
+
+#query {
+  height: calc(100% - 15px);
+  margin-top: 7.5px;
+  margin-left: 7.5px;
+  width: 270px;
+  border-radius: 5px;
+  background-color: #FFFFFF18;
+}
+#query > #search {
+  width: calc(100% - 10px);
+  margin: auto;
+  display: block;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.label {
+  margin-left: 0px;
+  margin-top: 5px;
+  display: block;
+  text-align: left;
+}
+
+#results {
+  height: calc(100% - 25px);
+  margin-top: 7.5px;
+  margin-left: 7.5px;
+  margin-right: 7.5px;
+  width: 597.5px;
+  padding: 5px;
+  border-radius: 5px;
+  margin-right: auto;
+  background-color: #FFFFFF18;
+}
+
+#searchHeader {
+  font-size: 24px;
+  opacity: 0.9;
+  margin-left: 10px;
+  margin-top: 3px;
+  display: block;
+}
+
+#query > .separator {
+  width: calc(100% - 10px) !important;
+  margin: auto;
+}
+
+#searchIcon, #sortIcon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+  margin-right: 5px;
+  margin-left: 7.5px;
+}
+#searchIcon {
+  background: url('../Assets/Misc/search.svg');
+}
+#sortIcon {
+  background: url('../Assets/Misc/sort.svg');
+}
+
+#filterParent {
+  width: calc(100% - 10px) !important;
+  margin: auto;
+}
+
+.workshopItem {
+  width: calc(100% - 10px) !important;
+  margin: auto;
+  padding: 5px;
+  border-radius: 5px;
+  background: #FFFFFF10;
+  justify-content: start;
+}
+
+.worskhopItemPreview {
+  width: 120px;
+  height: 120px;
+  background-size: cover;
+  border-radius: 3px;
+}
+
+.workshopItemDetails {
+  padding-left: 10px;
+  padding-top: 5px;
+  max-width: calc(100% - 210px)
+}
+
+.workshopItemName {
+  font-family: 'Modern';
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 23px;
+}
+
+.workshopItemDescription {
+  font-size: 18px;
+  opacity: 0.5;
+}

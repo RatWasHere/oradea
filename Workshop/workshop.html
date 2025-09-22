@@ -1,0 +1,34 @@
+<html>
+<link rel="stylesheet" href="../Core/main.css">
+<link rel="stylesheet" href="../Core/defaultComponents.css">
+<link rel="stylesheet" href="../Core/slimselect.css">
+<link rel="stylesheet" href="./style.css">
+
+<body>
+  <div id="titlebar" class="flexbox">
+    <btext>Workshop <span>ORADEA</span></btext>
+    <btn>X</btn>
+  </div>
+  <div class="flexbox" id="workshop_container">
+    <div id="query">
+      <btext class="label"><span class="image search" id="searchIcon"></span>Search</btext>
+      <input id="search" placeholder="Start typing...">
+      <btext class="label"><span class="image sort" id="sortIcon"></span>Sort By</btext>
+      <div id="filterParent">
+        <select id="filter">
+          <option>Hewwo</option>
+          <option>Hewwo2</option>
+        </select>
+      </div>
+      <btn onclick="startUpload()">Upload Folder</btn>
+    </div>
+    <div id="results"></div>
+  </div>
+</body>
+
+<script src="../Utilities/global.js"></script>
+<script src="../Utilities/defaultComponents.js"></script>
+<script src="../Core/slimselect.min.js"></script>
+<script src="./script.js"></script>
+
+</html>

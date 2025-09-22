@@ -1,4 +1,3 @@
-const fs = require('fs');
 const steamworks = require('steamworks.js');
 // let app = steamworks.init(3994990);
 // app.input.init();
@@ -16,13 +15,13 @@ const CONFIG = {
 
   PREVIEW_COUNT: 6,
   SNAP_INTERVAL: 60, // 360/6 = 6 (Segments)
-  SNAP_EXTENSION: 17.5, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
+  SNAP_EXTENSION: 21, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
 
   NOTE_RADIUS: 150,
 
   SCALE_DURATION: 0,
 
-  NOTE_PREVIEW_DELAY: 600,
+  NOTE_PREVIEW_DELAY: 480,
   CREATE_AT_DISTANCE_OF: 0,
 
   // ===== CONTAINERS =====
@@ -624,8 +623,8 @@ class InputSystem {
   }
 
   updateGamepadButtons(gamepad) {
-    const leftTrigger = gamepad.buttons[6]?.pressed;
-    const rightTrigger = gamepad.buttons[7]?.pressed;
+    const leftTrigger = gamepad.buttons[6]?.pressed || gamepad.buttons[4]?.pressed;
+    const rightTrigger = gamepad.buttons[7]?.pressed || gamepad.buttons[5]?.pressed;
 
     this.updateTriggerState('w', leftTrigger, 0);
     this.updateTriggerState('s', rightTrigger, 1);
@@ -759,6 +758,7 @@ class InputSystem {
       if (!note.element || note.done) return false;
 
       const matchesInput = !note.requiredInput || note.requiredInput === (laneIndex + 1);
+      const matchesTime = (note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD;
       const inArc = this.isInArc(note, rotation);
 
       return matchesInput && inArc;
@@ -1548,7 +1548,7 @@ class RhythmGame {
     await this.gameState.initializeAudio();
 
     // Load hit sound(s) once
-    const hitPath = './Assets/hit.mp3';
+    const hitPath = './Assets/hit_normal.mp3';
     try {
       const hitFile = fs.readFileSync(hitPath);
       const hitArray = hitFile.buffer.slice(hitFile.byteOffset, hitFile.byteOffset + hitFile.length);

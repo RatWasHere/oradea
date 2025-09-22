@@ -1,3 +1,4 @@
+const fs = require('fs');
 function dismissContent(content) {
   if (!settingsFS.existsSync('./Dismissed Content')) {
     settingsFS.mkdirSync('./Dismissed Content')
@@ -13,3 +14,9 @@ window.onresize = () => {
   window.innerWidth;
   window.innerHeight;
 }
+
+document.addEventListener('keydown', (e) => {
+  if (e.key == 'Tab') return e.preventDefault();
+})
+
+const ipcRenderer = require('electron').ipcRenderer;

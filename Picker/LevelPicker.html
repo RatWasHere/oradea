@@ -6,9 +6,27 @@
 
   <div class="flexbox" id="picker-overlay">
     <div id="songs" class="flexbox">
-      <btextm class="big" style="padding: 15px; display: block; height: 50px;">Levels <span id="amount"
-          class="small"></span></btextm>
+      <span id="amount"></span>
       <div id="levels" class="masked-overflow" style="overflow-x: auto;"></div>
+      <div id="song-controls" class="flexbox">
+        <btn class="flexbox dark-btn" onclick="location.href = '../Home/homescreen.html'"
+          style="margin-left: 0px; margin-right: 10px;">
+          <btext>Home</btext>
+        </btn>
+        <btn onclick="ipcRenderer.send('openWorkshop')" class="flexbox dark-btn" style="margin-left: 0px; margin-right: 10px;">
+          <btext>Workshop</btext>
+        </btn>
+        <btn onclick="location.href = '../Misc/waccastyle.html'" class="flexbox dark-btn" style="margin-left: 0px; margin-right: 10px;">
+          <btext>Workshop</btext>
+        </btn>
+        <btn class="flexbox dark-btn" style="margin-left: 0px; margin-right: 10px;">
+          <btext>Sort</btext>
+        </btn>
+        <div id="search-parent" class="flexbox">
+          <div class="image search"></div>
+          <input id="search" placeholder="Search...">
+        </div>
+      </div>
     </div>
     <div id="song" class="flexbox">
       <div class="song-details-container">

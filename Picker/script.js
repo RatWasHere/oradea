@@ -24,7 +24,7 @@ for (let i in files) {
 let chosenSong = 0;
 let levelsDisplay = document.getElementById('levels')
 
-document.getElementById('amount').innerHTML = `${levels.length} Charts`;
+document.getElementById('amount').innerHTML = `${levels.length} Songs`;
 
 let difficultyMap = {
   1: "Easy",

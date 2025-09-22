@@ -1,5 +1,5 @@
 {
-  "location": "Sage",
-  "difficulty": "2",
+  "location": "Igaku",
+  "difficulty": 2,
   "map": "map.json"
 }
