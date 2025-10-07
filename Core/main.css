@@ -48,6 +48,8 @@ body {
   --okay: #E2CF63;
   --bad: #FFB272;
   --miss: #FD7575;
+  
+  --controller-display-state: none;
 }
 
 .line {
@@ -553,7 +555,7 @@ body {
 }
 
 .m {
-  font-family: 'Moderno';
+  font-family: 'Moderno' !important;
 }
 
 
@@ -1362,6 +1364,14 @@ a {
   will-change: height;
   /* mask: linear-gradient(to to p, black calc(var(--progression) * 1%), transparent 0%) no-repeat cover; */
 }
+.trace-3 {
+  /* --progression: 0; */
+  background: url('../Assets/Headers/Long\ Flick\ Straight.svg') no-repeat;
+  /* clip-path: inset(calc(var(--progression) * 100%) 0 0 0); */
+  height: calc(var(--progression) * 100%);
+  will-change: height;
+  /* mask: linear-gradient(to to p, black calc(var(--progression) * 1%), transparent 0%) no-repeat cover; */
+}
 
 @keyframes fade_in {
   0% {
@@ -1819,4 +1829,36 @@ select {
   width: 100%;
   display: block;
   font-size: 20px;
+}
+
+
+.controller_selectable.selected {
+  outline: 3px solid #FFFFFF50;
+  box-shadow: 0px 0px 10px 10px #FFFFFF50;;
+  border-radius: 6px;
+}
+
+.visible_only_with_controller::before {
+  content: '';
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background: url('../Assets/bg.png');
+  display: var(--controller-display-state);
+  margin: auto;
+}
+
+.popover {
+  width: 900px;
+  border-radius: 5px;
+  height:fit-content;
+  padding: 10px;
+  margin-left: auto; margin-right: auto;
+  background: #00000050;
+  backdrop-filter: blur(10px);
+  position: relative;
+  display: block;
+  margin-top: calc(-50vh - 100px)
 }

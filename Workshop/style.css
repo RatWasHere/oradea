@@ -124,6 +124,7 @@ body {
 .workshopItem {
   width: calc(100% - 10px) !important;
   margin: auto;
+  margin-bottom: 5px;
   padding: 5px;
   border-radius: 5px;
   background: #FFFFFF10;
@@ -153,4 +154,14 @@ body {
 .workshopItemDescription {
   font-size: 18px;
   opacity: 0.5;
+}
+
+.workshopItemControls {
+  margin-left: auto;
+}
+
+btn.buffering {
+  filter: blur(5px);
+  scale: 0.9;
+  pointer-events: none;
 }

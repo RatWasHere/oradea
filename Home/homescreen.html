@@ -11,14 +11,15 @@
     <div id="reactive_core" class="flexbox">
       <div class="image logo"></div>
     </div>
-    <btn onclick="fadeThisOut('./Picker/LevelPicker.html')" style="margin-right: 10px;">Play</btn>
-    <btn onclick="openSettings()">Settings</btn>
-    <btn style="opacity: 0.5; pointer-events: none; margin-left: 10px;">PREVIEW. NOT FINAL. CONNECT YOUR CONTROLLER.</btn>
+    <btn class="controller_selectable selected" id="play-button" onclick="fadeThisOut('./Picker/LevelPicker.html')" style="margin-right: 10px;">Play</btn>
+    <btn class="controller_selectable" onclick="openSettings()">Settings</btn>
+    <btn class="controller_selectable" style="opacity: 0.5; pointer-events: none; margin-left: 10px;">PREVIEW. NOT FINAL. CONNECT YOUR CONTROLLER.</btn>
   </div>
 </body>
 
+<script src="../Utilities/global.js"></script>
+<script src="../Utilities/controller-control.js"></script>
 <script src="./home.js"></script>
 <script src="./settings.js"></script>
-<script src="../Utilities/global.js"></script>
 
 </html>

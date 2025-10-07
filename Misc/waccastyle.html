@@ -129,6 +129,63 @@
     }
   });
 
+  // ...existing code...
+  // after building `sheet` from beatmap.hitObjects, add this block:
+  (function combineSimultaneousSliders() {
+    // group slider entries by start+end time
+    let sliderGroups = {};
+    sheet.forEach((entry, idx) => {
+      if (entry.slider) {
+        const key = `${entry.time}_${entry.sliderEnd}`;
+        sliderGroups[key] = sliderGroups[key] || [];
+        sliderGroups[key].push({ entry, idx });
+      }
+    });
+
+    // find groups of size 3 or 4
+    const combineKeys = Object.keys(sliderGroups).filter(k => {
+      const c = sliderGroups[k].length;
+      return c === 3 || c === 4;
+    });
+
+    if (combineKeys.length === 0) return;
+
+    const skip = new Set();
+    const combinedEntries = [];
+
+    combineKeys.forEach(key => {
+      const group = sliderGroups[key];
+      // mark original entries to be removed
+      group.forEach(g => skip.add(g.idx));
+
+      // compute average angle for the new long flick
+      const angles = group.map(g => g.entry.angle);
+      const avgAngle = angles.reduce((a, b) => a + b, 0) / angles.length;
+
+      const startTime = group[0].entry.time;
+      const endTime = group[0].entry.sliderEnd;
+      const distance = group.length === 3 ? 2 : 3;
+
+      combinedEntries.push({
+        time: startTime,
+        flickEnd: endTime,
+        angle: avgAngle,
+        largeFlick: true,
+        flickDirection: 1,
+        direction: distance,
+      });
+    });
+
+    // build a new sheet without the original combined sliders, then add combined entries
+    const newSheet = sheet.filter((_, idx) => !skip.has(idx));
+    newSheet.push(...combinedEntries);
+
+    // keep sheet sorted by time (and angle as tie-breaker)
+    newSheet.sort((a, b) => (a.time - b.time) || ((a.angle || 0) - (b.angle || 0)));
+
+    sheet = newSheet;
+  })();
   require('fs').writeFileSync('./Misc/map.json', JSON.stringify(sheet, null, 2));
+
 </script>
 </html>

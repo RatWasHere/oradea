@@ -13,10 +13,10 @@
           style="margin-left: 0px; margin-right: 10px;">
           <btext>Home</btext>
         </btn>
-        <btn onclick="ipcRenderer.send('openWorkshop')" class="flexbox dark-btn" style="margin-left: 0px; margin-right: 10px;">
+        <btn onclick="ipcRenderer.send('openWorkshop')" class="flexbox dark-btn controller_selectable" style="margin-left: 0px; margin-right: 10px;">
           <btext>Workshop</btext>
         </btn>
-        <btn onclick="location.href = '../Misc/waccastyle.html'" class="flexbox dark-btn" style="margin-left: 0px; margin-right: 10px;">
+        <btn onclick="location.href = '../Misc/waccastyle.html'" class="flexbox dark-btn controller_selectable" style="margin-left: 0px; margin-right: 10px;">
           <btext>Workshop</btext>
         </btn>
         <btn class="flexbox dark-btn" style="margin-left: 0px; margin-right: 10px;">
@@ -37,8 +37,9 @@
         </div>
       </div>
       <div class="song-details-container" style="width: 100%; padding-bottom: 20px; margin: auto; margin-bottom: 0px;">
+        <div class="image" style="background: url('../Assets/Glyphs/LB_LR_DIRECTIONS.svg'); width: 80px; height: 20px; opacity: 0.5; margin-left: 0px; margin-bottom: 5px;"></div>
         <div id="song-difficulties" class="flexbox"></div>
-        <btn id="play-button" onclick="play()">
+        <btn id="play-button" class="controller_selectable" onclick="play()">
           <btextm style="z-index: 1000; position: relative;">Play</btextm>
         </btn>
       </div>
@@ -46,7 +47,8 @@
   </div>
 </body>
 
-<script src="./script.js"></script>
 <script src="../Utilities/global.js"></script>
+<script src="../Utilities/controller-control.js"></script>
+<script src="./script.js"></script>
 
 </html>

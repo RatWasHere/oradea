@@ -21,7 +21,7 @@ const CONFIG = {
 
   SCALE_DURATION: 0,
 
-  NOTE_PREVIEW_DELAY: 480,
+  NOTE_PREVIEW_DELAY: 530,
   CREATE_AT_DISTANCE_OF: 0,
 
   // ===== CONTAINERS =====
@@ -37,7 +37,7 @@ const CONFIG = {
 
   FLICK_THRESHOLD: 20,
   FLICK_OFFSET: 20,
-  LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD: 0.96,
+  LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD: 0.99,
 
   // SCORING
   ACCEPTANCE_THRESHOLD: 500,
@@ -63,7 +63,9 @@ const CONFIG = {
     2: "Normal",
     3: "Hard",
     4: "Expert",
-  }
+  },
+
+  AUTOPLAY: false
 };
 // translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
 // calc((var(--sr) / 2) - var(--tlr))
@@ -536,6 +538,38 @@ class InputSystem {
     this.updateRotations(angleDegrees, angleDegrees);
   }
 
+  handleAutoplay(currentTime) {
+    let relevantNotes = this.gameState.sheet.filter(note => {
+      return note.time <= currentTime && !note.done;
+    });
+
+    // Process each relevant note
+    relevantNotes.forEach(note => {
+      if (note.slider && !note.isBeingHeld) {
+        note.blockRelease = true;
+        this.holdSlider(note);
+      } else if (note.slider && note.isBeingHeld && currentTime > note.sliderEnd) {
+        console.log(note.sliderEnd, currentTime)
+        this.releaseSlider(note);
+      } else if (note.flick && !note.done) {
+        if (note.input == undefined) {
+          this.startFlick(note, 1);
+          note.rotations = (note.angle * (CONFIG.ANGLE_MODIFIER)) + CONFIG.ANGLE_OFFSET;
+        }
+
+        if (!note.largeFlick) {
+          note.done = true;
+          this.releaseFlick(note);
+        } else if (note.largeFlick && note.flickEnd <= currentTime) {
+          note.done = true;
+          this.releaseFlick(note);
+        }
+      } else if (!note.slider && !note.flick && !note.largeFlick && !note.done) {
+        this.hitNote(note, 1);
+      }
+    });
+  }
+
   handleGamepadConnected(event) {
     if (this.gameState.phone) return
     let gamepads = navigator.getGamepads()
@@ -778,11 +812,11 @@ class InputSystem {
     note.isBeingHeld = true;
     note.wasEverHeld = true;
     note.element.parentElement.classList.add('actively_pressed_in');
-    console.log(note.element.parentElement)
     this.createNoteAura(note)
   }
 
   releaseSlider(note) {
+    if (note.blockRelease && note.sliderEnd >= this.gameState.currentTime) return;
     note.isBeingHeld = false;
     const timeDiff = Math.abs(note.sliderEnd - (this.gameState.currentTime));
     note.element.parentElement.classList.remove('actively_pressed_in');
@@ -1239,31 +1273,6 @@ class RenderingSystem {
     if (note.slider) {
       return this.updateSliderPosition(note, currentTime, noteTiming);
     } else if (note.flick || note.largeFlick) {
-      if (note.rotations) {
-
-        if (note.largeFlick) {
-          // this.inputSystem.normalizeAngle(this.inputSystem.normalizeAngle(((Number(note.angle) + Number(note.direction)) * CONFIG.ANGLE_MODIFIER)))
-        }
-        const input = note.input;
-        const desiredFlickOffset = note.largeFlick ? Number(note.direction) * CONFIG.ANGLE_MODIFIER : (CONFIG.FLICK_OFFSET * (note.flickDirection == "2" ? 1 : -1));
-        const desiredAngle = this.inputSystem.normalizeAngle(note.flickStart + desiredFlickOffset);
-        const currentAngle = this.inputSystem.normalizeAngle(this.gameState.rawRotations[input]);
-        const flickDiff = currentAngle - desiredAngle;
-        const desiredThreshold = CONFIG.FLICK_THRESHOLD;
-
-        if (Math.abs(flickDiff) > desiredThreshold && (note.largeFlick ? this.gameState.centerDistance[input] > CONFIG.LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD : true)) {
-          note.done = true;
-          this.inputSystem.releaseFlick(note);
-        }
-      } else {
-        if (note.holdable) {
-          if ((this.gameState.keysPressed['w'] && this.inputSystem.isInArc(note, this.gameState.rotations[0])) ||
-            (this.gameState.keysPressed['s'] && this.inputSystem.isInArc(note, this.gameState.rotations[1]))) {
-            const laneIndex = this.gameState.keysPressed['w'] ? 0 : 1;
-            this.inputSystem.startFlick(note, laneIndex);
-          }
-        }
-      }
       if (note.largeFlick && note.tracePath) {
         let duration = note.flickEnd - note.time;
 
@@ -1275,9 +1284,38 @@ class RenderingSystem {
         duration = Math.max(duration, CONFIG.NOTE_PREVIEW_DELAY);
         const preprogress = Math.min(Math.max((elapsed + duration) / duration, 0), 1);
         note.traceParent.style.opacity = preprogress;
-        if (note.lastProgress !== progress) {
-          note.traceParent.style.setProperty('--progression', 1 - progress);
-          note.lastProgress = progress;
+        note.traceParent.style.setProperty('--progression', 1 - progress);
+        note.lastProgress = progress;
+      }
+
+      if (note.rotations) {
+        if (note.largeFlick) {
+          let desiredRotation = this.inputSystem.normalizeAngle(((Number(note.angle) + Number(note.direction)) * CONFIG.ANGLE_MODIFIER) + CONFIG.ANGLE_OFFSET);
+          let currentRotation = this.gameState.rotations[note.input];
+          if (currentRotation == desiredRotation && this.gameState.centerDistance[note.input] > CONFIG.LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD) {
+            note.done = true;
+            this.inputSystem.releaseFlick(note);
+          }
+        } else {
+          const input = note.input;
+          const desiredFlickOffset = (CONFIG.FLICK_OFFSET * (note.flickDirection == "2" ? 1 : -1));
+          const desiredAngle = note.flickStart + desiredFlickOffset;
+          const currentAngle = this.gameState.rawRotations[input];
+          const flickDiff = currentAngle - desiredAngle;
+          const desiredThreshold = CONFIG.FLICK_THRESHOLD;
+
+          if (Math.abs(flickDiff) > desiredThreshold) {
+            note.done = true;
+            this.inputSystem.releaseFlick(note);
+          }
+        }
+      } else {
+        if (note.holdable) {
+          if ((this.gameState.keysPressed['w'] && this.inputSystem.isInArc(note, this.gameState.rotations[0])) ||
+            (this.gameState.keysPressed['s'] && this.inputSystem.isInArc(note, this.gameState.rotations[1]))) {
+            const laneIndex = this.gameState.keysPressed['w'] ? 0 : 1;
+            this.inputSystem.startFlick(note, laneIndex);
+          }
         }
       }
     } else if (note.holdable && note.time < currentTime) {
@@ -1577,7 +1615,7 @@ class RhythmGame {
     const gameLoop = (timestamp) => {
       if (this.gameState.paused || this.gameState.ended) return;
       const currentTime = this.gameState.currentTime;
-      if (currentTime > this.gameState.endsAt) return this.endGame();
+      if ((currentTime - 5000) > this.gameState.endsAt) return this.endGame();
 
       // Update gamepad input
       this.inputSystem.updateGamepadInput();
@@ -1588,6 +1626,9 @@ class RhythmGame {
       // (Global) Update global timing point
       this.timingSystem.updateGlobalTimingPoint(this.gameState.timeSheet, currentTime);
 
+      if (CONFIG.AUTOPLAY && game.inputSystem) {
+        game.inputSystem.handleAutoplay(currentTime)
+      }
 
       // Continue loop
       requestAnimationFrame(gameLoop);
@@ -1656,7 +1697,7 @@ class RhythmGame {
       <btext><span>${(totalNotesHit / totalNotes) * 100}%</span> ${totalNotesHit}/${totalNotes}</btext>
       <btextm style="color: var(--perfect); border-color: var(--perfect);">A</btextm>
       `
-      
+
       document.getElementById('songProcedureControls').innerHTML = `
       <btn>Replay</btn>
       <btn onclick="location.href = '../Picker/LevelPicker.html'">Home</btn>

@@ -1,5 +1,3 @@
-const fs = require('fs');
-
 let levels = [];
 
 let files = fs.readdirSync('./Beatmaps/');
@@ -49,15 +47,15 @@ levels.forEach((level, index) => {
     item.id = `level-${index}`
     level.difficulties = difficulties;
     item.innerHTML = `
-    <div class="song-cover" style="background-image: url('${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}/${level.information.cover}')">
+    <div class="song-cover controller_selectable" data-hitc="play()" data-highlight="highlightSong(${index})" style="background-image: url('${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}/${level.information.cover}')">
       <div class="flexbox difficulties-preview">${difficulties}</div>
     </div>
-  <div class="song-details">
-    <btextm class="song_name">${level.information.name} <span class="small">${level.information.romanizedName || ""}</span></btextm>
-    <btextm class="song_artist" style="margin-bottom: auto;">${level.information.artist}</btextm>
-  </div>
-  `
-    levelsDisplay.appendChild(item)
+    <div class="song-details">
+      <btextm class="song_name">${level.information.name} <span class="small">${level.information.romanizedName || ""}</span></btextm>
+      <btextm class="song_artist" style="margin-bottom: auto;">${level.information.artist}</btextm>
+    </div>
+    `
+    levelsDisplay.appendChild(item);
   } catch (error) { }
 });
 levelsDisplay.innerHTML += `
@@ -103,7 +101,7 @@ async function highlightSong(index) {
   let difficulties = ``;
   if (!level.information.difficulties[lastSelectedDifficulty]) lastSelectedDifficulty = Object.keys(level.information.difficulties)[0];
   for (let i in level.information.difficulties) {
-    difficulties += `<div id="difficulty-${i}" onclick="selectDifficulty(${i})" class="difficulty-dot flexbox clickable ${difficultyMap[i].toLowerCase()} ${i == lastSelectedDifficulty ? 'highlighted' : ''}"><div style="margin: auto;">${difficultyMap[i]} - ${level.information.ratings[i]}</div></div>`;
+    difficulties += `<div id="difficulty-${i}" onclick="selectDifficulty(${i})" class="difficulty-dot controller_selectable flexbox clickable ${difficultyMap[i].toLowerCase()} ${i == lastSelectedDifficulty ? 'highlighted' : ''}"><div style="margin: auto;">${difficultyMap[i]} - ${level.information.ratings[i]}</div></div>`;
   }
   document.getElementById('song-difficulties').innerHTML = difficulties;
   // Stop previous audio preview and cleanup
@@ -117,7 +115,7 @@ async function highlightSong(index) {
   const playPreview = () => {
     // Ensure this is still the current audio (user hasn't clicked another song)
     if (audio !== currentAudio) return;
-      audio.volume = 0
+    audio.volume = 0
 
     setTimeout(() => {
       audio.volume = 0.1
@@ -220,3 +218,20 @@ document.addEventListener('wheel', event => {
     highlightSong((chosenSong + levels.length - 1) % levels.length);
   }
 }, { passive: false });
+
+globalControllerActions.leftTrigger = () => {
+  let supposedDifficulty = lastSelectedDifficulty - 1
+  let difficultyElement = document.getElementById(`difficulty-${supposedDifficulty}`);
+  if (!difficultyElement) return
+  
+  selectDifficulty(supposedDifficulty);
+}
+
+
+globalControllerActions.rightTrigger = () => {
+  let supposedDifficulty = lastSelectedDifficulty + 1
+  let difficultyElement = document.getElementById(`difficulty-${supposedDifficulty}`);
+  if (!difficultyElement) return
+  
+  selectDifficulty(supposedDifficulty);
+}
