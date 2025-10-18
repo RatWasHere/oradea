@@ -6,12 +6,13 @@ function getSelectableRects() {
 }
 let currentEl = null;
 let globalControllerActions = {
-  rightTrigger: () => {
-    console.log('tt!!!')
-  },
-  leftTrigger: () => {
-    console.log('ll!!!')
-  }
+  rightTrigger: () => {},
+  leftTrigger: () => {},
+  playTrigger: () => {},
+  aTrigger: () => {},
+  bTrigger: () => {},
+  xTrigger: () => {},
+  yTrigger: () => {}
 }
 function setSelection(el) {
   if (currentEl) currentEl.classList.remove("selected");
@@ -24,6 +25,7 @@ var lastDirection = null;
 var lastDirectionTime = 0;
 
 function moveSelection(direction) {
+  if (!document.hasFocus()) return
   console.log(lastDirection, direction, Date.now() - lastDirectionTime)
   if (lastDirection == direction && Date.now() - lastDirectionTime < 220) return;
   lastDirection = `${direction}`;
@@ -70,6 +72,7 @@ function moveSelection(direction) {
 }
 
 function activateSelection() {
+  if (!document.hasFocus()) return
   if (currentEl || document.getElementsByClassName('selected').length > 0) {
     let element = (currentEl || document.getElementsByClassName('selected')[0]);
     console.log(element.dataset.hitc)
@@ -94,16 +97,18 @@ let gamepadButtonStates = {
   left: false,
   right: false
 };
-
+let areGlyphsHidden = null;
 function pollGamepads() {
   const pads = navigator.getGamepads();
   let sheet = document.styleSheets[0];
-  if (pads.filter(pad => !!pad).length === 0) {
-
+  let isZero = pads.filter(pad => !!pad).length === 0;
+  if (isZero && !areGlyphsHidden) {
+    areGlyphsHidden = true;
     // insert a rule at the end (second arg is the index)
     sheet?.insertRule(":root { --controller-display-state: none; }", sheet.cssRules.length);
     return
-  } else {
+  } else if (!isZero && areGlyphsHidden == true) {
+    areGlyphsHidden = false;
     sheet?.insertRule(":root { --controller-display-state: block; }", sheet.cssRules.length);
   };
 
@@ -163,6 +168,55 @@ function pollGamepads() {
       }
     }
 
+    // Read face buttons and Start/Play
+    const btnA = !!pad.buttons[0]?.pressed;
+    const btnB = !!pad.buttons[1]?.pressed;
+    const btnX = !!pad.buttons[2]?.pressed;
+    const btnY = !!pad.buttons[3]?.pressed;
+    const btnPlay = !!pad.buttons[9]?.pressed; // Start / Play
+
+    // Ensure lastControllerState exists and has button fields
+    if (!lastControllerState) {
+      lastControllerState = {
+        up: false, down: false, left: false, right: false,
+        shoulderLeft: false, shoulderRight: false,
+        a: false, b: false, x: false, y: false, play: false
+      };
+    } else {
+      lastControllerState.a = lastControllerState.a || false;
+      lastControllerState.b = lastControllerState.b || false;
+      lastControllerState.x = lastControllerState.x || false;
+      lastControllerState.y = lastControllerState.y || false;
+      lastControllerState.play = lastControllerState.play || false;
+    }
+
+    // Edge detection for face buttons and play/start
+    if (btnA && !lastControllerState.a) {
+      if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.aTrigger === 'function') {
+        try { globalControllerActions.aTrigger(); } catch (e) { console.error(e); }
+      }
+    }
+    if (btnB && !lastControllerState.b) {
+      if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.bTrigger === 'function') {
+        try { globalControllerActions.bTrigger(); } catch (e) { console.error(e); }
+      }
+    }
+    if (btnX && !lastControllerState.x) {
+      if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.xTrigger === 'function') {
+        try { globalControllerActions.xTrigger(); } catch (e) { console.error(e); }
+      }
+    }
+    if (btnY && !lastControllerState.y) {
+      if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.yTrigger === 'function') {
+        try { globalControllerActions.yTrigger(); } catch (e) { console.error(e); }
+      }
+    }
+    if (btnPlay && !lastControllerState.play) {
+      if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.playTrigger === 'function') {
+        try { globalControllerActions.playTrigger(); } catch (e) { console.error(e); }
+      }
+    }
+
     // D-pad / analog movement (still allow holding to move selection based on existing behavior)
     if (currentUp) moveSelection("up");
     if (currentDown) moveSelection("down");
@@ -178,14 +232,18 @@ function pollGamepads() {
       }
     }
 
-    // Save current as last for next poll (including shoulders)
+    // Save current as last for next poll (including shoulders and face buttons)
     lastControllerState.left = currentLeft;
     lastControllerState.right = currentRight;
     lastControllerState.up = currentUp;
     lastControllerState.down = currentDown;
     lastControllerState.shoulderLeft = shoulderLeft;
     lastControllerState.shoulderRight = shoulderRight;
-
+    lastControllerState.a = btnA;
+    lastControllerState.b = btnB;
+    lastControllerState.x = btnX;
+    lastControllerState.y = btnY;
+    lastControllerState.play = btnPlay;
   }
 }
 

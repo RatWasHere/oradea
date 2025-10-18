@@ -70,11 +70,11 @@
 <body>
 
   <a href="../Picker/LevelPicker.html">back</a>
-  <a href="./lightmap.html">lightmap</a>
+  <a href="./waccastyle.html">wacca</a>
 </body>
 <script>
   let parser = require('osu-mania-parser');
-  let beatmap = parser.parseFileSync('./Misc/beatmap.osu');
+  let beatmap = parser.parseFileSync('./Misc/lightmap.osu');
   let sheet = [];
   function swap(json){
   var ret = {};
@@ -87,6 +87,13 @@
   let keyPositions = swap(beatmap.keyPositions);
 
   beatmap.hitObjects.forEach((hitObject, index) => {
+    if (!sheet.find(styleParent => styleParent.time == hitObject.time)) {
+      sheet.push({
+        time: hitObject.time,
+        speed: 1,
+        offset: 0
+      })
+    }
     if (hitObject.type == "note") {
       let additionalOptions = {};
       if (hitObject.hitSound.includes("clap") && hitObject.hitSound.includes("whistle")) {
@@ -186,7 +193,7 @@
 
     sheet = newSheet;
   })();
-  require('fs').writeFileSync('./Misc/map.json', JSON.stringify(sheet, null, 2));
+  require('fs').writeFileSync('./Misc/lightmap.json', JSON.stringify(sheet, null, 2));
 
 </script>
 </html>

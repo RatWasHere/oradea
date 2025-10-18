@@ -7,6 +7,7 @@ var workshop;
 try {
   var client = steamworks.init(3994990);
   var workshop = client.workshop;
+  // client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, 'Search Workshop', '', 256, false);
 } catch (error) { }
 
 let window;
@@ -34,6 +35,8 @@ app.on('ready', () => {
       minWidth: width,
       minHeight: height,
       resizable: false,
+      movable: false,
+      center: true,
       frame: false,
       modal: true,
       parent: window,
@@ -44,8 +47,20 @@ app.on('ready', () => {
       }
     });
     workshop.loadFile('./Workshop/workshop.html');
-    workshop.focus();
-  })
+    setTimeout(() => {
+      workshop.focus();
+    }, 100);
+    electron.ipcMain.once('closeWorkshop', () => {
+      window.focus()
+      workshop.destroy();
+    });
+
+    electron.ipcMain.on('show_workshop_keyboard', () => {
+      let position = workshop.getBounds();
+      client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, position.x, position.y, position.width, position.height / 2);
+    })
+  });
+
 
 
   window.loadFile('./Home/homescreen.html');
@@ -109,7 +124,7 @@ electron.ipcMain.on('uploadFolder', () => {
 // setTimeout(() => {
 //   const HID = require('node-hid');
 //   console.log('Finding DualSense...');
-  
+
 //   function findAllDualSense() {
 //     const devices = HID.devices();
 //     return devices.filter(d =>
@@ -137,7 +152,7 @@ electron.ipcMain.on('uploadFolder', () => {
 //       return true;
 //     } catch (e1) {
 //       console.log('❌ .write() failed:', e1.message);
-      
+
 //       console.log('Attempting with .sendFeatureReport()...');
 //       try {
 //         device.sendFeatureReport(Array.from(report));
@@ -145,7 +160,7 @@ electron.ipcMain.on('uploadFolder', () => {
 //         return true;
 //       } catch (e2) {
 //         console.log('❌ .sendFeatureReport() failed:', e2.message);
-        
+
 //         // Try without report ID
 //         console.log('Attempting without report ID...');
 //         try {
@@ -163,12 +178,12 @@ electron.ipcMain.on('uploadFolder', () => {
 //   setTimeout(() => {
 //     const devices = findAllDualSense();
 //     console.log(`Found ${devices.length} DualSense device(s)`);
-    
+
 //     if (devices.length === 0) {
 //       console.error('No DualSense found!');
 //       return;
 //     }
-    
+
 //     // Log all devices
 //     devices.forEach((d, i) => {
 //       console.log(`\nDevice ${i}:`);
@@ -178,35 +193,35 @@ electron.ipcMain.on('uploadFolder', () => {
 //       console.log('  UsagePage:', d.usagePage);
 //       console.log('  Product:', d.product);
 //     });
-    
+
 //     // Try EACH device path
 //     let workingDevice = null;
-    
+
 //     for (let i = 0; i < devices.length; i++) {
 //       const deviceInfo = devices[i];
 //       console.log(`\n--- Trying device ${i} (${deviceInfo.path}) ---`);
-      
+
 //       try {
 //         const device = new HID.HID(deviceInfo.path);
 //         console.log('Device opened successfully');
-        
+
 //         // Try to write
 //         if (setTriggerResistance(device, 'right', 0x01, [0x00, 0xFF])) {
 //           console.log('🎉 THIS DEVICE WORKS!');
 //           workingDevice = device;
-          
+
 //           // Keep it active for 5 seconds
 
 //           break; // Stop trying other devices
 //         } else {
 //           device.close();
 //         }
-        
+
 //       } catch (error) {
 //         console.log(`Failed to open device ${i}:`, error.message);
 //       }
 //     }
-    
+
 //     if (!workingDevice) {
 //       console.error('\n❌ No working device found!');
 //       console.error('Possible issues:');
@@ -214,7 +229,9 @@ electron.ipcMain.on('uploadFolder', () => {
 //       console.error('  2. Need to run as Administrator (Windows)');
 //       console.error('  3. Controller is in Bluetooth mode (try USB cable)');
 //     }
-    
+
 //   }, 2000);
 
 // }, 1000);
+
+// steamworks.electronEnableSteamOverlay();

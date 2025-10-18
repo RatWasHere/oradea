@@ -251,6 +251,7 @@ function proceedTutorialFromFlick() {
   document.getElementById('tutorialProceedButton').onclick = () => {
     currentPopover.remove();
     elementsRemovedForTutorial.forEach((el) => el.classList.add('controller_selectable'));
+    dismissContent("welcome");
   }
 
   document.getElementById('noteForDemonstration').style.backgroundImage = "url('../Assets/Headers/Frame.svg')";

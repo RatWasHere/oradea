@@ -20,36 +20,8 @@ body {
   background: #ffffff20;
 }
 
-#titlebar {
-  background-color: #FFFFFF10;
-  padding: 5px;
-}
-
-#titlebar>btext {
-  font-size: 25px;
-  font-family: 'Modern';
-  line-height: 30px !important;
-  display: block;
-  margin-right: auto;
-  margin-left: 10px;
-  margin-top: auto;
-  margin-bottom: auto;
-}
-
-#titlebar>btext>span {
-  opacity: 0.5;
-  font-size: 14px;
-}
-
-#titlebar>btn {
-  font-size: 20px;
-  font-family: 'Moderno';
-  padding: 5px;
-  width: fit-content;
-}
-
 #workshop_container {
-  height: calc(100% - 38px);
+  height: calc(100% - 43px);
   width: 100%;
 }
 
@@ -129,6 +101,7 @@ body {
   border-radius: 5px;
   background: #FFFFFF10;
   justify-content: start;
+  height: 120px;
 }
 
 .worskhopItemPreview {
@@ -141,7 +114,7 @@ body {
 .workshopItemDetails {
   padding-left: 10px;
   padding-top: 5px;
-  max-width: calc(100% - 210px)
+  max-width: calc(100% - 240px);
 }
 
 .workshopItemName {
@@ -160,8 +133,64 @@ body {
   margin-left: auto;
 }
 
+.glyph_back::before {
+  content: '';
+  width: 30px;
+  height: 30px;
+  background: url('../Assets/Glyphs/XBOX_BACK.svg');
+  background-size: cover;
+  top: 20px;
+  left: -20px;
+  position: absolute;
+  display: var(--controller-display-state);
+}
+
+.workshopItemControls > btn {
+  display: none !important;
+}
+
+.workshopItem:hover > .workshopItemControls > btn {
+  display: block !important;
+}
+
+.selected > .workshopItemControls > btn {
+  display: block !important;
+}
+.selected > .workshopItemControls > .glyph_select::before {
+  content: '';
+  width: 30px;
+  height: 30px;
+  background: url('../Assets/Glyphs/XBOX_CONFIRM.svg');
+  background-size: cover;
+  top: 0px;
+  left: -20px;
+  position: absolute;
+  display: var(--controller-display-state);
+}
+
+.selected > .workshopItemControls > .glyph_deselect::before {
+  content: '';
+  width: 30px;
+  height: 30px;
+  background: url('../Assets/Glyphs/XBOX_DESELECT.svg');
+  background-size: cover;
+  top: 0px;
+  left: -20px;
+  position: absolute;
+  display: var(--controller-display-state);
+}
+
 btn.buffering {
   filter: blur(5px);
   scale: 0.9;
   pointer-events: none;
+}
+
+btn {
+  text-align: center;
+}
+
+.workshopItemControls > btn:nth-child(2) {
+  margin-top: 58px;
+  display: block;
 }

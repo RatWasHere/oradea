@@ -232,3 +232,42 @@
 .toggle_button_true {
   scale: 1;
 }
+
+
+#titlebar {
+  background-color: #FFFFFF10;
+  padding: 5px;
+}
+
+#titlebar>btext {
+  font-size: 25px;
+  font-family: 'Modern';
+  line-height: 30px !important;
+  display: block;
+  margin-right: auto;
+  margin-left: 10px;
+  margin-top: auto;
+  margin-bottom: auto;
+}
+
+#titlebar>btext>span {
+  opacity: 0.5;
+  font-size: 14px;
+}
+
+#titlebar>btn {
+  font-size: 20px;
+  font-family: 'Moderno';
+  padding: 5px;
+  width: 30px;
+  height: 30px;
+}
+
+
+.close {
+  background: url('../Assets/Glyphs/Close.svg');
+  background-size: cover;
+  margin: auto;
+  opacity: 0.8;
+  rotate: 45deg;
+}

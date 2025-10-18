@@ -20,3 +20,21 @@ document.addEventListener('keydown', (e) => {
 })
 
 const ipcRenderer = require('electron').ipcRenderer;
+
+let hideTimeout;
+
+function hideCursor() {
+  document.body.style.cursor = 'none';
+}
+
+function showCursor() {
+  document.body.style.cursor = 'default';
+  clearTimeout(hideTimeout);
+  hideTimeout = setTimeout(hideCursor, 5000); // 5 seconds of inactivity
+}
+
+// any mouse movement resets the timer
+window.addEventListener('mousemove', showCursor);
+
+// start the countdown right away
+hideTimeout = setTimeout(hideCursor, 3000);

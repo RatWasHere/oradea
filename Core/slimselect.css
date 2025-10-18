@@ -507,3 +507,16 @@
 }
 
 /*# sourceMappingURL=slimselect.css.map */
+
+.ss-option {
+  transition: all 0.1s ease !important;
+  opacity: 0.8;
+}
+.ss-option.selected {
+  /* font-size: 20px !important; */
+  padding-left: 15px !important;
+  box-shadow: none !important;
+  outline: none !important;
+  opacity: 1;
+  font-weight: 700 !important;
+}

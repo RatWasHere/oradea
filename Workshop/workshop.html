@@ -6,18 +6,19 @@
 
 <body>
   <div id="titlebar" class="flexbox">
-    <btext>Workshop <span>ORADEA</span></btext>
-    <btn>X</btn>
+    <btext style="padding-top: 5px;">Workshop <span>ORADEA</span></btext>
+    <btn class="controller_selectable glyph_back" id="close-button" onclick="ipcRenderer.send('closeWorkshop')"><div class="image close" style="width: 30px; height: 30px;"></div></btn>
   </div>
   <div class="flexbox" id="workshop_container">
     <div id="query">
       <btext class="label"><span class="image search" id="searchIcon"></span>Search</btext>
-      <input id="search" placeholder="Start typing...">
+      <input id="search" onclick="if (document.activeElement.id != this.id) this.focus();" onfocus="ipcRenderer.send('show_workshop_keyboard')" class="controller_selectable" placeholder="Start typing...">
       <btext class="label"><span class="image sort" id="sortIcon"></span>Sort By</btext>
       <div id="filterParent">
         <select id="filter">
-          <option>Hewwo</option>
-          <option>Hewwo2</option>
+          <option>Recency</option>
+          <option>Popularity</option>
+          <option>Subscription Count</option>
         </select>
       </div>
       <btn onclick="startUpload()">Upload Folder</btn>
@@ -27,7 +28,8 @@
 </body>
 
 <script src="../Utilities/global.js"></script>
-<script src="../Utilities/defaultComponents.js"></script>
+<script src="../Utilities/controller-control.js"></script>
+<script src="../Core/defaultComponents.js"></script>
 <script src="../Core/slimselect.min.js"></script>
 <script src="./script.js"></script>
 

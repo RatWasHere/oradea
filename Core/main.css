@@ -646,11 +646,12 @@ btn:active {
 .noteContainer.actively_pressed_in {
   /* mask the top var(--slider-hold-offset) px */
   /* mask-image: linear-gradient(to bottom, black calc(100% - var(--slider-hold-offset)), transparent 0); */
-  mask-image: linear-gradient(to bottom, transparent 0, black calc(100% - var(--slider-hold-offset)));
+  /* mask-image: linear-gradient(to bottom, transparent 0, black calc(100% - var(--slider-hold-offset))); */
 }
 
 .slider {
   background: none !important;
+  height: calc((var(--raw-size) / 2));
 }
 
 .center {
@@ -916,7 +917,7 @@ btn:active {
   animation: sparkles 0.5s ease !important;
   border: none !important;
   box-shadow: none !important;
-  --target-distance: -40px;
+  --target-distance: -490px;
   scale: -1;
   opacity: 0;
 
@@ -924,15 +925,15 @@ btn:active {
 }
 
 .sfx_sparkles_2 {
-  width: var(--note-radius);
+  width: calc(700px / 2);
   height: var(--note-radius);
   background: url('../Assets/SFX/Sparkles\ Layer\ 2.svg');
   background-size: cover;
-  translate: calc(var(--real-size) / 2 - (var(--note-radius) / 2)) calc(var(--real-size)) !important;
+  /* translate: calc(var(--real-size) / 2 - (var(--note-radius) / 2)) calc(var(--real-size)) !important; */
   animation: sparkles 0.4s ease !important;
   border: none !important;
   box-shadow: none !important;
-  --target-distance: -50px;
+  --target-distance: -450px;
   --target-blur: 0px;
   scale: -1;
   opacity: 0;
@@ -943,7 +944,7 @@ btn:active {
 .sfx_particle_hold_2,
 .sfx_particle_1,
 .sfx_particle_2 {
-  width: calc(var(--note-radius) * 2);
+  width: calc(var(--raw-size) / 1.732);
   height: calc(var(--note-radius) * 2);
   scale: 0;
   opacity: 1;
@@ -953,10 +954,6 @@ btn:active {
   translate: 0px 315px; */
   /* translate: 64% 100%; */
   translate: 64% 190%;
-}
-
-.sfx_particle_hold_2 {
-  /* animation: hit 0.5s linear, rotate2 0.7s ease; */
 }
 
 .aura.golden {
@@ -1249,91 +1246,8 @@ a {
   background-size: cover !important;
 }
 
-.is_being_held>.header.midframe::after {
-  width: 100%;
-  height: 100%;
-  --blurAmount: 10px;
-  content: '';
-  position: relative;
-  display: block;
-  top: 0;
-  left: 0;
-  background: url('../Assets/Headers/Frame.svg');
-  background-size: var(--note-radius) var(--note-radius) !important;
-  background-repeat: repeat-y !important;
-  animation: flickeryGlow 0.3s cubic-bezier(.05, 1.34, 1, 0) infinite;
-}
-
-@keyframes flickeryGlow {
-  0% {
-    opacity: 1;
-    filter: blur(var(--blurAmount));
-  }
-
-  50% {
-    opacity: 0.5;
-    filter: blur(calc(var(--blurAmount) * 0.5));
-  }
-
-  100% {
-    opacity: 1;
-    filter: blur(var(--blurAmount));
-  }
-}
 
 
-@keyframes flickeryGlowOnce {
-  0% {
-    opacity: 0.5;
-    filter: blur(var(--blurAmount));
-  }
-
-  50% {
-    opacity: 0.5;
-    filter: blur(calc(var(--blurAmount) * 0.5));
-  }
-}
-
-.sfx_sparkles1,
-.sfx_sparkles2 {
-  width: calc(var(--note-radius) * 2);
-  height: calc(var(--note-radius) * 2);
-  border: none !important;
-  box-shadow: none !important;
-  background-size: cover;
-}
-
-.reversed_sparkles {
-  --target-distance: 30px;
-  --target-blur: 0px;
-}
-
-.reversed_sparkles_2 {
-  --target-distance: 40px;
-  --target-blur: 0px;
-}
-
-@keyframes sparkles {
-  0% {
-    margin-top: 0px;
-    filter: blur(0px);
-    opacity: 0;
-  }
-
-  20% {
-    opacity: 1;
-  }
-
-  75% {
-    opacity: 0;
-  }
-
-  100% {
-    opacity: 0;
-    margin-top: var(--target-distance);
-    filter: blur(var(--target-blur));
-  }
-}
 
 .traceable {
   width: 100%;
@@ -1835,7 +1749,6 @@ select {
 .controller_selectable.selected {
   outline: 3px solid #FFFFFF50;
   box-shadow: 0px 0px 10px 10px #FFFFFF50;;
-  border-radius: 6px;
 }
 
 .visible_only_with_controller::before {

@@ -25,9 +25,9 @@ const CONFIG = {
   CREATE_AT_DISTANCE_OF: 0,
 
   // ===== CONTAINERS =====
-  CONTAINER_RADIUS: 210,
+  CONTAINER_RADIUS: 220,
   // CONTAINER_REAL_RADIUS: 400,
-  CONTAINER_REAL_RADIUS: 570,
+  CONTAINER_REAL_RADIUS: 630,
   ADJUSTED_MAX_TRAVEL: 0,
   START_OFFSET: 0,
   CREATION_ANTIDELAY: 5000,
@@ -65,7 +65,7 @@ const CONFIG = {
     4: "Expert",
   },
 
-  AUTOPLAY: false
+  AUTOPLAY: true
 };
 // translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
 // calc((var(--sr) / 2) - var(--tlr))
@@ -87,6 +87,9 @@ class GameState {
     this.information = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/information.json`, 'utf8'));
     try {
       this.timeSheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/time_${this.crossDetails.map}`, 'utf8'));
+    } catch (error) { }
+    try {
+      this.lightMap = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/light_${this.crossDetails.map}`, 'utf8'));
     } catch (error) { }
     document.getElementById('songArt').style.backgroundImage = `url('../Beatmaps/${this.crossDetails.location}/${this.information.cover}')`;
     document.getElementById('songName').innerHTML = this.information.name;
@@ -159,6 +162,114 @@ class GameState {
       controls: document.getElementById('controls'),
     };
 
+    this.effectItems = []
+    for (let i = 0; i < 8; i++) {
+      let parent = document.createElement('div');
+      parent.classList.add('sfx_container');
+      parent.style.display = 'none';
+
+      let particle_outwards = document.createElement('div');
+      particle_outwards.classList.add('sfx_outwards_particle');
+      parent.appendChild(particle_outwards);
+
+      let particles_outwards = document.createElement('div');
+      particles_outwards.classList.add('sfx_outwards_particles');
+      parent.appendChild(particles_outwards);
+
+      this.elements.container.appendChild(parent);
+      this.effectItems.push({
+        parent,
+        element: particle_outwards,
+        particleElement: particles_outwards,
+        inUse: false,
+        type: 'particles'
+      });
+    }
+    for (let i = 0; i < 6; i++) {
+      let parent = document.createElement('div');
+      parent.classList.add('sfx_container');
+      parent.style.display = 'none';
+
+      let particle_outwards = document.createElement('div');
+      particle_outwards.classList.add('sfx_outwards_particle', 'sfx_constant_particle');
+      parent.appendChild(particle_outwards);
+
+      let particles_outwards = document.createElement('div');
+      particles_outwards.classList.add('sfx_outwards_particles', 'sfx_constant_particles');
+      parent.appendChild(particles_outwards);
+
+      let particles_outwards_repeat = document.createElement('div');
+      particles_outwards_repeat.classList.add('sfx_outwards_particles', 'sfx_constant_particles', 'sfx_constant_particles_repeat');
+      parent.appendChild(particles_outwards_repeat);
+
+      this.elements.container.appendChild(parent);
+      this.effectItems.push({
+        parent,
+        element: particle_outwards,
+        particleElement: particles_outwards,
+        particleElementRepeat: particles_outwards_repeat,
+        inUse: false,
+        type: 'particles_constant',
+        constant: true
+      });
+    }
+
+    for (let i = 0; i < 4; i++) {
+      let parent = document.createElement('div');
+      parent.classList.add('sfx_container');
+      parent.style.display = 'none';
+
+      let header = document.createElement('div');
+      header.classList.add('sfx_header', 'note_header');
+      parent.appendChild(header);
+
+      this.elements.container.appendChild(parent);
+      this.effectItems.push({
+        parent,
+        element: header,
+        inUse: false,
+        type: 'header_burst'
+      })
+    }
+
+    for (let i = 0; i < 4; i++) {
+      let parent = document.createElement('div');
+      parent.classList.add('sfx_container');
+      parent.style.display = 'none';
+
+      let header = document.createElement('div');
+      header.classList.add('sfx_header', 'slider_header');
+      parent.appendChild(header);
+
+      this.elements.container.appendChild(parent);
+      this.effectItems.push({
+        parent,
+        element: header,
+        inUse: false,
+        type: 'header_constant',
+        constant: true
+      })
+    }
+
+    for (let i = 0; i < 4; i++) {
+      let parent = document.createElement('div');
+      parent.classList.add('sfx_container');
+      parent.style.display = 'none';
+
+      let header = document.createElement('div');
+      header.classList.add('sfx_flick_particle');
+      parent.appendChild(header);
+
+      this.elements.container.appendChild(parent);
+      this.effectItems.push({
+        parent,
+        element: header,
+        inUse: false,
+        type: 'flick_particles'
+      });
+    }
+
+
     const rect = this.elements.container.getBoundingClientRect();
     const centerX = rect.x + (rect.width / 2);
     const centerY = rect.y + (rect.height / 2);
@@ -230,6 +341,9 @@ class TimingSystem {
     this.globalTimingPoint = timingPoint;
     if (timingPoint.style) {
       this.applySegmentStyles(timingPoint);
+    }
+    if (timingPoint.flickers) {
+      this.applyFlickers(timingPoint)
     }
   }
 
@@ -811,7 +925,6 @@ class InputSystem {
   holdSlider(note) {
     note.isBeingHeld = true;
     note.wasEverHeld = true;
-    note.element.parentElement.classList.add('actively_pressed_in');
     this.createNoteAura(note)
   }
 
@@ -837,7 +950,7 @@ class InputSystem {
   hitNote(note, laneIndex) {
     this.gameState.scoringSystem.judge(note.time);
 
-    if (note.flick || note.startLargeFlick) {
+    if (note.flick || note.startLargeFlick || note.largeFlick) {
       this.startFlick(note, laneIndex);
       return;
     }
@@ -855,97 +968,60 @@ class InputSystem {
       note.element.parentElement.parentElement.parentElement.remove();
     });
   }
-  createNoteAura(note) {
-    return new Promise(resolve => {
-      this.gameState.playHitSound();
-      const frameEl = this.gameState.elements.noteContainerFrame;
-      if (frameEl) {
-        frameEl.style.animation = 'none';
-        // restore on next frame (no offsetWidth read)
-        requestAnimationFrame(() => { frameEl.style.animation = null; });
+
+  consumeEffect(type, angle) {
+    let consumable = this.gameState.effectItems.find(i => i.type === type && !i.inUse);
+    if (!consumable) consumable = this.gameState.effectItems.find(i => i.type === type);
+    consumable.inUse = true;
+    consumable.parent.style.display = 'block';
+    consumable.parent.style.rotate = `${(angle * CONFIG.SNAP_INTERVAL) + 90}deg`;
+    consumable.element.style.animationName = 'none';
+    if (consumable.particleElement) {
+      consumable.particleElement.style.animationName = 'none';
+    }
+    if (consumable.particleElementRepeat) {
+      consumable.particleElementRepeat.style.animationName = 'none';
+    }
+    requestAnimationFrame(() => {
+      consumable.element.style.animationName = '';
+      if (consumable.particleElement) {
+        consumable.particleElement.style.animationName = '';
       }
-      const frag = document.createDocumentFragment();
-
-      // Main indicator parent
-      const indicator_parent = document.createElement('div');
-      indicator_parent.classList.add('indicator_parent', 'sfx');
-      indicator_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 270}deg`;
-
-      const indicator = document.createElement('div');
-      indicator.classList.add('indicator', note.slider ? 'sfx_particle_1' : 'sfx_particle_hold_1');
-      indicator_parent.appendChild(indicator);
-
-      const indicator2 = document.createElement('div');
-      indicator2.classList.add('indicator', note.slider ? 'sfx_particle_2' : 'sfx_particle_hold_2');
-      indicator_parent.appendChild(indicator2);
-
-      const sparkles = document.createElement('div');
-      sparkles.classList.add('indicator', 'sfx_sparkles_1');
-      indicator_parent.appendChild(sparkles);
-
-      const sparkles2 = document.createElement('div');
-      sparkles2.classList.add('indicator', 'sfx_sparkles_2');
-      indicator_parent.appendChild(sparkles2);
-
-
-      const sparkles_reverse = document.createElement('div');
-      sparkles_reverse.classList.add('indicator', 'sfx_sparkles_1', 'reversed_sparkles');
-      indicator_parent.appendChild(sparkles_reverse);
-
-      const sparkles_reverse2 = document.createElement('div');
-      sparkles_reverse2.classList.add('indicator', 'sfx_sparkles_2', 'reversed_sparkles_2');
-      indicator_parent.appendChild(sparkles_reverse2);
-
-      // Optional slider header
-      const header_parent = document.createElement('div');
-      note.element.classList.add('is_being_held');
-      header_parent.classList.add('indicator_parent', 'sfx');
-      header_parent.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + 270}deg`;
-
-      const header = document.createElement('div');
-      header.classList.add('header', 'end', 'from_aura', note.slider ? 'from_slider' : 'from_note');
-      header_parent.appendChild(header);
-
-      frag.appendChild(header_parent);
-      note.aura_header = header_parent;
-
-      frag.appendChild(indicator_parent);
-
-      // Append everything in one go
-      this.gameState.elements.container.appendChild(frag);
-
-      note.aura = indicator_parent;
-
-      if (!note.slider) {
-        note.element.classList.add('aura');
-        setTimeout(() => {
-          indicator_parent.remove();
-          header_parent.remove();
-          resolve();
-        }, 500);
+      if (consumable.particleElementRepeat) {
+        consumable.particleElementRepeat.style.animationName = '';
       }
     });
+    if (consumable.constant) return consumable;
+    setTimeout(() => {
+      consumable.parent.style.display = 'none';
+      consumable.inUse = false;
+    }, 1000);
+  }
+
+  releaseEffect(effect) {
+    effect.parent.style.display = 'none';
+    effect.inUse = false;
+  }
+
+  createNoteAura(note) {
+    return new Promise(res => {
+      if (!note.slider && !note.flick && !note.largeFlick) {
+        this.consumeEffect('particles', note.angle);
+        this.consumeEffect('header_burst', note.angle);
+      } else if (note.slider) {
+        note.playingEffect = this.consumeEffect('header_constant', note.angle);
+        note.playingEffect = this.consumeEffect('particles_constant', note.angle);
+        note.element.classList.add('sfx_slider_hold');
+      }
+      res(true);
+    })
   }
 
 
   removeNoteAura(note) {
-    if (note.aura_header) {
-      note.aura_header.remove();
-      note.aura_header = null;
+    if (note.currentEffect) {
+      this.releaseEffect(note.currentEffect);
     }
-
-    if (!note.aura) return;
-    note.aura.querySelectorAll('.indicator').forEach(indicator => {
-      indicator.style.scale = '0';
-      indicator.style.opacity = '0';
-    });
-
-    let noteAura = note.aura;
-    note.aura = null;
-
-    setTimeout(() => {
-      noteAura.remove();
-    }, 300);
   }
 
   startFlick(note, laneIndex) {
@@ -1171,7 +1247,7 @@ class RenderingSystem {
       noteElement.classList.add('slider');
       const actualHeight = ((note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2);
 
-      noteElement.style.height = `${actualHeight + CONFIG.NOTE_RADIUS}px`;
+      // noteElement.style.height = `${actualHeight + CONFIG.NOTE_RADIUS}px`;
       noteElement.style.translate = `0px`;
 
       noteElement.style.setProperty('--sliderHeight', `${actualHeight}px`);
@@ -1615,7 +1691,7 @@ class RhythmGame {
     const gameLoop = (timestamp) => {
       if (this.gameState.paused || this.gameState.ended) return;
       const currentTime = this.gameState.currentTime;
-      if ((currentTime - 5000) > this.gameState.endsAt) return this.endGame();
+      if ((currentTime) > this.gameState.endsAt) return this.endGame();
 
       // Update gamepad input
       this.inputSystem.updateGamepadInput();
@@ -1649,9 +1725,19 @@ class RhythmGame {
     this.gameState.elements.songArt.classList.add('viewing');
     this.gameState.elements.backButton.classList.remove('hiddenButton');
     this.gameState.elements.restartButton.classList.remove('hiddenButton');
+    document.getElementById('pauseButton').classList.add('controller_selectable', 'selected');
+    document.getElementById('restartButton').classList.add('controller_selectable');
+    document.getElementById('backButton').classList.add('controller_selectable');
+    let cc = document.createElement('script');
+    cc.src = '../Utilities/controller-control.js'
+    document.head.appendChild(cc);
+    this.gameState.pauseScript = cc;
   }
 
   unpauseGame(force) {
+    document.getElementById('pauseButton').classList.remove('controller_selectable', 'selected');
+    document.getElementById('restartButton').classList.remove('controller_selectable', 'selected');
+    document.getElementById('backButton').classList.remove('controller_selectable', 'selected');
     if (!force && this.gameState.ended) return;
     this.gameState.audioContext.resume();
     this.gameState.paused = false;
@@ -1663,14 +1749,20 @@ class RhythmGame {
     this.gameState.elements.songArt.classList.remove('viewing');
     this.gameState.elements.backButton.classList.add('hiddenButton');
     this.gameState.elements.restartButton.classList.add('hiddenButton');
+    this.gameState.pauseScript.remove();
     this.startGameLoop();
+    pollGamepads = null;
   }
 
   endGame() {
+    return
     this.gameState.elements.controls.style.opacity = 0;
     this.gameState.elements.controls.style.scale = 0.9;
     this.gameState.ended = true;
     this.gameState.elements.noteContainerFrame.parentElement.parentElement.style.opacity = 0;
+    let cc = document.createElement('script');
+    cc.src = '../Utilities/controller-control.js'
+    document.head.appendChild(cc);
     setTimeout(() => {
       document.getElementById('buttons').remove();
       this.gameState.elements.controls.classList.add('end_controls');
@@ -1699,8 +1791,8 @@ class RhythmGame {
       `
 
       document.getElementById('songProcedureControls').innerHTML = `
-      <btn>Replay</btn>
-      <btn onclick="location.href = '../Picker/LevelPicker.html'">Home</btn>
+      <btn class="controller_selectable">Replay</btn>
+      <btn class="controller_selectable selected" onclick="location.href = '../Picker/LevelPicker.html'">Home</btn>
       `
     }, CONFIG.LONG_ANIMATION * 2);
   }

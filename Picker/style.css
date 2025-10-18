@@ -382,7 +382,7 @@ body {
   border-radius: 10px;
 }
 
-#play-button::before {
+/* #play-button::before {
   content: "";
   position: absolute;
   top: 0;
@@ -393,7 +393,7 @@ body {
   backdrop-filter: blur(10px);
   border-radius: 10px;
   transition: all 0.1s ease;
-}
+} */
 
 
 #song-credits {
@@ -472,4 +472,16 @@ body {
   margin-top: 10px;
   text-align: left;
   margin-right: auto;
+}
+
+#play-button.glyph_select::before {
+  content: '';
+  width: 30px;
+  height: 30px;
+  background: url('../Assets/Glyphs/XBOX_CONFIRM.svg');
+  background-size: cover;
+  top: 45px;
+  left: calc(100% - 25px);
+  position: absolute;
+  display: var(--controller-display-state);
 }

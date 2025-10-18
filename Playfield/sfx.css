@@ -1,0 +1,227 @@
+:root {
+  --slider-header-overlap: 4px;
+}
+
+.sfx_container {
+  position: absolute;
+  width: var(--raw-size);
+  height: var(--raw-size);
+}
+
+.sfx_outwards_particle {
+  background: url('../Assets/SFX/Sublayer_Burst.svg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: calc(var(--raw-size) / 2);
+  aspect-ratio: 1/1;
+  margin: auto;
+  opacity: 0;
+  animation: ease sfx_outwards_particle 0.40s forwards;
+  transform-origin: bottom;
+  scale: 1 0.5;
+  border-radius: 5px;
+  translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance) + -75px) / -2);
+}
+
+.sfx_constant_particle.sfx_constant_particle {
+  background-image: url('../Assets/SFX/Sublayer_Hold.svg');
+  animation: ease sfx_constant_particle 0.15s forwards infinite alternate;
+  scale: 1 0.9;
+}
+
+@keyframes sfx_constant_particle {
+  0% {
+    opacity: 0.6;
+  }
+
+  100% {
+    opacity: 0.8;
+  }
+}
+
+@keyframes sfx_outwards_particle {
+  0% {
+    opacity: 0;
+    /* translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance) + (var(--raw-size) / -3)) / -2); */
+    scale: 1 0.5;
+  }
+
+  25% {
+    opacity: 0.8;
+  }
+
+  30% {
+    opacity: 0.8;
+    scale: 1 1.2;
+  }
+
+  100% {
+    opacity: 0;
+    scale: 1 1.2;
+    /* translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance)) / -2); */
+    /* translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance)) / -2); */
+    /* translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance)) * -1); */
+  }
+}
+
+.sfx_outwards_particles {
+  width: calc(var(--raw-size) / 2);
+  aspect-ratio: 1/1;
+  margin: auto;
+  opacity: 1;
+  transform-origin: bottom;
+  /* scale: 1 0.5; */
+  border-radius: 5px;
+  margin-top: calc(var(--raw-size) / -2) !important;
+  translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance) + -75px) / -2);
+}
+
+.sfx_outwards_particles::after,
+.sfx_outwards_particles::before {
+  transform-origin: bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: url('../Assets/SFX/Layer_Particles_Above.svg');
+  content: '';
+  animation: ease sfx_outwards_particles 0.55s forwards;
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+}
+
+
+.sfx_outwards_particles::before {
+  background-image: url('../Assets/SFX/Layer_Particles_Below.svg');
+  animation-delay: 60ms;
+  animation-duration: 0.6s;
+  opacity: 0;
+}
+
+@keyframes sfx_outwards_particles {
+  0% {
+    opacity: 0;
+    scale: 1 0.5;
+    translate: 0px 0px;
+  }
+
+  25% {
+    opacity: 0.6;
+  }
+
+  70% {
+    opacity: 0.5;
+  }
+
+  100% {
+    opacity: 0;
+    scale: 1 1.3;
+    translate: 0px -60px;
+    /* translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance)) / -2); */
+    /* translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance)) / -2); */
+    /* translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance)) * -1); */
+  }
+}
+.sfx_constant_particles::before, .sfx_constant_particles::after {
+  opacity: 0;
+  animation-iteration-count: infinite;
+  animation-duration: 1250ms !important;
+}
+
+.sfx_constant_particles::before {
+  animation-delay: 500ms !important;
+}
+
+.sfx_constant_particles_repeat::after {
+  animation-duration: 2500ms !important;
+  background-image: url('../Assets/SFX/Layer_Particles_Constant_Above.svg') !important;
+  animation-delay: 500ms !important;
+}
+.sfx_constant_particles_repeat::before {
+  animation-delay: 400ms !important;
+  animation-duration: 1750ms;
+  background-image: url('../Assets/SFX/Layer_Particles_Constant_Below.svg') !important;
+}
+
+.sfx_header {
+  background: url('../Assets/SFX/Header.svg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  width: calc(var(--raw-size) / 2);
+  aspect-ratio: 1/1;
+  margin: auto;
+  opacity: 1;
+  transform-origin: bottom;
+  translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance) + -170px) / -4);
+  animation: sfx_header_burst 0.3s ease forwards;
+}
+
+.sfx_header.slider_header {
+  aspect-ratio: unset !important;
+  width: calc(var(--raw-size) / 2);
+  height: var(--note-radius);
+  translate: 0px 0px;
+  background-image: url('../Assets/SFX/Header_Hold.svg');
+  animation: sfx_header_constant 0.12s ease-in-out infinite alternate;
+}
+
+.sfx_slider_hold {
+  height: calc((var(--raw-size) / 2) - var(--slider-header-overlap));
+  overflow-y: hidden;
+}
+
+.sfx_slider_hold>.midframe::after {
+  content: '';
+  width: 100%;
+  height: 100%;
+  --blurAmount: 10px;
+  position: relative;
+  display: block;
+  background: url('../Assets/Headers/Frame.svg');
+  background-size: var(--note-radius) var(--note-radius) !important;
+  background-repeat: repeat-y !important;
+  animation: sfx_flicker 0.12s ease-in-out infinite alternate;
+}
+@keyframes sfx_flicker {
+  0% {
+    opacity: 1;
+    filter: blur(var(--blurAmount));
+  }
+
+  100% {
+    opacity: 0.7;
+    filter: blur(calc(var(--blurAmount) * 0.5));
+  }
+}
+
+@keyframes sfx_header_constant {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0.7;
+  }
+}
+
+@keyframes sfx_header_burst {
+  0% {
+    opacity: 0.2;
+  }
+
+  3% {
+    opacity: 0.5;
+  }
+
+  50% {
+    opacity: 0.7;
+  }
+
+  70% {
+    opacity: 0.7;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}

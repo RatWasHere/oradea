@@ -229,7 +229,7 @@ globalControllerActions.leftTrigger = () => {
 
 
 globalControllerActions.rightTrigger = () => {
-  let supposedDifficulty = lastSelectedDifficulty + 1
+  let supposedDifficulty = Number(lastSelectedDifficulty) + 1
   let difficultyElement = document.getElementById(`difficulty-${supposedDifficulty}`);
   if (!difficultyElement) return
   
