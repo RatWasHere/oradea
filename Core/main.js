@@ -17,13 +17,15 @@ app.on('ready', () => {
     height: 800,
     minHeight: 800,
     minWidth: 1000,
+    titleBarStyle: 'default',
+    autoHideMenuBar: true,
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      spellcheck: false
+      spellcheck: false,
     },
   });
-
+  window.setMenuBarVisibility(false);
   electron.ipcMain.on('openWorkshop', () => {
     let width = 900;
     let height = 600;
@@ -57,6 +59,72 @@ app.on('ready', () => {
 
     electron.ipcMain.on('show_workshop_keyboard', () => {
       let position = workshop.getBounds();
+      client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, position.x, position.y, position.width, position.height / 2);
+    })
+  });
+
+    electron.ipcMain.on('openSettings', () => {
+    let width = 900;
+    let height = 600;
+    let settings = new BrowserWindow({
+      width: width,
+      height: height,
+      maxWidth: width,
+      maxHeight: height,
+      minWidth: width,
+      minHeight: height,
+      resizable: false,
+      movable: false,
+      center: true,
+      frame: false,
+      modal: true,
+      parent: window,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        spellcheck: false
+      }
+    });
+    let hexapreview = new BrowserWindow({
+      width: width,
+      height: height,
+      resizable: false,
+      movable: false,
+      center: true,
+      frame: false,
+      transparent: true,
+      thickFrame: false,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        spellcheck: false
+      },
+      hiddenInMissionControl: true,
+      fullscreen: true
+    });
+    hexapreview.loadFile('./Settings/hexapreview.html');
+    hexapreview.setIgnoreMouseEvents(true);
+    hexapreview.hide();
+    electron.ipcMain.on('updateHexagon', (c, v) => {
+      hexapreview.webContents.send('updateHexagon', v);
+      hexapreview.focusOnWebView();
+      hexapreview.show();
+    });
+    electron.ipcMain.on('doneUpdatingHexagon', () => {
+      hexapreview.hide();
+    });
+    settings.loadFile('./Settings/settings.html');
+    setTimeout(() => {
+      settings.focus();
+    }, 100);
+    electron.ipcMain.once('closeSettings', () => {
+      window.focus()
+      settings.destroy();
+      hexapreview.destroy();
+    });
+
+    electron.ipcMain.on('show_settings_keyboard', () => {
+      let position = settings.getBounds();
       client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, position.x, position.y, position.width, position.height / 2);
     })
   });

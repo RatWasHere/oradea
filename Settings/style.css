@@ -1,0 +1,295 @@
+:root {
+  --difficulty-1: #9dff0050;
+  --difficulty-2: #fffb0050;
+  --difficulty-3: #ff000050;
+  --difficulty-4: #ff00ff50;
+
+}
+
+body {
+  background: linear-gradient(130deg, #000000, #131313) !important;
+  background-repeat: none !important;
+  animation: none !important;
+  margin-left: 0px;
+  margin-top: 0px;
+  width: 100vw;
+}
+
+#search {
+  width: 100%;
+  background: #ffffff20;
+}
+
+#workshop_container {
+  height: calc(100% - 43px);
+  width: 100%;
+}
+
+#query {
+  height: calc(100% - 15px);
+  margin-top: 7.5px;
+  margin-left: 7.5px;
+  width: 270px;
+  border-radius: 5px;
+  background-color: #FFFFFF18;
+}
+#query > #search {
+  width: calc(100% - 10px);
+  margin: auto;
+  display: block;
+  padding-top: 3px;
+  padding-bottom: 3px;
+}
+
+.label {
+  margin-left: 0px;
+  margin-top: 5px;
+  display: block;
+  text-align: left;
+}
+
+#results {
+  height: calc(100% - 25px);
+  margin-top: 7.5px;
+  margin-left: 7.5px;
+  margin-right: 7.5px;
+  width: 597.5px;
+  padding: 5px;
+  border-radius: 5px;
+  margin-right: auto;
+  background-color: #FFFFFF18;
+  overflow-y: scroll;
+}
+
+#searchHeader {
+  font-size: 24px;
+  opacity: 0.9;
+  margin-left: 10px;
+  margin-top: 3px;
+  display: block;
+}
+
+#query > .separator {
+  width: calc(100% - 10px) !important;
+  margin: auto;
+}
+
+#searchIcon, #sortIcon {
+  display: inline-block;
+  width: 18px;
+  height: 18px;
+  opacity: 0.7;
+  margin-right: 5px;
+  margin-left: 7.5px;
+}
+#searchIcon {
+  background: url('../Assets/Misc/search.svg');
+}
+#sortIcon {
+  background: url('../Assets/Misc/sort.svg');
+}
+
+#filterParent {
+  width: calc(100% - 10px) !important;
+  margin: auto;
+}
+
+.workshopItem {
+  width: calc(100% - 10px) !important;
+  margin: auto;
+  margin-bottom: 5px;
+  padding: 5px;
+  border-radius: 5px;
+  background: #FFFFFF10;
+  justify-content: start;
+  height: 120px;
+}
+
+.worskhopItemPreview {
+  width: 120px;
+  height: 120px;
+  background-size: cover;
+  border-radius: 3px;
+}
+
+.workshopItemDetails {
+  padding-left: 10px;
+  padding-top: 5px;
+  max-width: calc(100% - 240px);
+}
+
+.workshopItemName {
+  font-family: 'Modern';
+  font-size: 23px;
+  font-weight: 600;
+  line-height: 23px;
+}
+
+.workshopItemDescription {
+  font-size: 18px;
+  opacity: 0.5;
+}
+
+.workshopItemControls {
+  margin-left: auto;
+}
+
+.glyph_back::before {
+  content: '';
+  width: 30px;
+  height: 30px;
+  background: url('../Assets/Glyphs/XBOX_BACK.svg');
+  background-size: cover;
+  top: 20px;
+  left: -20px;
+  position: absolute;
+  display: var(--controller-display-state);
+}
+
+.workshopItemControls > btn {
+  display: none !important;
+}
+
+.workshopItem:hover > .workshopItemControls > btn {
+  display: block !important;
+}
+
+.selected > .workshopItemControls > btn {
+  display: block !important;
+}
+.selected > .workshopItemControls > .glyph_select::before {
+  content: '';
+  width: 30px;
+  height: 30px;
+  background: url('../Assets/Glyphs/XBOX_CONFIRM.svg');
+  background-size: cover;
+  top: 0px;
+  left: -20px;
+  position: absolute;
+  display: var(--controller-display-state);
+}
+
+.selected > .workshopItemControls > .glyph_deselect::before {
+  content: '';
+  width: 30px;
+  height: 30px;
+  background: url('../Assets/Glyphs/XBOX_DESELECT.svg');
+  background-size: cover;
+  top: 0px;
+  left: -20px;
+  position: absolute;
+  display: var(--controller-display-state);
+}
+
+btn.buffering {
+  filter: blur(5px);
+  scale: 0.9;
+  pointer-events: none;
+}
+
+btn {
+  text-align: center;
+}
+
+.workshopItemControls > btn:nth-child(2) {
+  margin-top: 58px;
+  display: block;
+}
+
+.category_name {
+  display: block; width: fit-content; font-size: 20px;
+  margin-left: 10px;
+  margin-top: 5px;
+  opacity: 0.5;
+}
+
+.category_contents {
+  width: 100%;
+}
+
+.preview_window {
+  width: calc(100% - 10px);
+  border-radius: 5px;
+  padding: 5px;
+  background: #FFFFFF05;
+  margin-bottom: 10px;
+  position: relative;
+}
+
+.category_contents > btext {
+  padding-left: 3px;
+  opacity: 0.8;
+}
+
+
+@keyframes noteDemonstration {
+  0% {
+    opacity: 0;
+    transform: translateY(90px);
+  }
+  30% {
+    opacity: 1;
+  }
+  60% {
+    filter: blur(0px);
+    scale: 1;
+  }
+  100% {
+    transform: translateY(-26px);
+    opacity: 1;
+  }
+}
+
+.nsbuttons {
+  width: 40px;
+  margin-left: 7px;
+  padding-bottom: 15px;
+  padding-top: 15px;
+}
+
+.nsbuttons.positive {
+  margin-left: 0px;
+  margin-right: 7px;
+}
+
+#note_speed_preview {
+  font-size: 25px;
+  opacity: 0.5;
+  font-family: 'Modern';
+  font-weight: 500;
+  position: absolute; top: 50%; translate: 0% -50%; display: block;
+}
+
+.category_selector {
+  background: #FFFFFF20;
+  border-radius: 5px;
+  padding: 5px;
+  padding-left: 10px;
+  display: block;
+  width: calc(100% - 25px);
+  margin: auto;
+  margin-bottom: 5px;
+  transition: all 0.06s ease;
+  border-left: 0px solid #FFFFFF00;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+.category_selector:hover {
+  background: #FFFFFF40;
+}
+
+.category_selector.selected {
+  padding-right: 0px;
+  width: calc(100% - 15px);
+  border-radius: 0px;
+  padding-left: 15px;
+  background: #FFFFFF30;
+}
+
+.category_selector:active {
+  background: #FFFFFF10;
+}
+
+.category_selector:has(.selected) {
+}

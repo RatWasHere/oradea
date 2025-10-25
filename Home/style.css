@@ -16,24 +16,44 @@
   margin: auto;
   position: fixed;
   top: 50%;
-  translate: 0 -50%;
+  translate: 0 calc(-50% - 30px);
   background-size: cover;
+  opacity: 0;
+  animation: fadein ease 1s 2s forwards;
+}
+@keyframes fadein {
+  0% {
+    opacity: 0;
+    scale: 0.8;
+  }
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
 }
 
 body {
-  background-size: cover;
   margin: 0px !important;
   transition: unset;
   background-color: black;
 }
 
 .logo {
-  width: 200px;
+  width: 500px;
   aspect-ratio: 843.39 / 128.48;
   margin: auto;
   background: url('../Assets/Oradea.svg');
   background-size: cover;
   opacity: 0.5;
+  animation: logoLoop ease-in-out 2s alternate infinite;
+}
+@keyframes logoLoop {
+  0% {
+    rotate: 4deg;
+  }
+  100% {
+    rotate: -4deg;
+  }
 }
 
 #bg-overlay {
@@ -52,10 +72,15 @@ btn.exiting {
   transition-timing-function: cubic-bezier(1, -0.09, .23, 1.32);
 }
 
-#bg-overlay>btn {
+#buttons-container>btn {
   padding: 10px;
   height: fit-content;
-  margin-top: calc(50vh + 50px)
+  font-size: 30px;
+  margin-top: 15px;
+}
+
+#buttons-container {
+  margin-top: calc(50vh + 50px);
 }
 
 @keyframes noteDemonstration {
@@ -290,4 +315,25 @@ btn.exiting {
   100% {
     opacity: 0;
   }
+}
+
+.icon {
+  width: 30px;
+  height: 30px;
+  margin-top: auto;
+  margin-bottom: auto;
+  margin-left: auto;
+  background-size: cover;
+  background-position: center;
+  display: block;
+  opacity: 0.5;
+}
+
+.popover > btn > span {
+  font-size: 13px;
+  opacity: 0.5;
+}
+
+.popover {
+  transition: all 0.2s ease;
 }

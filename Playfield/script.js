@@ -21,7 +21,7 @@ const CONFIG = {
 
   SCALE_DURATION: 0,
 
-  NOTE_PREVIEW_DELAY: 530,
+  NOTE_PREVIEW_DELAY: 580,
   CREATE_AT_DISTANCE_OF: 0,
 
   // ===== CONTAINERS =====
@@ -35,12 +35,14 @@ const CONFIG = {
   // TIMING & INPUT
   GAMEPAD_DEADZONE: 0.1,
 
-  FLICK_THRESHOLD: 20,
+  FLICK_THRESHOLD: 13,
   FLICK_OFFSET: 20,
   LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD: 0.99,
 
   // SCORING
-  ACCEPTANCE_THRESHOLD: 500,
+  ACCEPTANCE_THRESHOLD: 300,
+  FLICK_ACCEPTANCE_THRESHOLD: 400,
+  SLIDER_RELEASE_THRESHOLD: 250,
   ACCURACY_RANGES: {
     'perfect': [0, 52.8],
     'great': [52.8, 90.8],
@@ -65,7 +67,8 @@ const CONFIG = {
     4: "Expert",
   },
 
-  AUTOPLAY: true
+  AUTOPLAY: false,
+  BUTTONS: false
 };
 // translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
 // calc((var(--sr) / 2) - var(--tlr))
@@ -100,7 +103,14 @@ class GameState {
     this.score = 0;
 
     let lastNote = this.sheet[this.sheet.length - 1];
-    this.endsAt = lastNote.time + (lastNote.duration || (lastNote.time - lastNote.flickEnd) || (lastNote.time - lastNote.endsAt) || 0) + CONFIG.ACCEPTANCE_THRESHOLD;
+    let determinedTime = lastNote.time;
+    if (lastNote.slider) {
+      determinedTime = lastNote.sliderEnd;
+    }
+    if (lastNote.largeFlick) {
+      determinedTime = lastNote.flickEnd;
+    }
+    this.endsAt = determinedTime + CONFIG.ACCEPTANCE_THRESHOLD;
 
     this.keysPressed = {};
 
@@ -119,6 +129,7 @@ class GameState {
       bad: [],
       miss: []
     }
+
 
     this.gamepad = null;
 
@@ -163,7 +174,7 @@ class GameState {
     };
 
     this.effectItems = []
-    for (let i = 0; i < 8; i++) {
+    for (let i = 0; i < 10; i++) {
       let parent = document.createElement('div');
       parent.classList.add('sfx_container');
       parent.style.display = 'none';
@@ -185,7 +196,7 @@ class GameState {
         type: 'particles'
       });
     }
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 10; i++) {
       let parent = document.createElement('div');
       parent.classList.add('sfx_container');
       parent.style.display = 'none';
@@ -214,7 +225,7 @@ class GameState {
       });
     }
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       let parent = document.createElement('div');
       parent.classList.add('sfx_container');
       parent.style.display = 'none';
@@ -232,7 +243,7 @@ class GameState {
       })
     }
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 7; i++) {
       let parent = document.createElement('div');
       parent.classList.add('sfx_container');
       parent.style.display = 'none';
@@ -251,7 +262,7 @@ class GameState {
       })
     }
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 6; i++) {
       let parent = document.createElement('div');
       parent.classList.add('sfx_container');
       parent.style.display = 'none';
@@ -339,12 +350,22 @@ class TimingSystem {
   updateGlobalTimingPoint(sheet, time) {
     const timingPoint = this.getTimingPointAt(time, sheet, { speed: 1, offset: 0 });
     this.globalTimingPoint = timingPoint;
+
     if (timingPoint.style) {
       this.applySegmentStyles(timingPoint);
     }
     if (timingPoint.flickers) {
       this.applyFlickers(timingPoint)
     }
+    if (timingPoint.playfield) {
+      this.applyPlayfieldStyles(timingPoint)
+    }
+  }
+
+  applyPlayfieldStyles(timingPoint) {
+    Object.entries(timingPoint.playfield).forEach(([key, value]) => {
+      game.gameState.elements.container.style.setProperty(key, value);
+    });
   }
 
   getTimingPointAt(time, timingSheet, defaultPoint = { speed: 1, offset: 0 }) {
@@ -368,6 +389,7 @@ class TimingSystem {
         activePoint.style = point.style || {};
         activePoint.from = point.from || {};
         activePoint.note = point.note || null;
+        activePoint.playfield = point.playfield || null;
 
         if (activePoint.from?.offset) {
           activePoint.from.offset = this.fromSpecial(activePoint.from.offset);
@@ -604,8 +626,65 @@ class InputSystem {
   constructor(gameState, timingSystem) {
     this.gameState = gameState;
     this.timingSystem = timingSystem;
+    this.points = new Map();
+    this.pointIDs = 0;
     this.setupEventListeners();
   }
+
+  /**
+ * Creates a new input point with the specified options
+ * @param {Object} options - The options for creating a point
+ * @param {Object} options.source - The source of the input point
+ * @param {number} options.angle - The angle of the input point in degrees
+ * @param {number} options.rawAngle - The raw unprocessed angle in degrees
+ * @param {number|null} [options.distance] - The distance from center (defaults to 1)
+ * @param {(string|number|null)} [options.type] - The type of input point (defaults to 'button')
+ * @param {Object} [options.associatedNote] - The note object associated with this point
+ * @returns {void}
+ */
+  createPoint(options) {
+    this.pointIDs++;
+    const point = {
+      source: options.source,
+      angle: options.angle,
+      rawAngle: options.rawAngle,
+      distance: options.distance || 1,
+      type: options.type || 'button',
+      startedAt: this.gameState.currentTime,
+      associatedNote: options.associatedNote || null
+    };
+
+    this.points.set(point.type, point);
+    this.hit(point.angle)
+  }
+
+  hit(angle) {
+    const matchingNotes = this.findMatchingNotes(angle);
+    const closestNote = this.findClosestNote(matchingNotes);
+    if (closestNote) {
+      if (closestNote.slider) {
+        if (!(closestNote.holdableStart ? game.gameState.currentTime <= closestNote.time : true)) return;
+        return this.holdSlider(closestNote);
+      }
+      this.hitNote(closestNote);
+    }
+  }
+
+  updatePoint(id, options = {
+    angle: Number,
+    rawAngle: Number,
+    distance: Number
+  }) {
+    let point = this.points.get(id);
+    point.angle = options.angle;
+    point.rawAngle = options.rawAngle;
+    point.distance = options.distance;
+  }
+
+  releasePoint(id) {
+    this.points.delete(id)
+  }
+
 
   setupEventListeners() {
     document.addEventListener('keydown', this.handleKeyDown.bind(this));
@@ -663,11 +742,10 @@ class InputSystem {
         note.blockRelease = true;
         this.holdSlider(note);
       } else if (note.slider && note.isBeingHeld && currentTime > note.sliderEnd) {
-        console.log(note.sliderEnd, currentTime)
         this.releaseSlider(note);
       } else if (note.flick && !note.done) {
         if (note.input == undefined) {
-          this.startFlick(note, 1);
+          this.startFlick(note);
           note.rotations = (note.angle * (CONFIG.ANGLE_MODIFIER)) + CONFIG.ANGLE_OFFSET;
         }
 
@@ -691,29 +769,72 @@ class InputSystem {
   }
 
   updateGamepadInput() {
-    if (this.gameState.phone) return;
-
     const gamepad = navigator.getGamepads()[0];
     if (!gamepad) return;
 
-    this.updateGamepadRotations(gamepad);
+    let stickStates = this.getJoystickStates(gamepad);
+    const leftTrigger = gamepad.buttons[6]?.pressed || gamepad.buttons[4]?.pressed;
+    const rightTrigger = gamepad.buttons[7]?.pressed || gamepad.buttons[5]?.pressed;
+    if (!CONFIG.BUTTONS) {
+      let isLHeld = this.points.get('L');
+      var LeftPoint;
+      if (leftTrigger) {
+        LeftPoint = {
+          angle: stickStates.snappedRotations[0],
+          rawAngle: stickStates.rawRotations[0],
+          distance: stickStates.distances[0],
+          type: 'L',
+          source: 'L'
+        }
+      }
+
+      let isRHeld = this.points.get('R');
+      var RightPoint;
+      if (rightTrigger) {
+        RightPoint = {
+          angle: stickStates.snappedRotations[1],
+          rawAngle: stickStates.rawRotations[1],
+          distance: stickStates.distances[1],
+          type: 'R',
+          source: 'R'
+        }
+      }
+
+      if (leftTrigger && !isLHeld) {
+        this.createPoint(LeftPoint);
+      } else if (leftTrigger) {
+        this.updatePoint('L', LeftPoint)
+      } else {
+        this.releasePoint('L')
+      }
+
+      if (rightTrigger && !isRHeld) {
+        this.createPoint(RightPoint);
+      } else if (rightTrigger) {
+        this.updatePoint('R', RightPoint)
+      } else {
+        this.releasePoint('R')
+      }
+
+      this.updateCursorRotation(0, stickStates.snappedRotations[0]);
+      this.updateCursorRotation(1, stickStates.snappedRotations[1]);
+    }
+
     this.updateGamepadButtons(gamepad);
   }
 
-  updateGamepadRotations(gamepad) {
+  getJoystickStates(gamepad) {
     // Left stick is cursor1
     const x1 = gamepad.axes[0];
     const y1 = gamepad.axes[1];
     if (Math.abs(x1) > CONFIG.GAMEPAD_DEADZONE || Math.abs(y1) > CONFIG.GAMEPAD_DEADZONE) {
-      const angle1 = Math.atan2(y1, x1) * (180 / Math.PI);
+      var angle1 = Math.atan2(y1, x1) * (180 / Math.PI);
 
-      const mag1 = Math.min(Math.sqrt(x1 * x1 + y1 * y1), 1);
-      this.gameState.centerDistance[0] = mag1;
+      var distance1 = Math.min(Math.sqrt(x1 * x1 + y1 * y1), 1);
 
-      const extendedSnap1 = this.extendedSnapAngle(angle1, 0);
+      var extendedSnap1 = this.extendedSnapAngle(angle1, 0);
       if (extendedSnap1 !== null) {
         this.gameState.rawRotations[0] = angle1;
-        this.updateCursorRotation(0, extendedSnap1);
       }
     }
 
@@ -721,17 +842,17 @@ class InputSystem {
     const x2 = gamepad.axes[2];
     const y2 = gamepad.axes[3];
     if (Math.abs(x2) > CONFIG.GAMEPAD_DEADZONE || Math.abs(y2) > CONFIG.GAMEPAD_DEADZONE) {
-      const angle2 = Math.atan2(y2, x2) * (180 / Math.PI);
+      var angle2 = Math.atan2(y2, x2) * (180 / Math.PI);
 
-      const mag2 = Math.min(Math.sqrt(x2 * x2 + y2 * y2), 1);
-      this.gameState.centerDistance[1] = mag2;
+      var distance2 = Math.min(Math.sqrt(x2 * x2 + y2 * y2), 1);
 
-      const extendedSnap2 = this.extendedSnapAngle(angle2, 1);
+      var extendedSnap2 = this.extendedSnapAngle(angle2, 1);
       if (extendedSnap2 !== null) {
         this.gameState.rawRotations[1] = angle2;
-        this.updateCursorRotation(1, extendedSnap2);
       }
     }
+
+    return { snappedRotations: [extendedSnap1, extendedSnap2], rawRotations: [angle1, angle2], distances: [distance1, distance2] };
   }
 
   /**
@@ -749,7 +870,10 @@ class InputSystem {
     const normalizedAngle = this.normalizeAngle(angle);
 
     // Find the segment center
-    const segmentCenter = Math.round(normalizedAngle / segmentSize) * segmentSize;
+    let segmentCenter = Math.round(normalizedAngle / segmentSize) * segmentSize;
+
+    // Normalize to ensure 360 becomes 0
+    segmentCenter = segmentCenter % 360;
 
     // Extended segment range
     const start = this.normalizeAngle(segmentCenter - (segmentSize / 2) - extension);
@@ -769,19 +893,22 @@ class InputSystem {
     }
     return null;
   }
-
   updateGamepadButtons(gamepad) {
     const leftTrigger = gamepad.buttons[6]?.pressed || gamepad.buttons[4]?.pressed;
     const rightTrigger = gamepad.buttons[7]?.pressed || gamepad.buttons[5]?.pressed;
 
+    if (CONFIG.BUTTONS) {
+      return this.updateButtonInput(gamepad)
+    }
     this.updateTriggerState('w', leftTrigger, 0);
     this.updateTriggerState('s', rightTrigger, 1);
   }
 
+  updateButtonInput() { }
+
   updateTriggerState(key, pressed, cursorIndex) {
     if (pressed && !this.gameState.keysPressed[key]) {
       this.gameState.keysPressed[key] = true;
-      this.processNoteHold(key);
       this.scaleCursor(cursorIndex, '2');
     } else if (!pressed && this.gameState.keysPressed[key]) {
       this.gameState.keysPressed[key] = false;
@@ -851,8 +978,6 @@ class InputSystem {
     if (cursor) {
       cursor.style.rotate = `${angle + CONFIG.ANGLE_OFFSET}deg`;
     }
-
-    this.gameState.rotations[index] = this.normalizeAngle(angle - 270);
   }
 
   snapAngle(angle) {
@@ -863,79 +988,49 @@ class InputSystem {
     return ((parseFloat(deg) % 360) + 360) % 360;
   }
 
-  processNoteHold(key) {
-    const isW = key === 'w';
-    const laneIndex = isW ? 0 : 1;
-    const rotation = this.gameState.rotations[laneIndex];
-
-    const matchingNotes = this.findMatchingNotes(laneIndex, rotation);
-
-    // Handle sliders first
-    const closestNote = this.findClosestNote(matchingNotes, rotation);
-    if (closestNote) {
-      if (closestNote.slider) {
-        if (!(closestNote.holdableStart ? game.gameState.currentTime >= closestNote.time : true)) return;
-        this.holdSlider(closestNote);
-        return
-      }
-      this.hitNote(closestNote, laneIndex);
-    }
-  }
-
-  processNoteRelease(key) {
-    const isW = key === 'w';
-    const laneIndex = isW ? 0 : 1;
-    const rotation = this.gameState.rotations[laneIndex];
-
-    const matchingNotes = this.findMatchingNotes(laneIndex, rotation);
-    for (let i = 0; i < matchingNotes.length; i++) {
-      const note = matchingNotes[i];
-      if (note.flickStart && note.input === laneIndex && !note.done) {
-        this.releaseFlick(note);
-      }
-      if (note.slider && note.isBeingHeld && !(
-        this.isInArc(note, this.gameState.rotations[isW ? 1 : 0]) && this.gameState.keysPressed[isW ? 's' : 'w']
-      )) {
-        this.releaseSlider(note);
-      }
-    }
-  }
-
-  findMatchingNotes(laneIndex, rotation) {
+  findMatchingNotes(rotation) {
     return this.gameState.sheet.filter(note => {
       if (!note.element || note.done) return false;
-
-      const matchesInput = !note.requiredInput || note.requiredInput === (laneIndex + 1);
       const matchesTime = (note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD;
-      const inArc = this.isInArc(note, rotation);
-
-      return matchesInput && inArc;
-    });
+      if (!matchesTime) return false; // avoid running the function if it doesn't match, save even the tiniest microsecond
+      return this.isInArc(note, rotation);
+    })
   }
 
+
+  getSegment(rotation) {
+    return rotation / CONFIG.ANGLE_MODIFIER
+  }
 
   findClosestNote(notes) {
     return notes
-      .filter(note => note.slider ?
-        (!note.isBeingHeld && !note.done && ((Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD) || note.sliderEnd > this.gameState.currentTime))
-        : (Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD))
-      .sort((a, b) => a.time - b.time)[0];
+      .filter(note => {
+        if (note.slider) {
+          if (note.isBeingHeld || note.done || note.wasEverHeld) return false;
+          if (note.sliderEnd < this.gameState.currentTime) return false;
+          return Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD
+        } else {
+          if (note.done) return false;
+          return Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD
+        }
+      }).sort((a, b) => a.time - b.time)[0];
   }
 
   holdSlider(note) {
     note.isBeingHeld = true;
     note.wasEverHeld = true;
-    this.createNoteAura(note)
+    this.createNoteAura(note);
+    this.gameState.scoringSystem.judge(note.time);
   }
 
   releaseSlider(note) {
     if (note.blockRelease && note.sliderEnd >= this.gameState.currentTime) return;
     note.isBeingHeld = false;
-    const timeDiff = Math.abs(note.sliderEnd - (this.gameState.currentTime));
+    const timeDiff = note.sliderEnd - (this.gameState.currentTime);
     note.element.parentElement.classList.remove('actively_pressed_in');
-    if (Math.abs(timeDiff) <= CONFIG.ACCEPTANCE_THRESHOLD) {
+    if (timeDiff <= CONFIG.SLIDER_RELEASE_THRESHOLD) {
       note.done = true;
-      this.gameState.scoringSystem.judge(note.sliderEnd);
+      this.gameState.scoringSystem.judge(note.sliderEnd, true, note);
       this.vibrate(2);
       this.createHoldEffect(note);
       note.element.parentElement.parentElement.parentElement.remove();
@@ -947,11 +1042,11 @@ class InputSystem {
     this.removeNoteAura(note);
   }
 
-  hitNote(note, laneIndex) {
+  hitNote(note, pointID) {
     this.gameState.scoringSystem.judge(note.time);
 
-    if (note.flick || note.startLargeFlick || note.largeFlick) {
-      this.startFlick(note, laneIndex);
+    if (note.flick || note.largeFlick) {
+      this.startFlick(note);
       return;
     }
 
@@ -999,6 +1094,15 @@ class InputSystem {
   }
 
   releaseEffect(effect) {
+    if (effect.type == 'particles_constant') {
+      effect.parent.style.opacity = '0';
+      setTimeout(() => {
+        effect.parent.style.display = 'none';
+        effect.parent.style.opacity = null;
+        effect.inUse = false;
+      }, 250);
+      return
+    }
     effect.parent.style.display = 'none';
     effect.inUse = false;
   }
@@ -1010,7 +1114,7 @@ class InputSystem {
         this.consumeEffect('header_burst', note.angle);
       } else if (note.slider) {
         note.playingEffect = this.consumeEffect('header_constant', note.angle);
-        note.playingEffect = this.consumeEffect('particles_constant', note.angle);
+        note.playingEffects = this.consumeEffect('particles_constant', note.angle);
         note.element.classList.add('sfx_slider_hold');
       }
       res(true);
@@ -1019,17 +1123,25 @@ class InputSystem {
 
 
   removeNoteAura(note) {
-    if (note.currentEffect) {
-      this.releaseEffect(note.currentEffect);
+    if (note.playingEffect) {
+      this.releaseEffect(note.playingEffect);
+    }
+    if (note.playingEffects) {
+      this.releaseEffect(note.playingEffects);
     }
   }
 
-  startFlick(note, laneIndex) {
-    note.flickStart = this.gameState.rawRotations[laneIndex];
-    note.input = laneIndex;
-    note.flickMoment = this.gameState.currentTime;
-    note.rotations = this.gameState.rawRotations;
-    this.vibrate(4);
+  startFlick(note) {
+    note.started = true;
+    note.startedAt = this.gameState.currentTime;
+    let relevantPoints = [];
+    for (let [pointID, point] of this.points) {
+      if (this.getSegment(point.angle) == note.angle) relevantPoints.push({
+        id: pointID,
+        rawAngle: point.rawAngle
+      });
+    }
+    note.points = relevantPoints;
     if (note.largeFlick) {
       note.traceParent.style.opacity = 1;
     }
@@ -1042,7 +1154,7 @@ class InputSystem {
       note.element.parentElement.parentElement.classList.add('flicked_p');
       note.element.classList.add('flicked');
       note.element.parentElement.parentElement.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + (note.flickDirection == "2" ? -50 : 50) + 270}deg`;
-      game.gameState.scoringSystem.judge(note.time);
+      game.gameState.scoringSystem.judge(note.time, true, note);
       if (note.largeFlick) {
         game.gameState.scoringSystem.judge(note.flickEnd);
         note.traceParent.remove();
@@ -1053,21 +1165,10 @@ class InputSystem {
       }, 500);
       return;
     }
-    note.flickStart = null;
-    note.flickMoment = null;
-    note.input = null;
   }
 
   isInArc(note, rotation) {
-    const normalizedRotation = this.normalizeAngle(rotation);
-    const noteStartAngle = this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + CONFIG.ANGLE_OFFSET - (CONFIG.NOTE_ARC_ANGLE / 2));
-    const noteEndAngle = this.normalizeAngle(noteStartAngle + CONFIG.NOTE_ARC_ANGLE);
-
-    if (noteStartAngle < noteEndAngle) {
-      return normalizedRotation >= noteStartAngle && normalizedRotation <= noteEndAngle && !note.done;
-    } else {
-      return (normalizedRotation >= noteStartAngle || normalizedRotation <= noteEndAngle) && !note.done;
-    }
+    return note.angle == this.getSegment(rotation);
   }
 
   canBeHeld(note) {
@@ -1079,7 +1180,6 @@ class InputSystem {
   }
 
   createHoldEffect(note, failed = false) {
-
     if (failed) {
     } else if (note.flickDirection) {
       note.element.style.setProperty('--t', `${Math.max(100, this.gameState.currentTime - note.flickMoment)}ms`);
@@ -1096,29 +1196,6 @@ class InputSystem {
 
   vibrate(kind) {
     return
-    if (!this.gameState.gamepad?.vibrationActuator) return;
-    const vibrationSettings = {
-      1: { startDelay: 0, duration: 100, weakMagnitude: 0.5, strongMagnitude: 0.7, leftTrigger: 1, rightTrigger: 1 },
-      2: { startDelay: 0, duration: 50, weakMagnitude: 1, strongMagnitude: 1, leftTrigger: 1, rightTrigger: 1 },
-      3: { startDelay: 0, duration: 150, weakMagnitude: 1, strongMagnitude: 1 },
-      4: { startDelay: 0, duration: 50, weakMagnitude: 0, strongMagnitude: 0.1 }
-    };
-
-    const settings = vibrationSettings[kind];
-    if (!settings) return;
-
-    if (kind === 3) {
-      this.gameState.gamepad.vibrationActuator.playEffect("dual-rumble", settings);
-      setTimeout(() => {
-        this.gameState.gamepad.vibrationActuator.playEffect("trigger-rumble", {
-          startDelay: 0, duration: 50, weakMagnitude: 0.5, strongMagnitude: 1,
-          leftTrigger: 0.5, rightTrigger: 0.5
-        });
-      }, 50);
-    } else {
-      const effectType = kind === 4 ? "dual-rumble" : "trigger-rumble";
-      this.gameState.gamepad.vibrationActuator.playEffect(effectType, settings);
-    }
   }
 }
 
@@ -1263,6 +1340,7 @@ class RenderingSystem {
       const frame = document.createElement('div');
       frame.classList.add('header', 'midframe');
       noteElement.appendChild(frame);
+      note.midframe = frame;
 
       const header2 = document.createElement('div');
       header2.classList.add('header', 'end');
@@ -1348,52 +1426,20 @@ class RenderingSystem {
 
     if (note.slider) {
       return this.updateSliderPosition(note, currentTime, noteTiming);
-    } else if (note.flick || note.largeFlick) {
-      if (note.largeFlick && note.tracePath) {
-        let duration = note.flickEnd - note.time;
+    } else if (note.flick && !note.largeFlick) {
+      this.updateFlickState(note, currentTime);
+    } else if (note.largeFlick) {
+      this.updateLargeFlickState(note, currentTime);
+      let duration = note.flickEnd - note.time;
 
-        // time passed since the flick started
-        const elapsed = currentTime - note.time;
+      const elapsed = currentTime - note.time;
 
-        // clamp between 0 and 1
-        const progress = Math.min(Math.max(elapsed / duration, 0), 1);
-        duration = Math.max(duration, CONFIG.NOTE_PREVIEW_DELAY);
-        const preprogress = Math.min(Math.max((elapsed + duration) / duration, 0), 1);
-        note.traceParent.style.opacity = preprogress;
-        note.traceParent.style.setProperty('--progression', 1 - progress);
-        note.lastProgress = progress;
-      }
-
-      if (note.rotations) {
-        if (note.largeFlick) {
-          let desiredRotation = this.inputSystem.normalizeAngle(((Number(note.angle) + Number(note.direction)) * CONFIG.ANGLE_MODIFIER) + CONFIG.ANGLE_OFFSET);
-          let currentRotation = this.gameState.rotations[note.input];
-          if (currentRotation == desiredRotation && this.gameState.centerDistance[note.input] > CONFIG.LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD) {
-            note.done = true;
-            this.inputSystem.releaseFlick(note);
-          }
-        } else {
-          const input = note.input;
-          const desiredFlickOffset = (CONFIG.FLICK_OFFSET * (note.flickDirection == "2" ? 1 : -1));
-          const desiredAngle = note.flickStart + desiredFlickOffset;
-          const currentAngle = this.gameState.rawRotations[input];
-          const flickDiff = currentAngle - desiredAngle;
-          const desiredThreshold = CONFIG.FLICK_THRESHOLD;
-
-          if (Math.abs(flickDiff) > desiredThreshold) {
-            note.done = true;
-            this.inputSystem.releaseFlick(note);
-          }
-        }
-      } else {
-        if (note.holdable) {
-          if ((this.gameState.keysPressed['w'] && this.inputSystem.isInArc(note, this.gameState.rotations[0])) ||
-            (this.gameState.keysPressed['s'] && this.inputSystem.isInArc(note, this.gameState.rotations[1]))) {
-            const laneIndex = this.gameState.keysPressed['w'] ? 0 : 1;
-            this.inputSystem.startFlick(note, laneIndex);
-          }
-        }
-      }
+      const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+      duration = Math.max(duration, CONFIG.NOTE_PREVIEW_DELAY);
+      const preprogress = Math.min(Math.max((elapsed + duration) / duration, 0), 1);
+      note.traceParent.style.opacity = preprogress;
+      note.traceParent.style.setProperty('--progression', 1 - progress);
+      note.lastProgress = progress;
     } else if (note.holdable && note.time < currentTime) {
       let isInArc0 = this.inputSystem.isInArc(note, this.gameState.rotations[0]);
       let isInArc1 = this.inputSystem.isInArc(note, this.gameState.rotations[1]);
@@ -1402,6 +1448,54 @@ class RenderingSystem {
       }
     }
     this.updateRegularNotePosition(note, currentTime, noteTiming);
+  }
+
+  updateFlickState(note) {
+    if (!(note.holdable || note.started)) return;
+
+    let flickPoints = note.points ? note.points : [];
+    let relevantPoints = [];
+    for (let [pointID, point] of this.inputSystem.points) {
+      let foundPoint = flickPoints.find(point => point.id == pointID);
+      if (foundPoint) {
+        relevantPoints.push({
+          id: pointID,
+          rawAngle: foundPoint.rawAngle
+        });
+        if (Math.abs(foundPoint.rawAngle - point.rawAngle) >= CONFIG.FLICK_THRESHOLD) {
+          note.done = true;
+          this.inputSystem.releaseFlick(note);
+        }
+      } else if (this.inputSystem.getSegment(point.angle) == note.angle) {
+        relevantPoints.push({
+          id: pointID,
+          rawAngle: point.rawAngle
+        })
+      }
+    }
+    note.points = relevantPoints;
+  }
+
+  updateLargeFlickState(note) {
+    if (!(note.holdable || note.started)) return;
+
+    let noteDesiredSegment = this.normalizeAngle(Number(note.angle) + Number(note.direction) * CONFIG.ANGLE_MODIFIER);
+    let flickPoints = note.points || [];
+    let relevantPoints = [];
+    for (let [pointID, point] of this.inputSystem.points) {
+      let foundPoint = flickPoints.find(point => point.id == pointID);
+      if (foundPoint && point.angle == noteDesiredSegment) {
+        note.done = true;
+        this.inputSystem.releaseFlick(note);
+        relevantPoints.push(point);
+      } else if (!foundPoint && this.inputSystem.getSegment(point.angle) == note.angle) {
+        relevantPoints.push({
+          id: pointID,
+          rawAngle: point.rawAngle
+        })
+      }
+    }
+    note.points = relevantPoints;
   }
 
   updateSliderPosition(note, currentTime, timing) {
@@ -1437,22 +1531,17 @@ class RenderingSystem {
 
       note.element.getElementsByClassName('start')[0].style.transform = `scale(${scale})`;
       note.element.getElementsByClassName('end')[0].style.transform = `scale(${scale})`;
-      // noteTravelMax - (((CONFIG.APPEARANCE_HASTE) / previewDelay) * noteTravelMax)
-      // ((noteTime - currentTime) / previewDelay) * noteTravelMax,
 
       const maxHeight = (((sliderEnd - (sliderStart)) / previewDelay) * (sliderMaxHeight));
-      // ((note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2)
 
       if ((currentTime + previewDelay) <= sliderEnd) {
         let currentHeight = getProgress(currentTime + previewDelay, sliderStart, sliderEnd) * maxHeight;
-        note.element.style.setProperty('--sliderHeight', `${currentHeight}px`);
+        note.midframe.style.height = `${currentHeight}px`;
         spentHeight = sliderMaxHeight;
       } else {
-        note.element.style.setProperty('--sliderHeight', `${maxHeight}px`);
+        note.midframe.style.height = `${maxHeight}px`;
         spentHeight = ((sliderEnd - (currentTime)) / previewDelay) * sliderMaxHeight;
       }
-
-      // spentHeight = (((sliderEnd - currentTime)) / previewDelay) * sliderMaxHeight; 
     } else {
       spentHeight = (((sliderEnd - (sliderStart + offset))) / previewDelay) * sliderMaxHeight;
     }
@@ -1468,28 +1557,16 @@ class RenderingSystem {
 
 
   updateSliderHoldStatus(note) {
-    if (note.isBeingHeld || (note.holdableStart && this.gameState.currentTime >= note.time)) {
-      let determinedLane = (this.gameState.keysPressed['w'] ? (this.inputSystem.findMatchingNotes(0, this.gameState.rotations[0]).indexOf(note) != -1) : false) || (this.gameState.keysPressed['s'] ? (this.inputSystem.findMatchingNotes(1, this.gameState.rotations[1]).indexOf(note) != -1) : false);
-
-      if (!determinedLane && note.isBeingHeld) {
-        this.inputSystem.releaseSlider(note);
-        return;
-      }
-      if (!note.isBeingHeld && note.holdableStart && (determinedLane != false)) {
+    let isBeingHeld = false;
+    for (let [pointID, point] of this.inputSystem.points) {
+      if (this.inputSystem.getSegment(point.angle) == note.angle) isBeingHeld = true;
+    }
+    if (isBeingHeld) {
+      if ((note.holdableStart && !note.isBeingHeld && this.gameState.currentTime >= note.time) || (!note.isBeingHeld && note.wasEverHeld)) {
         this.inputSystem.holdSlider(note);
       }
-    } else {
-      if (!note.wasEverHeld && this.gameState.currentTime - note.currentTime > CONFIG.ACCEPTANCE_THRESHOLD) {
-        this.gameState.combo = 0;
-        this.gameState.scoringSystem.updateComboDisplay();
-        this.createFailedHoldEffect(note)
-      }
-      if (note.wasEverHeld && !note.done) {
-        let determinedLane = (this.gameState.keysPressed['w'] ? (this.inputSystem.findMatchingNotes(0, this.gameState.rotations[0]).indexOf(note) != -1) : false) || (this.gameState.keysPressed['s'] ? (this.inputSystem.findMatchingNotes(1, this.gameState.rotations[1]).indexOf(note) != -1) : false);
-        if (determinedLane) {
-          note.isBeingHeld = true;
-        }
-      }
+    } else if (!isBeingHeld && note.isBeingHeld) {
+      this.inputSystem.releaseSlider(note);
     }
   }
 
@@ -1554,21 +1631,21 @@ class RenderingSystem {
   }
 
   hasFailed(note, currentTime) {
-    // Don't fail notes that are already done or haven't started yet
     if (note.done) return false;
 
-    // For sliders, they only fail if they end without being held
     if (note.slider || note.traceParent) {
-      let failed = currentTime > ((note.sliderEnd || note.flickEnd) + CONFIG.ACCEPTANCE_THRESHOLD);
+      let failed = currentTime > ((note.sliderEnd || note.flickEnd) + CONFIG.SLIDER_RELEASE_THRESHOLD);
       if (failed) {
         this.inputSystem.releaseSlider(note);
+        note.done = true;
       }
       return failed;
     }
 
-    // For regular notes, check if they've passed the acceptance window
     const failTime = note.flickEnd || note.failTime || note.time;
-    return (currentTime - failTime) > CONFIG.ACCEPTANCE_THRESHOLD;
+    let acceptance = CONFIG.ACCEPTANCE_THRESHOLD;
+    if (note.flick) acceptance = CONFIG.FLICK_ACCEPTANCE_THRESHOLD;
+    return (currentTime - failTime) > acceptance;
   }
 
   createFailedHoldEffect(note) {
@@ -1592,7 +1669,8 @@ class ScoringSystem {
     this.gameState.score += Number(amount) * Math.max(Math.min(8, this.gameState.combo), 1);
   }
 
-  judge(noteTime, affectCombo = true) {
+  judge(noteTime, affectCombo = true, note) {
+    if (note?.slider) return
     const currentTime = this.gameState.currentTime;
     const difference = Math.abs(noteTime - currentTime);
 
@@ -1619,6 +1697,9 @@ class ScoringSystem {
     this.gameState.elements.perfectionIndicator.style.animationName = 'none'
     requestAnimationFrame(() => { this.gameState.elements.perfectionIndicator.style.animationName = null });
     this.gameState.scoringPad[accuracy].push(noteTime - currentTime);
+    try {
+      this.gameState.playHitSound(note)
+    } catch (error) { console.log(error) }
     return accuracy;
   }
 
@@ -1661,16 +1742,17 @@ class RhythmGame {
     // Ensure audio for the beatmap is decoded and playing
     await this.gameState.initializeAudio();
 
-    // Load hit sound(s) once
-    const hitPath = './Assets/hit_normal.mp3';
-    try {
-      const hitFile = fs.readFileSync(hitPath);
-      const hitArray = hitFile.buffer.slice(hitFile.byteOffset, hitFile.byteOffset + hitFile.length);
-      const buf = await this.gameState.audioContext.decodeAudioData(hitArray);
-      this.gameState.hitBuffer = buf;
-    } catch (err) {
-      console.warn('Failed to load hit sound', err);
-      this.gameState.hitBuffer = undefined;
+    let audioPaths = {
+      'hit': './Assets/hit_normal.mp3',
+      'flick': './Assets/flick.mp3'
+    };
+
+    this.gameState.loadedAudios = {};
+    for (let type in audioPaths) {
+      const data = fs.readFileSync(audioPaths[type]);
+      const arrayBuffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+      let hitSoundBuffer = await game.gameState.audioContext.decodeAudioData(arrayBuffer);
+      this.gameState.loadedAudios[type] = hitSoundBuffer;
     }
 
     // Start game loop now that audio is ready
@@ -1678,13 +1760,15 @@ class RhythmGame {
     this.startGameLoop();
   }
 
-  playHitSound() {
-    if (!this.gameState.hitBuffer) return;
-    const ctx = this.gameState.audioContext;
-    const src = ctx.createBufferSource();
-    src.buffer = this.gameState.hitBuffer;
-    src.connect(ctx.destination);
-    src.start(0);
+  playHitSound(note) {
+    const source = this.gameState.audioContext.createBufferSource();
+    let determinedBuffer = this.gameState.loadedAudios['hit'];
+    if (note?.flick) {
+      determinedBuffer = this.gameState.loadedAudios['flick'];
+    }
+    source.buffer = determinedBuffer;
+    source.connect(this.gameState.audioContext.destination);
+    source.start();
   }
 
   startGameLoop() {
@@ -1755,7 +1839,6 @@ class RhythmGame {
   }
 
   endGame() {
-    return
     this.gameState.elements.controls.style.opacity = 0;
     this.gameState.elements.controls.style.scale = 0.9;
     this.gameState.ended = true;

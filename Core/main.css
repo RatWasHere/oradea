@@ -48,7 +48,7 @@ body {
   --okay: #E2CF63;
   --bad: #FFB272;
   --miss: #FD7575;
-  
+
   --controller-display-state: none;
 }
 
@@ -169,7 +169,7 @@ body {
   justify-content: center;
   align-items: center;
   transition: all ease 0.5s;
-  color: #ffffff90;
+  color: #ffffff80;
   font-size: 18px;
 }
 
@@ -636,7 +636,7 @@ btn:active {
 .noteContainer {
   width: 100%;
   height: calc(50% - (var(--note-radius) / 2));
-  overflow: hidden;
+  overflow: visible;
   /* scale: 1 -1; */
   /* transform: translateY(calc(-100% - (var(--note-radius) / 2))); */
   transform: translateY(calc(100% + (var(--note-radius) / 2)));
@@ -1278,6 +1278,7 @@ a {
   will-change: height;
   /* mask: linear-gradient(to to p, black calc(var(--progression) * 1%), transparent 0%) no-repeat cover; */
 }
+
 .trace-3 {
   /* --progression: 0; */
   background: url('../Assets/Headers/Long\ Flick\ Straight.svg') no-repeat;
@@ -1310,10 +1311,12 @@ a {
   pointer-events: auto;
   transition: all var(--longer) ease;
 }
+
 @keyframes overlayKickIn {
   0% {
     background: #000000;
   }
+
   100% {
     background: #000000b4;
   }
@@ -1403,12 +1406,15 @@ a {
 .pause {
   background-image: url('../Assets/Playfield/pause.svg');
 }
+
 .play {
   background-image: url('../Assets/Playfield/play.svg');
 }
+
 .reset {
   background-image: url('../Assets/Playfield/reset.svg');
 }
+
 .back {
   background-image: url('../Assets/Playfield/back.svg');
 }
@@ -1477,7 +1483,7 @@ btn:has(.pause) {
   transition: all var(--long) ease;
 }
 
-.end_controls > #songData > #songArt {
+.end_controls>#songData>#songArt {
   width: 380px;
   height: 380px;
 }
@@ -1557,7 +1563,8 @@ difficulty {
   margin-top: 0px;
 }
 
-#backButton, #restartButton {
+#backButton,
+#restartButton {
   margin-top: 10px;
   scale: 1;
   opacity: 1;
@@ -1577,18 +1584,21 @@ difficulty {
 #scoreStats {
   margin-top: 30px;
 }
+
 .scoreIndicator {
   font-family: 'Modern';
   font-size: 30px;
   line-height: 33px;
   color: #FFFFFF;
 }
-.scoreIndicator > span {
+
+.scoreIndicator>span {
   display: inline-block;
   width: 230px;
   font-weight: 1000;
 }
-.scoreIndicator > span:nth-of-type(2) {
+
+.scoreIndicator>span:nth-of-type(2) {
   width: fit-content;
   font-size: 16px !important;
   color: #FFFFFF50 !important;
@@ -1596,29 +1606,33 @@ difficulty {
   text-shadow: #FFFFFF20 0px 0px 15px !important;
 }
 
-.scoreIndicator.perfect > span {
+.scoreIndicator.perfect>span {
   color: var(--perfect);
   text-shadow: #FFFFFF90 0px 0px 15px;
 }
-.scoreIndicator.great > span {
+
+.scoreIndicator.great>span {
   color: var(--great);
   text-shadow: #FFFFFF30 0px 0px 5px;
 }
-.scoreIndicator.okay > span {
+
+.scoreIndicator.okay>span {
   color: var(--okay);
   text-shadow: #FFFFFF30 0px 0px 5px;
 }
-.scoreIndicator.bad > span {
+
+.scoreIndicator.bad>span {
   color: var(--bad);
   text-shadow: #FFFFFF30 0px 0px 5px;
 }
-.scoreIndicator.miss > span {
+
+.scoreIndicator.miss>span {
   color: var(--miss);
   text-shadow: #FFFFFF30 0px 0px 5px;
 }
 
 
-#grade > btextm {
+#grade>btextm {
   font-size: 200px;
   width: 200px;
   height: 200px;
@@ -1638,7 +1652,7 @@ difficulty {
   text-shadow: #FFFFFF90 0px 0px 10px;
 }
 
-#grade > btext {
+#grade>btext {
   font-family: 'Mono';
   position: fixed;
   margin-top: 300px;
@@ -1646,7 +1660,7 @@ difficulty {
   text-align: right;
 }
 
-#grade > btext > span {
+#grade>btext>span {
   font-weight: 800;
 }
 
@@ -1658,13 +1672,13 @@ difficulty {
   margin-left: auto !important;
 }
 
-#songProcedureControls > btn {
+#songProcedureControls>btn {
   text-align: center;
   font-family: 'Moderno';
   padding: 10px;
 }
 
-#songProcedureControls > btn:nth-child(1) {
+#songProcedureControls>btn:nth-child(1) {
   margin-bottom: 20px;
   width: 360px;
   font-size: 20px;
@@ -1672,7 +1686,7 @@ difficulty {
   margin-top: calc(100vh - 580px);
 }
 
-#songProcedureControls > btn:nth-child(2) {
+#songProcedureControls>btn:nth-child(2) {
   width: 360px;
   font-size: 25px;
   animation: procedureButtonCue infinite 2s ease;
@@ -1682,9 +1696,11 @@ difficulty {
   0% {
     box-shadow: #FFFFFF30 0px 0px 10px 5px;
   }
+
   50% {
     box-shadow: #FFFFFF10 0px 0px 0px 5px;
   }
+
   100% {
     box-shadow: #FFFFFF30 0px 0px 10px 5px;
   }
@@ -1705,7 +1721,7 @@ difficulty {
   padding: 0px !important;
 }
 
-.end_controls > #songData {
+.end_controls>#songData {
   margin-top: 10px;
   margin-right: -20px;
 }
@@ -1721,6 +1737,7 @@ input {
   background-color: #00000070;
   color: #FFFFFF;
 }
+
 ::selection {
   background: #000000;
   color: #FFFFFF;
@@ -1748,7 +1765,8 @@ select {
 
 .controller_selectable.selected {
   outline: 3px solid #FFFFFF50;
-  box-shadow: 0px 0px 10px 10px #FFFFFF50;;
+  box-shadow: 0px 0px 10px 10px #FFFFFF50;
+  ;
 }
 
 .visible_only_with_controller::before {
@@ -1764,14 +1782,22 @@ select {
 }
 
 .popover {
-  width: 900px;
+  width: 500px;
   border-radius: 5px;
-  height:fit-content;
+  height: fit-content;
   padding: 10px;
-  margin-left: auto; margin-right: auto;
+  margin-left: auto;
+  margin-right: auto;
   background: #00000050;
   backdrop-filter: blur(10px);
   position: relative;
   display: block;
   margin-top: calc(-50vh - 100px)
+}
+
+.popover>btn {
+  margin-top: 10px;
+  width: fit-content;
+  margin: auto;
+  margin-top: 20px;
 }

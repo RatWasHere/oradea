@@ -4,21 +4,31 @@
 <link rel="stylesheet" href="./settings.css">
 
 <body>
-  <div class="flexbox" id="bg-overlay" style="width: 100vw; height: 100vh; backdrop-filter: blur(100px); background: #00000090;">
+  <div class="flexbox" id="bg-overlay"
+    style="width: 100vw; height: 100vh; backdrop-filter: blur(100px); background: #00000090;">
     <div id="reactive_note_core" class="flexbox">
-      <div class="image logo"></div>
+      <div id="logo" class="image logo"></div>
     </div>
-    <div id="reactive_core" class="flexbox">
-      <div class="image logo"></div>
+    <div style="height: 50px; display: block;"></div>
+    <div id="buttons-container" style="transition: all 0.2s ease;">
+      <div style="opacity: 0.5;"><btext style="animation: fadein ease 1s 3s forwards; opacity: 0; font-family: 'Modern'; font-weight: 500;">Pick your poison</btext></div>
+      <btn class="controller_selectable flexbox selected"
+        style="animation: fadein ease 1s 3s forwards; opacity: 0; width: 460px;" id="play-button"
+        onclick="fadeThisOut('./Picker/LevelPicker.html')"><div>Play</div><div class="icon" style="background-image: url('../Assets/Glyphs/Play.svg')"></div></btn>
+      <btn class="controller_selectable flexbox" style="animation: fadein ease 1s 3.3s forwards; opacity: 0;"
+        onclick="openSettings()"><div>Settings</div><div class="icon" style="background-image: url('../Assets/Glyphs/Settings.svg')"></div></btn>
+      <btn class="controller_selectable flexbox" style="animation: fadein ease 1s 3.5s forwards; opacity: 0;"
+        onclick="playTutorial()"><div>Tutorial</div><div class="icon" style="background-image: url('../Assets/Glyphs/Help.svg')"></div></btn>
+      <btn class="controller_selectable flexbox" style="animation: fadein ease 1s 3.7s forwards; opacity: 0;"
+        onclick="openSettings()"><div>Exit</div><div class="icon" style="background-image: url('../Assets/Glyphs/Exit.svg')"></div></btn>
     </div>
-    <btn class="controller_selectable selected" id="play-button" onclick="fadeThisOut('./Picker/LevelPicker.html')" style="margin-right: 10px;">Play</btn>
-    <btn class="controller_selectable" onclick="openSettings()">Settings</btn>
-    <btn class="controller_selectable" style="opacity: 0.5; pointer-events: none; margin-left: 10px;">PREVIEW. NOT FINAL. CONNECT YOUR CONTROLLER.</btn>
   </div>
 </body>
 
 <script src="../Utilities/global.js"></script>
 <script src="../Utilities/controller-control.js"></script>
+<script src="../Core/defaultComponents.js"></script>
+<script src="../Core/slimselect.min.js"></script>
 <script src="./home.js"></script>
 <script src="./settings.js"></script>
 

@@ -8,6 +8,10 @@
   height: var(--raw-size);
 }
 
+.sfx_container:has(.sfx_constant_particle) {
+  transition: opacity 0.15s ease;
+}
+
 .sfx_outwards_particle {
   background: url('../Assets/SFX/Sublayer_Burst.svg');
   background-repeat: no-repeat;
@@ -23,7 +27,7 @@
   translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance) + -75px) / -2);
 }
 
-.sfx_constant_particle.sfx_constant_particle {
+.sfx_constant_particle {
   background-image: url('../Assets/SFX/Sublayer_Hold.svg');
   animation: ease sfx_constant_particle 0.15s forwards infinite alternate;
   scale: 1 0.9;
@@ -31,7 +35,7 @@
 
 @keyframes sfx_constant_particle {
   0% {
-    opacity: 0.6;
+    opacity: 0.5;
   }
 
   100% {

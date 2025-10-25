@@ -38,3 +38,19 @@ window.addEventListener('mousemove', showCursor);
 
 // start the countdown right away
 hideTimeout = setTimeout(hideCursor, 3000);
+
+var settings = {};
+
+try {
+  settings = JSON.parse(fs.readFileSync('./Config/settings', 'utf8'))
+} catch (error) {
+  fs.writeFileSync('./Config/settings', `{}`)
+}
+
+function saveSettings() {
+  fs.writeFileSync('./Config/settings', JSON.stringify(settings, null, 2))
+}
+
+function getSetting(label, defaultValue) {
+  return (settings[label] ? settings[label] : defaultValue);
+}

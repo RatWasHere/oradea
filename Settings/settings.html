@@ -1,0 +1,89 @@
+<html>
+<link rel="stylesheet" href="../Core/main.css">
+<link rel="stylesheet" href="../Core/defaultComponents.css">
+<link rel="stylesheet" href="../Core/slimselect.css">
+<link rel="stylesheet" href="./style.css">
+
+<body>
+  <div id="titlebar" class="flexbox">
+    <btext style="padding-top: 5px;">Settings <span>ORADEA</span></btext>
+    <btn class="controller_selectable glyph_back" id="close-button" onclick="ipcRenderer.send('closeWorkshop')">
+      <div class="image close" style="width: 30px; height: 30px;"></div>
+    </btn>
+  </div>
+  <div class="flexbox" id="workshop_container">
+    <div id="query">
+      <btext class="category_name">Basics</btext>
+      <div class="category" id="category_basics"></div>
+      <btext class="category_name">Display</btext>
+      <div class="category" id="category_display"></div>
+      <btext class="category_name">Controller</btext>
+      <div class="category" id="category_controller"></div>
+      <btext class="category_name">Mouse & Keyboard</btext>
+      <div class="category" id="category_mouse_keyboard"></div>
+      <btext class="category_name">Misc</btext>
+      <div class="category" id="category_misc"></div>
+    </div>
+    <div id="results">
+      <div class="category_contents" data-associated-function="initPlayfieldConfig()" data-category="Playfield"
+        data-associate="category_basics">
+        <div></div>
+        <btext>Note Speed <span style="opacity: 0.5;" id="note_speed"></span></btext>
+        <div class="preview_window flexbox">
+          <div class="flexbox" style="height: fit-content; margin-top: auto; margin-bottom: auto;">
+            <btn class="nsbuttons" onclick="addToNS(-1)">-1</btn>
+            <btn class="nsbuttons" onclick="addToNS(-0.1)">-0.1</btn>
+          </div>
+
+          <div class="flexbox"
+            style="width: 300px; height: 300px; margin: auto; margin-top: 10px; margin-bottom: 10px; position: relative !important; background: url('../Assets/Playfield/frame.svg'); background-size: cover;">
+            <div style="width: 100px; height: 100%; margin: auto; rotate: 30deg; position: relative !important;">
+              <div id="noteForDemonstration"
+                style="width: 100%; height: 100%; background-image: url('../Assets/Headers/Note.svg'); background-repeat: no-repeat; animation: noteDemonstration infinite 2s linear;">
+              </div>
+            </div>
+            <btext id="note_speed_preview">[]</btext>
+          </div>
+
+          <div class="flexbox" style="height: fit-content; margin-top: auto; margin-bottom: auto;">
+            <btn class="nsbuttons" onclick="addToNS(0.1)">+0.1</btn>
+            <btn class="nsbuttons" onclick="addToNS(1)">+1</btn>
+          </div>
+        </div>
+
+        <btext>Hexagon Size <span style="opacity: 0.5;" id="hexagon_size_preview"></span></btext><br>
+        <input type="range" min="0.5" max="2" step="0.1" value="1" onmousedown="startHoldingHexagon()"
+          oninput="updateHexagonSize(this.value)" id="hexagon_size" class="range_slider">
+        <btext style="font-size: 15px; opacity: 0.5;">Hold to preview. Some songs may temporarily affect this setting.
+        </btext><br>
+        <div style="height: 10px;"></div>
+        <btext>Joystick Segment Snap Extension <span style="opacity: 0.5;" id="snap_extension_preview"></span></btext>
+        <br>
+        <input type="range" min="1" max="30" step="1" value="1" oninput="updateSnapExtension(this.value)"
+          id="snap_extension" class="range_slider">
+        <btext style="font-size: 15px; opacity: 0.5;">Since controller input is inaccurate, we extend selected segments.
+          Default is best.
+        </btext>
+
+      </div>
+      <div class="category_contents" data-category="Credits" data-associate="category_misc">
+        <div></div>
+        <btext>
+          Homescreen ambiance: The Cynic Project / <a href="https://cynicmusic.com" target="_blank">cynicmusic.com</a> /
+          pixelsphere.org<br>
+          Special thanks to <a href="https://www.youtube.com/@lexycat" target="_blank">lexycat</a> for their songs!<br>
+          Special thanks to <a href="https://www.youtube.com/@lexycat" target="_blank">Waterflame</a> for their songs!<br>
+        </btext>
+      </div>
+    </div>
+  </div>
+  </div>
+</body>
+
+<script src="../Utilities/global.js"></script>
+<script src="../Utilities/controller-control.js"></script>
+<script src="../Core/defaultComponents.js"></script>
+<script src="../Core/slimselect.min.js"></script>
+<script src="./script.js"></script>
+
+</html>
