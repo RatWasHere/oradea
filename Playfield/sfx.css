@@ -229,3 +229,39 @@
     opacity: 0;
   }
 }
+
+.noteContainer:has(.sfx_slider_hold) {
+  overflow: hidden;
+}
+
+
+.lightshow_item {
+  width: 30vw;
+  height: 33.3vh;
+  background: white;
+  position: fixed;
+  opacity: 0;
+  filter: blur(100px);
+}
+
+.lightshow_item:nth-of-type(2) {
+  translate: 0 33.3vh;
+}
+.lightshow_item:nth-of-type(3) {
+  translate: 0 66.6vh;
+}
+.lightshow_item:nth-of-type(4) {
+  translate: 70vw 0;
+}
+.lightshow_item:nth-of-type(5) {
+  translate: 70vw 33.3vh;
+}
+.lightshow_item:nth-of-type(6) {
+  translate: 70vw 66.6vh;
+}
+.lightshow_item:nth-of-type(7) {
+  translate: 35vw 0vh;
+}
+.lightshow_item:nth-of-type(8) {
+  translate: 35vw 66.6vh;
+}

@@ -85,7 +85,6 @@
 }
 
   let keyPositions = swap(beatmap.keyPositions);
-
   beatmap.hitObjects.forEach((hitObject, index) => {
     if (hitObject.type == "note") {
       let additionalOptions = {};
@@ -186,7 +185,17 @@
 
     sheet = newSheet;
   })();
+  let leftAlignedAngles = ["2", "3", "4"]
+  let dupeCheck = {};
+  sheet.forEach((item) => {
+    let itemPosition = leftAlignedAngles.includes(item.angle) ? 'L' : 'R'
+    if (!dupeCheck[`${item.time}${itemPosition}`]) {
+      dupeCheck[`${item.time}${itemPosition}`] = item;
+    } else {
+      console.log('Dupe ', item, dupeCheck[`${item.time}${itemPosition}`])
+    }
+  })
   require('fs').writeFileSync('./Misc/map.json', JSON.stringify(sheet, null, 2));
-
+  console.log(sheet)
 </script>
 </html>

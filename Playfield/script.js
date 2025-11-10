@@ -17,11 +17,11 @@ const CONFIG = {
   SNAP_INTERVAL: 60, // 360/6 = 6 (Segments)
   SNAP_EXTENSION: 21, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
 
-  NOTE_RADIUS: 150,
+  NOTE_RADIUS: 110,
 
   SCALE_DURATION: 0,
 
-  NOTE_PREVIEW_DELAY: 580,
+  NOTE_PREVIEW_DELAY: 400,
   CREATE_AT_DISTANCE_OF: 0,
 
   // ===== CONTAINERS =====
@@ -34,6 +34,8 @@ const CONFIG = {
 
   // TIMING & INPUT
   GAMEPAD_DEADZONE: 0.1,
+
+  AUDIO_OFFSET: 0,
 
   FLICK_THRESHOLD: 13,
   FLICK_OFFSET: 20,
@@ -68,11 +70,16 @@ const CONFIG = {
   },
 
   AUTOPLAY: false,
-  BUTTONS: false
+  BUTTONS: true
 };
+
+function getProgress(value, min, max) {
+  return Math.max(0, (value - min) / (max - min));
+}
+
+
 // translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
 // calc((var(--sr) / 2) - var(--tlr))
-CONFIG.CONTAINER_REAL_RADIUS = CONFIG.CONTAINER_REAL_RADIUS
 CONFIG.ADJUSTED_MAX_TRAVEL = (CONFIG.CONTAINER_REAL_RADIUS / 2);
 var sheet = document.styleSheets[0];
 // sheet.insertRule(`:root{--real-size: ${CONFIG.CONTAINER_REAL_RADIUS}px}`);
@@ -101,6 +108,8 @@ class GameState {
     document.getElementById('difficultyTag').classList.add(CONFIG.DIFFICULTY_MAP[this.crossDetails.difficulty].toLowerCase());
     this.combo = 0;
     this.score = 0;
+
+    CONFIG.AUDIO_OFFSET = getSetting('audio_offset', 0);
 
     let lastNote = this.sheet[this.sheet.length - 1];
     let determinedTime = lastNote.time;
@@ -155,6 +164,7 @@ class GameState {
   initializeDOM() {
     this.elements = {
       container: document.getElementById('noteContainer'),
+      topLevelContainer: document.getElementById('topLevelContainer'),
       cursor1: document.getElementById('cursor1'),
       cursor2: document.getElementById('cursor2'),
       comboDisplay: document.getElementById('comboDisplay'),
@@ -171,7 +181,28 @@ class GameState {
       backButton: document.getElementById('backButton'),
       restartButton: document.getElementById('restartButton'),
       controls: document.getElementById('controls'),
+      overlay: document.getElementById('overlay'),
+      flickers: [
+        document.getElementById('lightshow_1'), document.getElementById('lightshow_2'),
+        document.getElementById('lightshow_3'), document.getElementById('lightshow_4'),
+        document.getElementById('lightshow_5'), document.getElementById('lightshow_6'),
+        document.getElementById('lightshow_7'), document.getElementById('lightshow_8'),
+      ],
+      flickerStates: {
+        0: false,
+        1: false,
+        2: false,
+        3: false,
+        4: false,
+        5: false,
+        6: false,
+        7: false,
+      }
     };
+
+    CONFIG.NOTE_PREVIEW_DELAY = (5 / getSetting('note_speed', 6)) * 1000;
+
+    this.elements.overlay.style.scale = getSetting('hexagon_size', 1);
 
     this.effectItems = []
     for (let i = 0; i < 10; i++) {
@@ -315,7 +346,27 @@ class GameState {
 
   get currentTime() {
     if (!this.audioBuffer || !this.audioStartTime) return 0;
-    return ((this.audioContext.currentTime - this.audioStartTime) * 1000)
+    return ((this.audioContext.currentTime - this.audioStartTime) * 1000) - CONFIG.AUDIO_OFFSET
+  }
+
+  seekToTime(timeInMs) {
+    if (!this.audioSource || !this.audioBuffer) return;
+
+    // Stop current playback
+    this.audioSource.stop();
+    this.audioSource.disconnect();
+
+    // Create new source
+    this.audioSource = this.audioContext.createBufferSource();
+    this.audioSource.buffer = this.audioBuffer;
+    this.audioSource.connect(this.audioContext.destination);
+
+    // Calculate new start time
+    const timeInSeconds = timeInMs / 1000;
+    this.audioStartTime = this.audioContext.currentTime - timeInSeconds;
+
+    // Start playback from specified offset
+    this.audioSource.start(0, timeInSeconds);
   }
 }
 // ============================================================================
@@ -350,7 +401,7 @@ class TimingSystem {
   updateGlobalTimingPoint(sheet, time) {
     const timingPoint = this.getTimingPointAt(time, sheet, { speed: 1, offset: 0 });
     this.globalTimingPoint = timingPoint;
-
+    if (game.gameState?.timeSheet?.[timingPoint?.index]?.applied) return;
     if (timingPoint.style) {
       this.applySegmentStyles(timingPoint);
     }
@@ -360,12 +411,33 @@ class TimingSystem {
     if (timingPoint.playfield) {
       this.applyPlayfieldStyles(timingPoint)
     }
+    if (game.gameState.timeSheet?.[timingPoint?.index]) game.gameState.timeSheet[timingPoint.index].applied = true;
   }
 
   applyPlayfieldStyles(timingPoint) {
-    Object.entries(timingPoint.playfield).forEach(([key, value]) => {
-      game.gameState.elements.container.style.setProperty(key, value);
-    });
+    const entries = Object.entries(timingPoint.playfield);
+    for (let i = 0; i < entries.length; i++) {
+      const [key, value] = entries[i];
+      game.gameState.elements.container.style[key] = value;
+    }
+  }
+
+  applyFlickers(timingPoint) {
+    for (let i = 0; i < timingPoint.flickers.length; i++) {
+      let modifier = timingPoint.flickers[i];
+      const flicker = game.gameState.elements.flickers[modifier.source];
+      let duration = modifier.duration || 0;
+      flicker.style.transition = `opacity ${duration}ms ease`
+      requestAnimationFrame(() => {
+        if (game.gameState.elements.flickerStates[modifier.source]) {
+          game.gameState.elements.flickerStates[modifier.source] = false;
+          flicker.style.opacity = '0';
+        } else {
+          game.gameState.elements.flickerStates[modifier.source] = true;
+          flicker.style.opacity = modifier.strength || '1';
+        }
+      })
+    }
   }
 
   getTimingPointAt(time, timingSheet, defaultPoint = { speed: 1, offset: 0 }) {
@@ -390,6 +462,8 @@ class TimingSystem {
         activePoint.from = point.from || {};
         activePoint.note = point.note || null;
         activePoint.playfield = point.playfield || null;
+        activePoint.flickers = point.flickers || null;
+        activePoint.index = i;
 
         if (activePoint.from?.offset) {
           activePoint.from.offset = this.fromSpecial(activePoint.from.offset);
@@ -421,24 +495,30 @@ class TimingSystem {
     // Apply parent styles
     if (timingPoint.style.parent) {
       const parentElement = noteElement.parentElement.parentElement;
-      Object.entries(timingPoint.style.parent).forEach(([key, value]) => {
-        parentElement.style.setProperty(key, value);
-      });
+      const parentEntries = Object.entries(timingPoint.style.parent);
+      for (let i = 0; i < parentEntries.length; i++) {
+        const [key, value] = parentEntries[i];
+        parentElement.style[key] = value;
+      }
     }
 
     // Apply child styles
     if (timingPoint.style.child) {
       const childElement = noteElement.parentElement;
-      Object.entries(timingPoint.style.child).forEach(([key, value]) => {
-        childElement.style.setProperty(key, value);
-      });
+      const childEntries = Object.entries(timingPoint.style.child);
+      for (let i = 0; i < childEntries.length; i++) {
+        const [key, value] = childEntries[i];
+        childElement.style[key] = value;
+      }
     }
 
     if (timingPoint.style.header) {
       const childElement = noteElement;
-      Object.entries(timingPoint.style.header).forEach(([key, value]) => {
-        childElement.style.setProperty(key, value);
-      });
+      const headerEntries = Object.entries(timingPoint.style.header);
+      for (let i = 0; i < headerEntries.length; i++) {
+        const [key, value] = headerEntries[i];
+        childElement.style[key] = value;
+      }
     }
   }
 
@@ -818,8 +898,41 @@ class InputSystem {
 
       this.updateCursorRotation(0, stickStates.snappedRotations[0]);
       this.updateCursorRotation(1, stickStates.snappedRotations[1]);
-    }
+    } else {
+      let stuffToHold = {
+        Y_Held: 3,
+        B_Held: 1,
+        A_Held: 0,
 
+        UP_Held: 12,
+        LEFT_Held: 14,
+        DOWN_Held: 13
+      }
+
+      let pointAngleMappings = {
+        Y_Held: 300,
+        B_Held: 0,
+        A_Held: 60,
+        DOWN_Held: 120,
+        LEFT_Held: 180,
+        UP_Held: 240,
+      }
+
+      for (let pointID in stuffToHold) {
+        if (!this.points.get(pointID) && gamepad.buttons[stuffToHold[pointID]]?.pressed) {
+          this.createPoint({
+            angle: pointAngleMappings[pointID],
+            rawAngle: pointAngleMappings[pointID],
+            distance: 1,
+            type: pointID,
+            source: pointID
+          });
+        } else if (this.points.get(pointID) && !gamepad.buttons[stuffToHold[pointID]]?.pressed) {
+          this.releasePoint(pointID);
+        }
+      }
+
+    }
     this.updateGamepadButtons(gamepad);
   }
 
@@ -1331,11 +1444,9 @@ class RenderingSystem {
 
       note.height = actualHeight;
 
-      // Build sub-elements in memory
       const header = document.createElement('div');
       header.classList.add('header', 'start');
       noteElement.appendChild(header);
-
 
       const frame = document.createElement('div');
       frame.classList.add('header', 'midframe');
@@ -1354,9 +1465,17 @@ class RenderingSystem {
           header.classList.add('holdable_start');
         }
       }
+
+      // const hint = document.createElement('div');
+      // hint.classList.add('hint');
+      // header2.appendChild(hint);
+
+      note.endElement = header2;
+      note.startElement = header;
+      // note.hint = hint;
+
       noteElement.appendChild(header2);
 
-      // Put assembled noteElement inside noteContainer
       noteContainer.appendChild(noteElement);
     } else {
       noteElement.style.translate = `0px`;
@@ -1479,19 +1598,24 @@ class RenderingSystem {
   updateLargeFlickState(note) {
     if (!(note.holdable || note.started)) return;
 
-    let noteDesiredSegment = this.normalizeAngle(Number(note.angle) + Number(note.direction) * CONFIG.ANGLE_MODIFIER);
-    let flickPoints = note.points || [];
+    let flickPoints = note.points ? note.points : [];
     let relevantPoints = [];
+    let desiredNoteSegment = this.inputSystem.getSegment(this.normalizeAngle((Number(note.angle) + Number(note.direction)) * CONFIG.ANGLE_MODIFIER));
     for (let [pointID, point] of this.inputSystem.points) {
       let foundPoint = flickPoints.find(point => point.id == pointID);
-      if (foundPoint && point.angle == noteDesiredSegment) {
-        note.done = true;
-        this.inputSystem.releaseFlick(note);
-        relevantPoints.push(point);
-      } else if (!foundPoint && this.inputSystem.getSegment(point.angle) == note.angle) {
+      if (foundPoint) {
         relevantPoints.push({
           id: pointID,
-          rawAngle: point.rawAngle
+          startSegment: note.angle
+        });
+        if (this.inputSystem.getSegment(point.angle) == desiredNoteSegment && point.distance > CONFIG.LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD) {
+          note.done = true;
+          this.inputSystem.releaseFlick(note);
+        }
+      } else if (this.inputSystem.getSegment(point.angle) == note.angle) {
+        relevantPoints.push({
+          id: pointID,
+          startSegment: note.angle
         })
       }
     }
@@ -1500,61 +1624,86 @@ class RenderingSystem {
 
   updateSliderPosition(note, currentTime, timing) {
     const sliderMaxHeight = CONFIG.ADJUSTED_MAX_TRAVEL;
-
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / (timing.speed || 1);
     const offset = timing.offset;
-
     const sliderEnd = note.sliderEnd;
     const sliderStart = note.time;
+    if (offset) {
+      currentTime = currentTime + offset;
+    }
 
     let spentHeight;
+    const scaleStart = sliderStart - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION);
+    const scaleEnd = sliderStart - CONFIG.NOTE_PREVIEW_DELAY;
 
-    function getProgress(value, min, max) {
-      return Math.max(0, (value - min) / (max - min));
+
+    const maxHeight = ((sliderEnd - sliderStart) / previewDelay) * sliderMaxHeight;
+    const progress = getProgress(currentTime + previewDelay, sliderStart, sliderEnd);
+    let currentHeight = progress * maxHeight;
+    if ((currentTime + previewDelay) <= sliderEnd) {
+      note.midframe.style.scale = `1 ${(currentHeight) / CONFIG.NOTE_RADIUS}`;
+      note.element.style.translate = `0px ${sliderMaxHeight * -1}px`;
+      note.endElement.style.translate = `0px ${currentHeight - (CONFIG.NOTE_RADIUS)}px`;
+    } else {
+      note.element.style.translate = `0px ${(currentHeight) - (maxHeight - (sliderMaxHeight*-1))}px`;
     }
 
+    this.updateSliderHoldStatus(note);
+    return
+
+    // (value - min) / (max - min)
+    let distanceFromStart = getProgress(currentTime, sliderStart - CONFIG.NOTE_PREVIEW_DELAY, sliderStart);
+    spentHeight = distanceFromStart * sliderMaxHeight;
+
+    let toTranslate = Math.max(spentHeight - currentHeight, sliderMaxHeight * -1);
+    note.element.style.translate = `0px ${Math.max(distanceFromStart - maxHeight, sliderMaxHeight * -1)}px`;
+
+    return
 
     if (!offset) {
-      let scale = 1; // default once scaling is done
-      let scaleStart = (sliderStart) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
-      let scaleEnd = (sliderStart) - CONFIG.NOTE_PREVIEW_DELAY;
-      if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
-        // progress from 0 → 1 during the scale duration
-        let progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
-        scale = game.timingSystem.applyEasing(progress, '[0.49,0.14,0.74,0.96]');
-      } else if (currentTime < scaleStart) {
+
+    }
+
+    return;
+    if (!offset) {
+      let scale = 1;
+      const scaleStart = sliderStart - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION);
+      const scaleEnd = sliderStart - CONFIG.NOTE_PREVIEW_DELAY;
+
+      if (currentTime < scaleStart) {
         scale = 0;
-      } else if (!note.endedScale && currentTime > scaleEnd) {
-        scale = 1;
+      } else if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
+        const progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
+        scale = game.timingSystem.applyEasing(progress, '[0.49,0.14,0.74,0.96]');
       }
 
+      // if (note.startElement.style.scale != scale) {
+      //   note.startElement.style.scale = scale;
+      //   note.endElement.style.scale = scale;
+      // }
 
-      note.element.getElementsByClassName('start')[0].style.transform = `scale(${scale})`;
-      note.element.getElementsByClassName('end')[0].style.transform = `scale(${scale})`;
-
-      const maxHeight = (((sliderEnd - (sliderStart)) / previewDelay) * (sliderMaxHeight));
-
+      const maxHeight = ((sliderEnd - sliderStart) / previewDelay) * sliderMaxHeight;
       if ((currentTime + previewDelay) <= sliderEnd) {
-        let currentHeight = getProgress(currentTime + previewDelay, sliderStart, sliderEnd) * maxHeight;
-        note.midframe.style.height = `${currentHeight}px`;
+        const currentHeight = getProgress(currentTime + previewDelay, sliderStart, sliderEnd) * maxHeight;
+        note.midframe.style.scaleY = currentHeight / CONFIG.NOTE_RADIUS;
         spentHeight = sliderMaxHeight;
       } else {
-        note.midframe.style.height = `${maxHeight}px`;
-        spentHeight = ((sliderEnd - (currentTime)) / previewDelay) * sliderMaxHeight;
+        let heightTranslatedToScale = maxHeight / CONFIG.NOTE_RADIUS;
+        note.midframe.style.scaleY = heightTranslatedToScale;
+        spentHeight = sliderMaxHeight;
+        spentHeight = ((sliderEnd - currentTime) / previewDelay) * sliderMaxHeight;
       }
     } else {
-      spentHeight = (((sliderEnd - (sliderStart + offset))) / previewDelay) * sliderMaxHeight;
+      spentHeight = ((sliderEnd - (sliderStart + offset)) / previewDelay) * sliderMaxHeight;
     }
-    const newTranslate = `0px ${(spentHeight) * -1}px`;
-    if (note.element.style.translate !== newTranslate) {
-      note.element.style.translate = newTranslate;
-    }
+
+    // const hintProgression = getProgress(currentTime, sliderStart - previewDelay, sliderStart);
+    // note.hint.style.scale = hintProgression;
 
     if (note.isBeingHeld || currentTime <= note.sliderEnd) {
       this.updateSliderHoldStatus(note);
     }
   }
-
 
   updateSliderHoldStatus(note) {
     let isBeingHeld = false;
@@ -1805,7 +1954,7 @@ class RhythmGame {
     this.gameState.elements.noteContainerFrame.parentElement.style.scale = 0.9;
     this.gameState.elements.pauseButton.firstElementChild.classList.remove('pause');
     this.gameState.elements.pauseButton.firstElementChild.classList.add('play');
-    this.gameState.elements.songData.style.scale = 2;
+    this.gameState.elements.songData.style.scale = 1.2;
     this.gameState.elements.songArt.classList.add('viewing');
     this.gameState.elements.backButton.classList.remove('hiddenButton');
     this.gameState.elements.restartButton.classList.remove('hiddenButton');
@@ -1861,21 +2010,23 @@ class RhythmGame {
       let totalNotesHit = this.gameState.scoringPad.perfect.length + this.gameState.scoringPad.great.length + this.gameState.scoringPad.ok.length + this.gameState.scoringPad.bad.length;
       let totalNotes = this.gameState.sheet.length;
       scoreStats.innerHTML = `
-        <div class="scoreIndicator perfect"><span>PERFECT</span>${this.gameState.scoringPad.perfect.length} </div>
-        <div class="scoreIndicator great"><span>GREAT</span>${this.gameState.scoringPad.great.length} <span>${this.gameState.scoringPad.great.filter(note => note < 0).length} early, ${this.gameState.scoringPad.great.filter(note => note > 0).length} late</span></div>
-        <div class="scoreIndicator okay"><span>OKAY</span>${this.gameState.scoringPad.ok.length} <span>${this.gameState.scoringPad.ok.filter(note => note < 0).length} early, ${this.gameState.scoringPad.ok.filter(note => note > 0).length} late</span></div>
-        <div class="scoreIndicator bad"><span>BAD</span>${this.gameState.scoringPad.bad.length} <span>${this.gameState.scoringPad.bad.filter(note => note < 0).length} early, ${this.gameState.scoringPad.bad.filter(note => note > 0).length} late</span></div>
-        <div class="scoreIndicator miss"><span>MISS</span>${this.gameState.scoringPad.miss.length}</div>
+      <btext id="hitCounts"><span>${(totalNotesHit / totalNotes) * 100}%</span> <span>${totalNotesHit}/${totalNotes}</span></btext><br>
+      <btext id="maxCombo"><span>Max Combo</span> <span>Unknown</span></btext>
+      <br>
+      <br>
+        <div class="scoreIndicator flexbox perfect"><div class="label">PERFECT</div><div class="count">${this.gameState.scoringPad.perfect.length}</div></div>
+        <div class="scoreIndicator flexbox great"><div class="label">GREAT</div><div class="count">${this.gameState.scoringPad.great.length}</div></div>
+        <div class="scoreIndicator flexbox okay"><div class="label">OKAY</div><div class="count">${this.gameState.scoringPad.ok.length}</div></div>
+        <div class="scoreIndicator flexbox bad"><div class="label">BAD</div><div class="count">${this.gameState.scoringPad.bad.length}</div></div>
+        <div class="scoreIndicator flexbox miss"><div class="label">MISS</div><div class="count">${this.gameState.scoringPad.miss.length}</div></div>
       `
       document.getElementById('grade').innerHTML = `
-      <btext><span>Max Combo</span> Unknown</btext><br>
-      <btext><span>${(totalNotesHit / totalNotes) * 100}%</span> ${totalNotesHit}/${totalNotes}</btext>
       <btextm style="color: var(--perfect); border-color: var(--perfect);">A</btextm>
       `
 
       document.getElementById('songProcedureControls').innerHTML = `
       <btn class="controller_selectable">Replay</btn>
-      <btn class="controller_selectable selected" onclick="location.href = '../Picker/LevelPicker.html'">Home</btn>
+      <btn class="controller_selectable" onclick="location.href = '../Picker/LevelPicker.html'">Home</btn>
       `
     }, CONFIG.LONG_ANIMATION * 2);
   }

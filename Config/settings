@@ -1,4 +1,12 @@
 {
-  "note_speed": 10,
-  "hexagon_size": "1.2"
+  "note_speed": 10.8,
+  "hexagon_size": "1",
+  "input_mode": "buttons",
+  "snap_extension": "0",
+  "default_screen_state": "full",
+  "frame_cap": "auto",
+  "screen_state": "windowed",
+  "audio_offset": "0",
+  "music_volume": "10",
+  "sfx_volume": "100"
 }

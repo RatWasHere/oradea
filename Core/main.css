@@ -3,6 +3,7 @@ body {
   background-color: black;
   background-repeat: none !important;
   background-image: url('../Assets/bg.png');
+  overflow: hidden !important;
 }
 
 @keyframes bgmodify {
@@ -306,19 +307,17 @@ body {
 .lane {
   height: var(--raw-size);
   width: var(--note-radius);
-  margin-left: calc((var(--raw-size) / 2) - var(--note-radius) / 2);
+  /* margin-left: calc((var(--raw-size) / 2) - var(--note-radius) / 2); */
+  margin-left: 315px;
+
   /* margin-top: var(--s); */
   /* padding: calc(var(--nr) / 2 * -1); */
   /* background: blue !important; */
   margin-right: auto;
   position: absolute;
   opacity: 1;
-  overflow: hidden;
+  overflow: visible;
   pointer-events: none;
-}
-
-.item:hover {
-  scale: 1.2 !important;
 }
 
 .from_slider {
@@ -329,7 +328,7 @@ body {
 .item {
   width: var(--note-radius);
   height: var(--note-radius);
-  margin-top: calc((((var(--real-size) - var(--note-radius)) / 2) + var(--gap)));
+  margin-top: 260px; /* was calc((((var(--real-size) - var(--note-radius)) / 2) + var(--gap))) */
   background: url('../Assets/Headers/Note.svg');
   background-size: cover !important;
   background-repeat: no-repeat !important;
@@ -411,7 +410,7 @@ body {
 
 .header {
   width: var(--note-radius);
-  height: calc(var(--note-radius) / 2);
+  height: 55px /* calc(var(--note-radius) / 2) */;
   background-size: cover !important;
   background-repeat: no-repeat !important;
   shape-rendering: geometricPrecision;
@@ -425,21 +424,38 @@ body {
 .header.end {
   background: url('../Assets/Headers/Bottom.svg');
   transform-origin: top;
-  translate: 0px -0.3px;
+  transform: translateY(-1px);
+}
+
+.hint {
+  content: '';
+  width: 740px;
+  height: 740px;
+  /* top: -630px; */
+  bottom: 0;
+  left: -320px;
+  position: absolute;
+  transform-origin: bottom;
+  background: url('../Assets/Playfield/sync_frame.svg') no-repeat center/contain;
+  image-rendering: optimizeSpeed;
+  display: block;
+  will-change: transform;
+  contain: layout paint size;
 }
 
 .header.start {
   background: url('../Assets/Headers/Top.svg');
   margin-top: auto;
   transform-origin: bottom;
-  translate: 0px 0.3px;
+  transform: translateY(1px);
 }
 
 .header.midframe {
   background: url(../Assets/Headers/Frame.svg);
-  height: calc(var(--sliderHeight));
+  height: var(--note-radius) !important;
   background-size: var(--note-radius) var(--note-radius) !important;
   background-repeat: repeat-y !important;
+  transform-origin: top;
 }
 
 .header:nth-of-type(1) {
@@ -635,11 +651,11 @@ btn:active {
 
 .noteContainer {
   width: 100%;
-  height: calc(50% - (var(--note-radius) / 2));
+  height: 315px;
   overflow: visible;
   /* scale: 1 -1; */
   /* transform: translateY(calc(-100% - (var(--note-radius) / 2))); */
-  transform: translateY(calc(100% + (var(--note-radius) / 2)));
+  transform: translateY(370px);
   transition: all var(--long) ease;
 }
 
@@ -651,18 +667,18 @@ btn:active {
 
 .slider {
   background: none !important;
-  height: calc((var(--raw-size) / 2));
+  height: 370px;
 }
 
 .center {
-  --size: calc(var(--note-radius));
+  --size: var(--note-radius);
   width: var(--size);
   aspect-ratio: 1;
   border-radius: var(--size);
   z-index: 500;
   background: #000000;
   position: absolute;
-  translate: calc(var(--raw-size) / 2 - var(--size) / 2) calc(var(--raw-size) / 2 - var(--size) / 2);
+  translate: 315px 315px /* calc(var(--raw-size) / 2 - var(--size) / 2) calc(var(--raw-size) / 2 - var(--size) / 2) */;
 }
 
 #comboDisplay {
@@ -718,11 +734,11 @@ btn:active {
   inset: 0;
   border-radius: 100%;
   pointer-events: none;
-  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg);
+  mask-image: conic-gradient(from 90deg at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg);
   z-index: 1;
   background-size: var(--raw-size);
   background-position: 600px 600px;
-  rotate: calc(var(--rotation) * -1);
+  rotate: -90deg;
   transition: all var(--long) ease;
   opacity: 1;
   /* animation: glow 2s linear; */
@@ -738,7 +754,7 @@ btn:active {
   /* define the variable here */
   rotate: -90deg;
   filter: blur(50px);
-  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg);
+  mask-image: conic-gradient(from 90deg at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg);
   mask-composite: exclude;
   height: var(--raw-size);
   display: block;
@@ -752,7 +768,7 @@ btn:active {
   content: "";
   transition: all 0.15s cubic-bezier(0, .93, .68, 1.03);
   --rotation: 90deg;
-  mask-image: conic-gradient(from var(--rotation) at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg) !important;
+  mask-image: conic-gradient(from 90deg at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg) !important;
   scale: 1.2;
   opacity: 0;
   rotate: -90deg;
@@ -813,6 +829,7 @@ btn:active {
   margin-left: calc((var(--raw-size) - var(--frame-size)) / 2);
   margin-top: calc((var(--raw-size) - var(--frame-size)) / 2);
   position: absolute;
+  transform-origin: bottom;
 }
 
 .frame .indicator_parent {
@@ -925,11 +942,10 @@ btn:active {
 }
 
 .sfx_sparkles_2 {
-  width: calc(700px / 2);
+  width: 350px;
   height: var(--note-radius);
   background: url('../Assets/SFX/Sparkles\ Layer\ 2.svg');
   background-size: cover;
-  /* translate: calc(var(--real-size) / 2 - (var(--note-radius) / 2)) calc(var(--real-size)) !important; */
   animation: sparkles 0.4s ease !important;
   border: none !important;
   box-shadow: none !important;
@@ -944,7 +960,7 @@ btn:active {
 .sfx_particle_hold_2,
 .sfx_particle_1,
 .sfx_particle_2 {
-  width: calc(var(--raw-size) / 1.732);
+  width: 427.35px; /* calc(var(--raw-size) / 1.732) */;
   height: calc(var(--note-radius) * 2);
   scale: 0;
   opacity: 1;
@@ -1396,7 +1412,7 @@ a {
 #controls {
   padding: 20px;
   position: absolute;
-  width: calc(100% - 40px);
+  width: calc(100% - 48px);
   z-index: 1000;
   height: 0px;
   transition: all var(--longer) ease;
@@ -1424,9 +1440,13 @@ a {
 }
 
 #scoreText {
-  margin-left: 0px;
+  margin-left: 4px;
   margin-right: 0px;
+  margin-bottom: 0px;
+  width: 100%;
+  height: fit-content;
   font-size: 20px;
+  display: block;
   text-shadow: #FFFFFF30 0px 0px 6px;
   opacity: 0.5;
   font-family: 'Mono';
@@ -1436,16 +1456,23 @@ btn:has(.pause) {
   box-shadow: #FFFFFF10 0px 0px 5px 4px;
 }
 
+#scoreCard {
+  margin-top: 0px;
+  margin-bottom: auto;
+  width: 100%;
+}
+
 #scoreNumber {
   background: #FFFFFF10;
+  height: fit-content;
   padding-left: 8px;
   padding-right: 8px;
   border-radius: 5px;
-  margin: auto;
   margin-top: 2px;
   margin-left: 0px;
   font-size: 25px;
   font-family: 'Mono';
+  width: calc(100% - 16px);
 }
 
 #scoreNumber>#unusedScoreNumbers {
@@ -1453,12 +1480,12 @@ btn:has(.pause) {
 }
 
 #songName {
-  margin: auto 0px;
-  margin-right: 5px;
+  margin-left: auto;
   font-family: 'Modern';
   font-size: 26px;
   font-weight: 500;
   line-height: 29px;
+  text-align: right;
 }
 
 #songArtist {
@@ -1469,6 +1496,7 @@ btn:has(.pause) {
   font-size: 18px;
   margin-top: -7px;
   font-weight: 100;
+  text-align: right;
 }
 
 #topLevelContainer {
@@ -1478,24 +1506,22 @@ btn:has(.pause) {
 }
 
 #songData {
-  margin-right: 25px;
-  transform-origin: top right;
+  width: 330px;
+  margin-left: calc(100vw - 400px);
+  transform-origin: right top;
+  position: absolute;
   transition: all var(--long) ease;
-}
-
-.end_controls>#songData>#songArt {
-  width: 380px;
-  height: 380px;
 }
 
 #songArt {
   opacity: 0;
   border-radius: 5px;
-  width: 200px;
-  height: 200px;
+  width: 330px;
+  height: 0px;
   margin-right: auto;
   margin-left: 0px;
   background-size: cover;
+  background-position: 0px 0px;
   scale: 0.8;
   filter: blur(12px);
   transform-origin: top left;
@@ -1505,6 +1531,8 @@ btn:has(.pause) {
   opacity: 1 !important;
   scale: 1 !important;
   filter: blur(0px) !important;
+  height: 330px;
+  margin-bottom: 10px;
 }
 
 .easy {
@@ -1522,6 +1550,10 @@ btn:has(.pause) {
   --border-color: #FF0000;
 }
 
+.expert {
+  --diff-color: #ff00ff30;
+  --border-color: #c300ff;
+}
 
 .difficulty-dot {
   width: 30px;
@@ -1582,80 +1614,99 @@ difficulty {
 }
 
 #scoreStats {
-  margin-top: 30px;
+  width: 100%;
+  margin-top: auto;
 }
 
 .scoreIndicator {
   font-family: 'Modern';
+  font-weight: 100;
   font-size: 30px;
   line-height: 33px;
   color: #FFFFFF;
+  padding: 10px;
+  border-radius: 5px;
+  width: calc(100% - 20px);
+}
+.scoreIndicator:nth-of-type(odd) {
+  background: #00000050;
 }
 
-.scoreIndicator>span {
-  display: inline-block;
-  width: 230px;
+.scoreIndicator>div {
+  display: block;
   font-weight: 1000;
+  margin-right: auto;
 }
 
-.scoreIndicator>span:nth-of-type(2) {
+
+.scoreIndicator>div:nth-of-type(2) {
   width: fit-content;
-  font-size: 16px !important;
+  margin-left: auto; margin-right: 0px;
   color: #FFFFFF50 !important;
   font-weight: 300;
   text-shadow: #FFFFFF20 0px 0px 15px !important;
 }
 
-.scoreIndicator.perfect>span {
+.scoreIndicator>div {
+  font-weight: 200;
+}
+.scoreIndicator.perfect>div {
   color: var(--perfect);
   text-shadow: #FFFFFF90 0px 0px 15px;
 }
 
-.scoreIndicator.great>span {
+.scoreIndicator.great>div {
   color: var(--great);
   text-shadow: #FFFFFF30 0px 0px 5px;
 }
 
-.scoreIndicator.okay>span {
+.scoreIndicator.okay>div {
   color: var(--okay);
   text-shadow: #FFFFFF30 0px 0px 5px;
 }
 
-.scoreIndicator.bad>span {
+.scoreIndicator.bad>div {
   color: var(--bad);
   text-shadow: #FFFFFF30 0px 0px 5px;
 }
 
-.scoreIndicator.miss>span {
+.scoreIndicator.miss>div {
   color: var(--miss);
   text-shadow: #FFFFFF30 0px 0px 5px;
 }
 
+#grade {
+  width: 100%;
+  border-radius: 5px;
+  margin-top: 0px;
+  display: block;
+  height: fit-content;
+  margin-top: 20px;
+}
 
 #grade>btextm {
+  font-family: 'Modern';
+  font-weight: 100;
   font-size: 200px;
+
   width: 200px;
   height: 200px;
   margin: auto;
   line-height: 200px;
-  padding: 30px;
   display: block;
   text-align: center;
   border-width: 0px;
-  margin-top: 20px;
+  padding: 30px;
   border-style: solid;
   color: #000000;
-  /* box-shadow: #FFFFFF20 0px 0px 10px 5px; */
   border-radius: 100%;
   transition: all var(--long) ease;
-  margin-bottom: calc(100vh - 610px);
   text-shadow: #FFFFFF90 0px 0px 10px;
 }
 
 #grade>btext {
   font-family: 'Mono';
   position: fixed;
-  margin-top: 300px;
   width: 340px;
   text-align: right;
 }
@@ -1669,27 +1720,30 @@ difficulty {
 }
 
 #songProcedureControls {
-  margin-left: auto !important;
+  width: 100%;
+  height: fit-content;
 }
 
 #songProcedureControls>btn {
   text-align: center;
   font-family: 'Moderno';
   padding: 10px;
+  width: calc(100% - 20px);
 }
 
 #songProcedureControls>btn:nth-child(1) {
-  margin-bottom: 20px;
-  width: 360px;
   font-size: 20px;
-  /* margin-top: calc(100vh - 200px) !important; */
-  margin-top: calc(100vh - 580px);
+  margin-bottom: 10px;
+  opacity: 0.67;
 }
 
 #songProcedureControls>btn:nth-child(2) {
-  width: 360px;
   font-size: 25px;
-  animation: procedureButtonCue infinite 2s ease;
+}
+
+#lowerScoreContainer {
+  margin-top: auto;
+  width: 100%;
 }
 
 @keyframes procedureButtonCue {
@@ -1706,15 +1760,19 @@ difficulty {
   }
 }
 
-.end_gradeParent {
+#gradeParent {
+  width: 500px;
+  height: calc(100vh - 37px);
+  margin: auto;
+  margin-left: 0px;
   padding: 10px;
   border-radius: 10px;
   background-color: #FFFFFF10;
-  padding-left: 18px;
-  margin-left: -8px;
-  margin-right: 0px;
-  border-top-left-radius: 0px;
-  border-bottom-left-radius: 0px;
+  display: none;
+}
+
+.end_gradeParent {
+  display: flex !important;
 }
 
 #controls:has(.end_gradeParent) {
@@ -1723,10 +1781,36 @@ difficulty {
 
 .end_controls>#songData {
   margin-top: 10px;
-  margin-right: -20px;
+  margin-right: -17px;
 }
 
+#maxCombo {
+  font-family: 'Modern';
+  font-size: 20px;
+}
+#maxCombo > span:nth-of-type(1) {
+  font-weight: 100;
+  opacity: 0.67;
+  padding-right: 5px;
+}
+#maxCombo > span:nth-of-type(2) {
+  font-weight: 200;
+  opacity: 1;
+}
 
+#hitCounts {
+  font-family: 'Modern';
+  font-size: 20px;
+}
+#hitCounts > span:nth-of-type(1) {
+  font-weight: 100;
+  opacity: 0.67;
+  padding-right: 5px;
+}
+#hitCounts > span:nth-of-type(2) {
+  font-weight: 200;
+  opacity: 1;
+}
 
 input {
   border: none !important;

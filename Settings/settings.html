@@ -7,7 +7,7 @@
 <body>
   <div id="titlebar" class="flexbox">
     <btext style="padding-top: 5px;">Settings <span>ORADEA</span></btext>
-    <btn class="controller_selectable glyph_back" id="close-button" onclick="ipcRenderer.send('closeWorkshop')">
+    <btn class="glyph_back" id="close-button" onclick="ipcRenderer.send('closeSettings')">
       <div class="image close" style="width: 30px; height: 30px;"></div>
     </btn>
   </div>
@@ -15,12 +15,8 @@
     <div id="query">
       <btext class="category_name">Basics</btext>
       <div class="category" id="category_basics"></div>
-      <btext class="category_name">Display</btext>
-      <div class="category" id="category_display"></div>
-      <btext class="category_name">Controller</btext>
-      <div class="category" id="category_controller"></div>
-      <btext class="category_name">Mouse & Keyboard</btext>
-      <div class="category" id="category_mouse_keyboard"></div>
+      <btext class="category_name">Hardware</btext>
+      <div class="category" id="category_hardware"></div>
       <btext class="category_name">Misc</btext>
       <div class="category" id="category_misc"></div>
     </div>
@@ -31,8 +27,8 @@
         <btext>Note Speed <span style="opacity: 0.5;" id="note_speed"></span></btext>
         <div class="preview_window flexbox">
           <div class="flexbox" style="height: fit-content; margin-top: auto; margin-bottom: auto;">
-            <btn class="nsbuttons" onclick="addToNS(-1)">-1</btn>
-            <btn class="nsbuttons" onclick="addToNS(-0.1)">-0.1</btn>
+            <btn class="nsbuttons controller_selectable" onclick="addToNS(-1)">-1</btn>
+            <btn class="nsbuttons controller_selectable" onclick="addToNS(-0.1)">-0.1</btn>
           </div>
 
           <div class="flexbox"
@@ -46,33 +42,102 @@
           </div>
 
           <div class="flexbox" style="height: fit-content; margin-top: auto; margin-bottom: auto;">
-            <btn class="nsbuttons" onclick="addToNS(0.1)">+0.1</btn>
-            <btn class="nsbuttons" onclick="addToNS(1)">+1</btn>
+            <btn class="nsbuttons controller_selectable" onclick="addToNS(0.1)">+0.1</btn>
+            <btn class="nsbuttons controller_selectable" onclick="addToNS(1)">+1</btn>
           </div>
         </div>
 
         <btext>Hexagon Size <span style="opacity: 0.5;" id="hexagon_size_preview"></span></btext><br>
         <input type="range" min="0.5" max="2" step="0.1" value="1" onmousedown="startHoldingHexagon()"
-          oninput="updateHexagonSize(this.value)" id="hexagon_size" class="range_slider">
+          onmouseup="require('electron').ipcRenderer.send('doneUpdatingHexagon')"
+          oninput="updateHexagonSize(this.value)" id="hexagon_size" class="range_slider controller_selectable">
         <btext style="font-size: 15px; opacity: 0.5;">Hold to preview. Some songs may temporarily affect this setting.
         </btext><br>
-        <div style="height: 10px;"></div>
-        <btext>Joystick Segment Snap Extension <span style="opacity: 0.5;" id="snap_extension_preview"></span></btext>
-        <br>
-        <input type="range" min="1" max="30" step="1" value="1" oninput="updateSnapExtension(this.value)"
-          id="snap_extension" class="range_slider">
-        <btext style="font-size: 15px; opacity: 0.5;">Since controller input is inaccurate, we extend selected segments.
-          Default is best.
-        </btext>
-
       </div>
+      <div class="category_contents" data-associated-function="initAudio()" data-category="Audio" data-id="hw_audio"
+        data-associate="category_hardware">
+        <div></div>
+        <btext>Offset <span style="opacity: 0.5;" id="audio_offset_preview">(0ms)</span></btext><br>
+        <input type="range" min="-750" max="750" step="5" value="0" oninput="updateOffsetAmount(this.value)"
+          id="audio_offset" class="range_slider controller_selectable">
+        <btext style="font-size: 15px; opacity: 0.5; display: block; text-align: left;">
+          Bluetooth audio devices typically have a delay of ~200ms.<br>
+          We recommend you go through the calibration wizard no matter your PC's specs.
+        </btext>
+        <br>
+        <btext>Music Volume <span style="opacity: 0.5;" id="music_volume_preview">(%)</span></btext><br>
+        <input type="range" min="0" max="100" step="1" value="0" oninput="updateMusicVolume(this.value)"
+          id="music_volume" class="range_slider controller_selectable">
+        <br>
+        <btext>SFX Volume <span style="opacity: 0.5;" id="sfx_volume_preview">(%)</span></btext><br>
+        <input type="range" min="0" max="100" step="1" value="0" oninput="updateSFXVolume(this.value)"
+          id="sfx_volume" class="range_slider controller_selectable">
+      </div>
+
+      <div class="category_contents" data-associated-function="initDisplay()" data-category="Display"
+        data-id="hw_display" data-associate="category_hardware">
+        <div></div>
+        <btext>
+          Startup Window Mode
+        </btext>
+        <select id="defaultScreenState">
+          <option value="windowed">Windowed</option>
+          <option value="maximized">Maximized</option>
+          <option value="full">Fullscreen</option>
+        </select>
+        <br>
+        <btext>
+          Frame Limit
+        </btext>
+        <select id="frameCap">
+          <option value="auto">Detect at startup (Display's refresh rate)</option>
+          <option value="60">60</option>
+          <option value="90">90</option>
+          <option value="120">120</option>
+          <option value="144">144</option>
+          <option value="165">165</option>
+          <option value="240">240</option>
+          <option value="unlimited">None</option>
+        </select>
+        <btext style="opacity: 0.3; font-size: 15px; display: block; text-align: left;">
+          How many frames to render every second.<br>
+          Restart required to apply.
+        </btext>
+      </div>
+
+      <div class="category_contents" data-category="Input" data-associate="category_hardware" data-id="hw_input"
+        data-function="initInputMode()">
+        <div></div>
+        <btext>
+          <span style="opacity: 0.5;">Detected inputs:</span>
+          <span id="detectedInput"></span>
+        </btext><br>
+        <btext style="opacity: 0.3; font-size: 15px;">
+          Is a controller not appearing? Try interacting with it.
+        </btext>
+        <br>
+        <br>
+        <btext>
+          Input Mode
+        </btext>
+        <select id="inputMode">
+          <option value="joysticks">Controller Joysticks & Shoulder Buttons</option>
+          <option value="buttons">Controller Face Buttons</option>
+          <option value="touch">Touchscreen</option>
+          <option value="mouse">Mouse</option>
+          <option value="keyboard">Keyboard</option>
+        </select>
+        <div id="input_explanation" style="width: 100%; margin: auto;"></div>
+      </div>
+
       <div class="category_contents" data-category="Credits" data-associate="category_misc">
         <div></div>
         <btext>
           Homescreen ambiance: The Cynic Project / <a href="https://cynicmusic.com" target="_blank">cynicmusic.com</a> /
           pixelsphere.org<br>
           Special thanks to <a href="https://www.youtube.com/@lexycat" target="_blank">lexycat</a> for their songs!<br>
-          Special thanks to <a href="https://www.youtube.com/@lexycat" target="_blank">Waterflame</a> for their songs!<br>
+          Special thanks to <a href="https://www.youtube.com/@lexycat" target="_blank">Waterflame</a> for their
+          songs!<br>
         </btext>
       </div>
     </div>

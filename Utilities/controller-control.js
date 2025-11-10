@@ -1,18 +1,18 @@
 function getSelectableRects() {
-  return Array.from(document.querySelectorAll(".controller_selectable")).map(el => ({
+  return Array.from(document.querySelectorAll(".controller_selectable")).filter(el => (el.getBoundingClientRect().width > 0)).map(el => ({
     el,
     rect: el.getBoundingClientRect()
   }));
 }
 let currentEl = null;
 let globalControllerActions = {
-  rightTrigger: () => {},
-  leftTrigger: () => {},
-  playTrigger: () => {},
-  aTrigger: () => {},
-  bTrigger: () => {},
-  xTrigger: () => {},
-  yTrigger: () => {}
+  rightTrigger: () => { },
+  leftTrigger: () => { },
+  playTrigger: () => { },
+  aTrigger: () => { },
+  bTrigger: () => { },
+  xTrigger: () => { },
+  yTrigger: () => { }
 }
 function setSelection(el) {
   if (currentEl) currentEl.classList.remove("selected");
@@ -26,15 +26,34 @@ var lastDirectionTime = 0;
 
 function moveSelection(direction) {
   if (!document.hasFocus()) return
-  console.log(lastDirection, direction, Date.now() - lastDirectionTime)
   if (lastDirection == direction && Date.now() - lastDirectionTime < 220) return;
   lastDirection = `${direction}`;
   lastDirectionTime = Date.now();
+  if (currentEl?.type == 'range' && (direction == 'left' || direction == 'right')) {
+    currentEl.value = Number(currentEl.value) + (direction == 'left' ? -Number(currentEl.step || 1) : Number(currentEl.step || 1));
+    currentEl.oninput(currentEl.value);
+    currentEl.onmousedown();
+    setTimeout(() => {
+      currentEl.onmouseup();
+      window.focus();
+    }, 500);
+    return
+  }
+  console.log('trying at least')
   const selectables = getSelectableRects();
   if (!currentEl && selectables.length > 0) {
     setSelection(selectables[0].el);
     return;
   }
+  let scrollToElement = currentEl;
+  while (scrollToElement.dataset.unscrollable == 'true') {
+    scrollToElement = scrollToElement.parentElement;
+  }
+  console.log('crollin g', scrollToElement.offsetTop)
+  scrollToElement.parentElement.scrollTo({
+    top: scrollToElement.offsetTop,
+    behavior: 'smooth'
+  })
 
   const currentRect = currentEl.getBoundingClientRect();
 

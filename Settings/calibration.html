@@ -1,0 +1,310 @@
+<html>
+<link rel="stylesheet" href="../Core/main.css">
+<link rel="stylesheet" href="../Core/defaultComponents.css">
+
+<body>
+  <div style="width: calc(100vw - 50px); height: calc(100vh - 50px); margin-top: 25px; margin-left: 22.5px; backdrop-filter: blur(15px); background-color: #00000040; border-radius: 10px; border: 2px #FFFFFF20 solid;">
+  <btextm style="display: block; margin-top: 20px; margin-left: 20px; opacity: 0.7;">Audio Calibration</btextm>
+  <div style="width: 100%; margin-top: 170px;" class="flexbox">
+    <div class="non-dominant-indicator"></div>
+    <div class="non-dominant-indicator"></div>
+    <div class="non-dominant-indicator"></div>
+    <div class="dominant-indicator"></div>
+  </div>
+
+  <btext style="display: block; margin-top: 20px; opacity: 0.5;">Listen for the fourth beat and hit space or click when you hear it.<br> <span id="results"></span></btext>
+  <btext style="display: block; margin-top: 10px; opacity: 0.3; font-size: 12px;">We're syncing up your visuals and easing. Don't rely on what you see</btext>
+
+  <div id="procedure">
+    <btn style="width: fit-content; margin: auto;">Proceed</btn>
+  </div>
+  </div>
+
+</body>
+
+<script>
+const fs = require('fs');
+const { ipcRenderer } = require('electron');
+
+class CalibrationSystem {
+  constructor() {
+    this.audioContext = new window.AudioContext();
+    this.loadAudio();
+    
+    // Timing configuration
+    this.bpm = 80; // 80 BPM = 750ms per beat
+    this.beatInterval = 60000 / this.bpm; // 750ms
+    this.beatsPerMeasure = 4;
+    
+    // Calibration state
+    this.startTime = null;
+    this.tapTimestamps = [];
+    this.offsets = [];
+    this.isCalibrating = false;
+    this.currentBeat = 0;
+    
+    // Calibration parameters
+    this.minTaps = 8; // Minimum valid taps needed
+    this.maxTaps = 16; // Maximum taps to collect
+    this.warmupTaps = 2; // Taps to ignore at start
+    this.timingWindow = 400; // Accept taps within ±400ms of beat
+    
+    // Results
+    this.finalOffset = 0;
+    this.calibrationComplete = false;
+    
+    this.setupEventListeners();
+  }
+
+  async loadAudio() {
+    const normalHit = fs.readFileSync('./Assets/hit_normal.mp3');
+    const goldenHit = fs.readFileSync('./Assets/golden_hit.mp3');
+    
+    const normalBuffer = normalHit.buffer.slice(normalHit.byteOffset, normalHit.byteOffset + normalHit.byteLength);
+    const goldenBuffer = goldenHit.buffer.slice(goldenHit.byteOffset, goldenHit.byteOffset + goldenHit.byteLength);
+    
+    [this.normalBuffer, this.goldenBuffer] = await Promise.all([
+      this.audioContext.decodeAudioData(normalBuffer),
+      this.audioContext.decodeAudioData(goldenBuffer)
+    ]);
+    
+    this.startMetronome();
+  }
+
+  playSound(isAccent = false) {
+    const source = this.audioContext.createBufferSource();
+    source.buffer = isAccent ? this.goldenBuffer : this.normalBuffer;
+    source.connect(this.audioContext.destination);
+    source.start(0);
+  }
+
+  startMetronome() {
+    // Record precise start time
+    this.startTime = performance.now();
+    this.isCalibrating = true;
+    
+    // Schedule beats using precise timing
+    this.scheduleNextBeat();
+  }
+
+  scheduleNextBeat() {
+    if (!this.isCalibrating) return;
+    
+    const expectedBeatTime = this.startTime + (this.currentBeat * this.beatInterval);
+    const now = performance.now();
+    const delay = Math.max(0, expectedBeatTime - now);
+    
+    setTimeout(() => {
+      if (!this.isCalibrating) return;
+      
+      const beatIndex = this.currentBeat % this.beatsPerMeasure;
+      const isAccent = beatIndex === 3; // Fourth beat is accented
+      
+      // Play audio
+      this.playSound(isAccent);
+      
+      // Update visual indicators
+      this.updateVisuals(beatIndex);
+      
+      // Continue to next beat
+      this.currentBeat++;
+      this.scheduleNextBeat();
+      
+    }, delay);
+  }
+
+  updateVisuals(beatIndex) {
+    const indicators = document.querySelectorAll('.non-dominant-indicator, .dominant-indicator');
+    indicators.forEach((ind, i) => {
+      ind.style.background = i === beatIndex ? '#FFFFFF40' : '#FFFFFF10';
+      ind.style.transform = i === beatIndex ? 'scale(1.1)' : 'scale(1)';
+    });
+  }
+
+  setupEventListeners() {
+    const tapHandler = (e) => {
+      if (e.type === 'keydown' && e.repeat) return; // Ignore key repeats
+      this.handleTap();
+    };
+    
+    document.addEventListener('click', tapHandler);
+    document.addEventListener('keydown', tapHandler);
+    
+    // Proceed button
+    document.querySelector('#procedure btn').addEventListener('click', () => {
+      if (this.calibrationComplete) {
+        this.saveAndProceed();
+      }
+    });
+  }
+
+  handleTap() {
+    if (!this.isCalibrating || this.calibrationComplete) return;
+    
+    const tapTime = performance.now();
+    const timeSinceStart = tapTime - this.startTime;
+    
+    // The 4th beat is at beat index 3 (0,1,2,3)
+    // So it plays at: startTime + (0*interval), then startTime + (4*interval), then (8*interval), etc.
+    // But the beat INDEX is 3, so actual times are: startTime + (3*interval), (7*interval), (11*interval)...
+    
+    // Find the nearest 4th beat occurrence
+    const beatsSinceStart = timeSinceStart / this.beatInterval;
+    
+    // Find nearest beat that is a 4th beat (3, 7, 11, 15, 19...)
+    // These are beats where (beatNumber - 3) % 4 === 0
+    const nearest4thBeat = Math.round((beatsSinceStart - 3) / 4) * 4 + 3;
+    
+    // Calculate expected time of that beat
+    const expectedTime = this.startTime + (nearest4thBeat * this.beatInterval);
+    
+    // Calculate offset (positive = late, negative = early)
+    const offset = tapTime - expectedTime;
+    
+    // Only accept taps within timing window
+    if (Math.abs(offset) > this.timingWindow) return;
+    
+    this.tapTimestamps.push(tapTime);
+    
+    // Skip warmup taps
+    if (this.tapTimestamps.length <= this.warmupTaps) {
+      this.updateUI(`Warming up... (${this.tapTimestamps.length}/${this.warmupTaps})`, null, true);
+      return;
+    }
+    
+    // Record offset for calibration
+    this.offsets.push(offset);
+    
+    // Calculate current statistics
+    const stats = this.calculateStats();
+    const validTaps = this.offsets.length;
+    
+    // Update UI with progress
+    this.updateUI(
+      `${Math.abs(stats.median).toFixed(0)}ms ${stats.direction}`,
+      `${validTaps}/${this.minTaps} samples`,
+      false
+    );
+    
+    // Check if calibration is complete
+    if (validTaps >= this.minTaps) {
+      this.completeCalibration(stats);
+    }
+    
+    // Stop accepting taps after max
+    if (validTaps >= this.maxTaps) {
+      this.calibrationComplete = true;
+    }
+  }
+
+  calculateStats() {
+    const sorted = [...this.offsets].sort((a, b) => a - b);
+    const mid = Math.floor(sorted.length / 2);
+    const median = sorted.length % 2 === 0 
+      ? (sorted[mid - 1] + sorted[mid]) / 2 
+      : sorted[mid];
+    
+    // Also calculate mean and standard deviation
+    const mean = this.offsets.reduce((sum, val) => sum + val, 0) / this.offsets.length;
+    const variance = this.offsets.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / this.offsets.length;
+    const stdDev = Math.sqrt(variance);
+    
+    return {
+      median,
+      mean,
+      stdDev,
+      direction: median > 0 ? 'late' : 'early',
+      consistency: stdDev < 50 ? 'excellent' : stdDev < 100 ? 'good' : 'fair'
+    };
+  }
+
+  completeCalibration(stats) {
+    if (this.calibrationComplete) return;
+    
+    this.calibrationComplete = true;
+    this.finalOffset = Math.round(stats.median);
+    
+    const resultsHTML = `
+      <span style="color: #4CAF50;">✓ Complete: ${Math.abs(this.finalOffset)}ms ${stats.direction}</span> <span style="opacity: 0.6;">• (${stats.consistency} consistency)</span>
+    `;
+    this.isCalibrating = false;
+    
+    document.getElementById('results').innerHTML = resultsHTML;
+    
+    const btn = document.querySelector('#procedure btn');
+    btn.style.opacity = '1';
+    btn.textContent = 'Apply & Continue';
+    
+    const helpText = this.finalOffset > 0 
+      ? 'You tap slightly after the beat - gameplay will compensate'
+      : this.finalOffset < 0
+      ? 'You tap slightly before the beat - gameplay will compensate'
+      : 'Perfect timing! No adjustment needed';
+    
+    document.querySelector('btext[style*="font-size: 12px"]').textContent = helpText;
+  }
+
+  updateUI(mainText, subText, isWarmup) {
+    const resultsEl = document.getElementById('results');
+    
+    if (isWarmup) {
+      resultsEl.innerHTML = `<span style="opacity: 0.5;">${mainText}</span>`;
+    } else {
+      resultsEl.innerHTML = subText 
+        ? `Offset: ${mainText} <span style="opacity: 0.6;">(${subText})</span>`
+        : mainText;
+    }
+  }
+
+  saveAndProceed() {
+    if (!this.calibrationComplete) return;
+    
+    this.isCalibrating = false;
+    
+    try {
+      const configPath = './config.json';
+      let config = {};
+      
+      if (fs.existsSync(configPath)) {
+        config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
+      }
+      
+      config.audioOffset = this.finalOffset;
+      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
+      
+      ipcRenderer.send('calibration-complete', this.finalOffset);
+      
+      // window.location.href = '../next-page.html';
+    } catch (error) {
+      console.error('Failed to save calibration:', error);
+      alert('Failed to save calibration settings');
+    }
+  }
+}
+
+// Initialize calibration
+const calibration = new CalibrationSystem();</script>
+<style>
+  body {
+    background: url('../Assets/SFX/Page\ Background.png') !important;
+    background-position: center !important;
+    margin: 0px !important;
+  }
+
+  .non-dominant-indicator, .dominant-indicator {
+    border: 1px #FFFFFF70 solid;
+    width: 40px;
+    margin-left: 5px;
+    margin-right: 5px;
+    height: 40px;
+    border-radius: 4px;
+    background: #FFFFFF10;
+    margin-top: 30px;
+  }
+  .dominant-indicator {
+    margin-top: 15px;
+    width: 70px;
+    height: 70px;
+  }
+</style>
+</html>

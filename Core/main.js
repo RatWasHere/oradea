@@ -1,6 +1,6 @@
 const electron = require('electron');
-const BrowserWindow = electron.BrowserWindow;
-const app = electron.app;
+const fs = require('fs');
+const { BrowserWindow, app, screen } = require('electron');
 const steamworks = require('steamworks.js');
 var client;
 var workshop;
@@ -10,22 +10,59 @@ try {
   // client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, 'Search Workshop', '', 256, false);
 } catch (error) { }
 
-let window;
+
+
+var window;
+
 app.on('ready', () => {
-  window = new BrowserWindow({
+  var settings = {};
+  try {
+    settings = JSON.parse(fs.readFileSync('./Config/settings', 'utf8'));
+  } catch (error) {
+    settings = {};
+  }
+  var window = new BrowserWindow({
     width: 1000,
     height: 800,
     minHeight: 800,
     minWidth: 1000,
     titleBarStyle: 'default',
     autoHideMenuBar: true,
+    title: "Oradea",
+    icon: './Assets/Glyphs/Logo.png',
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
       spellcheck: false,
     },
   });
-  window.setMenuBarVisibility(false);
+
+  function updateScreenState(state) {
+    return
+    if (state == 'full' || state == undefined) {
+      window.setFullScreen(true);
+    } else if (state == 'maximized') {
+      window.setFullScreen(false);
+      window.maximize();
+    } else if (state == 'windowed') {
+      window.setFullScreen(false);
+      window.unmaximize();
+    }
+  }
+
+  if (settings?.frame_cap == 'auto' || settings.frame_cap == undefined) {
+    window.webContents.setFrameRate(screen.getDisplayNearestPoint(window.getBounds()).displayFrequency);
+  } else if (settings.frame_cap == 'unlimited') {
+    window.webContents.setFrameRate(240);
+  } else {
+    window.webContents.setFrameRate(Number(settings.frame_cap));
+  }
+
+  // window.setMenuBarVisibility(false);
+  updateScreenState(settings?.screen_state)
+  electron.ipcMain.on('updateScreenState', (event, state) => {
+    updateScreenState(state);
+  })
   electron.ipcMain.on('openWorkshop', () => {
     let width = 900;
     let height = 600;
@@ -63,10 +100,59 @@ app.on('ready', () => {
     })
   });
 
-    electron.ipcMain.on('openSettings', () => {
+  var hexapreview;
+  var wereHexapreviewFunctionsCreated = false;
+  function createHexaPreview(force) {
+    if (hexapreview && !force) return;
+    const bounds = settings.getBounds();
+    const display = electron.screen.getDisplayMatching(bounds);
+
+    hexapreview = new BrowserWindow({
+      width: display.workArea.width,
+      height: display.workArea.height,
+      resizable: false,
+      movable: false,
+      center: true,
+      frame: false,
+      transparent: true,
+      thickFrame: false,
+
+      alwaysOnTop: true,
+      webPreferences: {
+        nodeIntegration: true,
+        contextIsolation: false,
+        spellcheck: false
+      },
+      hiddenInMissionControl: true,
+      fullscreen: false
+    });
+    hexapreview.loadFile('./Settings/hexapreview.html');
+    hexapreview.setIgnoreMouseEvents(true);
+    hexapreview.hide();
+
+    if (wereHexapreviewFunctionsCreated) return;
+
+    electron.ipcMain.on('updateHexagon', (c, v) => {
+      if (!hexapreview) createHexaPreview(true);
+      try {
+        hexapreview.webContents.send('updateHexagon', v);
+        hexapreview.focusOnWebView();
+        hexapreview.show();
+      } catch (error) { }
+    });
+    electron.ipcMain.on('doneUpdatingHexagon', () => {
+      hexapreview.hide();
+      settings.focus();
+    });
+
+    wereHexapreviewFunctionsCreated = true;
+  }
+
+  var settings;
+  electron.ipcMain.on('openSettings', () => {
     let width = 900;
     let height = 600;
-    let settings = new BrowserWindow({
+    settings = new BrowserWindow({
       width: width,
       height: height,
       maxWidth: width,
@@ -85,43 +171,27 @@ app.on('ready', () => {
         spellcheck: false
       }
     });
-    let hexapreview = new BrowserWindow({
-      width: width,
-      height: height,
-      resizable: false,
-      movable: false,
-      center: true,
-      frame: false,
-      transparent: true,
-      thickFrame: false,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
-        spellcheck: false
-      },
-      hiddenInMissionControl: true,
-      fullscreen: true
-    });
-    hexapreview.loadFile('./Settings/hexapreview.html');
-    hexapreview.setIgnoreMouseEvents(true);
-    hexapreview.hide();
-    electron.ipcMain.on('updateHexagon', (c, v) => {
-      hexapreview.webContents.send('updateHexagon', v);
-      hexapreview.focusOnWebView();
-      hexapreview.show();
-    });
-    electron.ipcMain.on('doneUpdatingHexagon', () => {
-      hexapreview.hide();
-    });
+
+    createHexaPreview();
+
     settings.loadFile('./Settings/settings.html');
     setTimeout(() => {
       settings.focus();
     }, 100);
     electron.ipcMain.once('closeSettings', () => {
-      window.focus()
-      settings.destroy();
-      hexapreview.destroy();
+      try {
+        window.focus()
+        settings.close();
+        hexapreview.close();
+      } catch (error) { }
     });
+    settings.on('close', () => {
+      try {
+        hexapreview.close();
+      } catch (err) { }
+      settings = null;
+      hexapreview = null;
+    })
 
     electron.ipcMain.on('show_settings_keyboard', () => {
       let position = settings.getBounds();

@@ -3,34 +3,6 @@
 <link rel="stylesheet" href="../Core/defaultComponents.css">
 
 <body style="background: #00000050 !important;">
-    <div id="controls" class="flexbox">
-    <div id="buttons">
-      <btn id="pauseButton" onclick="game.pauseGame()">
-        <div class="image pause" style="width: 50px; aspect-ratio: 1/1;"></div>
-      </btn>
-    </div>
-    <div style="width: fit-content; margin-right: auto; display: block;" id="gradeParent">
-      <div id="grade" style="width: fit-content; height: fit-content;"></div>
-
-      <btextm id="scoreText">SCORE</btextm>
-      <btextm id="scoreNumber" class="flexbox">
-        <div id="unusedScoreNumbers">00000</div>
-        <div id="usedScoreNumbers">1</div>
-      </btextm>
-      <div id="scoreStats" style="width: fit-content; height: fit-content;"></div>
-    </div>
-    <btextm id="songData">
-      <div class="flexbox" style="width: fit-content;">
-        <div id="songName"></div>
-        <span id="difficultyTag" class="difficulty-dot wideDot flexbox ${difficultyMap[i].toLowerCase()}">
-          <difficulty id="difficulty"></difficulty>
-        </span>
-      </div>
-      <div id="songArtist"></div>
-      <div id="songArt" class="image"></div>
-      <div id="songProcedureControls" style="position: absolute;"></div>
-    </btextm>
-  </div>
   <div style="width: 100vw; height: 100vh;" class="flexbox">
     <div id="preview" style="width: 740px; height: 740px; margin: auto; transition: ease 0.1s all; display: block; background: url('../Assets/Playfield/frame.svg'); background-size: cover;"></div>
   </div>
