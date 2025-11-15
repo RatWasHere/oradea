@@ -1,11 +1,11 @@
 const electron = require('electron');
 const fs = require('fs');
 const { BrowserWindow, app, screen } = require('electron');
-const steamworks = require('steamworks.js');
 var client;
 var workshop;
 try {
-  var client = steamworks.init(3994990);
+  // const steamworks = require('steamworks.js');
+  // var client = steamworks.init(3994990);
   var workshop = client.workshop;
   // client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, 'Search Workshop', '', 256, false);
 } catch (error) { }
@@ -28,6 +28,9 @@ app.on('ready', () => {
     minWidth: 1000,
     titleBarStyle: 'default',
     autoHideMenuBar: true,
+    titleBarOverlay: {
+      height: 32
+    },
     title: "Oradea",
     icon: './Assets/Glyphs/Logo.png',
     webPreferences: {
@@ -36,6 +39,7 @@ app.on('ready', () => {
       spellcheck: false,
     },
   });
+  window.setMenuBarVisibility(false);
 
   function updateScreenState(state) {
     return
@@ -51,7 +55,7 @@ app.on('ready', () => {
   }
 
   if (settings?.frame_cap == 'auto' || settings.frame_cap == undefined) {
-    window.webContents.setFrameRate(screen.getDisplayNearestPoint(window.getBounds()).displayFrequency);
+    // window.webContents.setFrameRate(screen.getDisplayNearestPoint(window.getBounds()).displayFrequency);
   } else if (settings.frame_cap == 'unlimited') {
     window.webContents.setFrameRate(240);
   } else {

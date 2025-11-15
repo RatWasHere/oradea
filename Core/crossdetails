@@ -1,5 +1,5 @@
 {
-  "location": "Kowareta",
-  "difficulty": 4,
-  "map": "insane_buttons.json"
+  "location": "Frozen Heart",
+  "difficulty": 3,
+  "map": "hard.json"
 }

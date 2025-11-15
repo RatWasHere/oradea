@@ -24,6 +24,8 @@ body {
   overflow-y: hidden;
   display: flex;
   flex-wrap: nowrap;
+  content-visibility: auto;
+  contain: content;
 
   /* keep them in a single row */
 }
@@ -45,6 +47,7 @@ body {
   backdrop-filter: blur(200px);
   transition: all 0.2s cubic-bezier(.17, .67, 0, .95), margin-top 0.2s linear, margin-bottom 0.2s linear !important;
   display: block;
+  content-visibility: auto;
 }
 
 .songTile>btextm {
@@ -196,6 +199,7 @@ body {
   background: #ffffff40;
   transition: all 0.2s ease;
   background-size: cover;
+  background-position: center;
   margin-top: 60px;
   box-shadow: 0px 0px 5px 5px #00000020;
   mask-position: 100% 100%;

@@ -35,11 +35,10 @@ function moveSelection(direction) {
     currentEl.onmousedown();
     setTimeout(() => {
       currentEl.onmouseup();
-      window.focus();
+      // window.focus();
     }, 500);
     return
   }
-  console.log('trying at least')
   const selectables = getSelectableRects();
   if (!currentEl && selectables.length > 0) {
     setSelection(selectables[0].el);
@@ -94,7 +93,6 @@ function activateSelection() {
   if (!document.hasFocus()) return
   if (currentEl || document.getElementsByClassName('selected').length > 0) {
     let element = (currentEl || document.getElementsByClassName('selected')[0]);
-    console.log(element.dataset.hitc)
     if (element.dataset.hitc) eval(element.dataset.hitc);
     element.click(); // or trigger custom behavior
   }

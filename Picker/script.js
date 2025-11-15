@@ -83,7 +83,6 @@ async function highlightSong(index) {
     top: 0,
     behavior: 'smooth'
   });
-  console.log(document.getElementById('level-' + index).scrollTop)
 
   chosenSong = index;
 

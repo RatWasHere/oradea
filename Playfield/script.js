@@ -386,7 +386,8 @@ class TimingSystem {
    */
 
   getTiming(note, time) {
-    const timingPoint = note.timeSheet ? this.getTimingPointAt(time, note.timeSheet, note) : this.globalTimingPoint;
+    const timingPoint = note.timeSheet ? this.getTimingPointAt(time, note.timeSheet, note) : null;
+    if (!timingPoint || timingPoint.applied) return;
     if (timingPoint.style) {
       this.applyNoteStyles(timingPoint, note);
     }
@@ -402,7 +403,7 @@ class TimingSystem {
     const timingPoint = this.getTimingPointAt(time, sheet, { speed: 1, offset: 0 });
     this.globalTimingPoint = timingPoint;
     if (game.gameState?.timeSheet?.[timingPoint?.index]?.applied) return;
-    if (timingPoint.style) {
+    if (timingPoint.segments) {
       this.applySegmentStyles(timingPoint);
     }
     if (timingPoint.flickers) {
@@ -428,54 +429,48 @@ class TimingSystem {
       const flicker = game.gameState.elements.flickers[modifier.source];
       let duration = modifier.duration || 0;
       flicker.style.transition = `opacity ${duration}ms ease`
-      requestAnimationFrame(() => {
-        if (game.gameState.elements.flickerStates[modifier.source]) {
-          game.gameState.elements.flickerStates[modifier.source] = false;
-          flicker.style.opacity = '0';
-        } else {
-          game.gameState.elements.flickerStates[modifier.source] = true;
-          flicker.style.opacity = modifier.strength || '1';
-        }
-      })
+      if (game.gameState.elements.flickerStates[modifier.source]) {
+        game.gameState.elements.flickerStates[modifier.source] = false;
+        flicker.style.opacity = '0';
+      } else {
+        game.gameState.elements.flickerStates[modifier.source] = true;
+        flicker.style.opacity = modifier.strength || '1';
+      }
     }
   }
 
   getTimingPointAt(time, timingSheet, defaultPoint = { speed: 1, offset: 0 }) {
-    if (!timingSheet) return defaultPoint;
+    if (!timingSheet?.length) return defaultPoint;
 
-    let activePoint = {};
+    const defaultTime = defaultPoint.time ? parseFloat(defaultPoint.time) : 0;
+
+    let activePoint = null;
+    let activeIndex = -1;
 
     for (let i = 0; i < timingSheet.length; i++) {
       const point = timingSheet[i];
-      if (typeof point.time == 'object') {
-        point.time = this.fromSpecial(point.time);
+
+      if (point.applied) {
+        break;
       }
-      const pointStartTime = parseFloat(point.time) + (defaultPoint.time ? parseFloat(defaultPoint.time) : 0);
+
+      let pointTime;
+      if (typeof point.time === 'object') {
+        pointTime = this.fromSpecial(point.time);
+      } else {
+        pointTime = parseFloat(point.time);
+      }
+
+      const pointStartTime = pointTime + defaultTime;
 
       if (pointStartTime <= time) {
-        activePoint.offset = this.fromSpecial(point.offset);
-        activePoint.speed = point.speed;
-        activePoint.time = pointStartTime;
-        activePoint.transition = this.fromSpecial(point.transition);
-        activePoint.easing = point.easing || 'linear';
-        activePoint.style = point.style || {};
-        activePoint.from = point.from || {};
-        activePoint.note = point.note || null;
-        activePoint.playfield = point.playfield || null;
-        activePoint.flickers = point.flickers || null;
-        activePoint.index = i;
-
-        if (activePoint.from?.offset) {
-          activePoint.from.offset = this.fromSpecial(activePoint.from.offset);
-        }
-      }
+        activePoint = point;
+        activeIndex = i;
+      } else break;
     }
 
-    if (activePoint.time == undefined) return defaultPoint;
-
-    const timing = this.interpolateTimingPoint(time, activePoint, defaultPoint);
-    activePoint.speed = timing.speed;
-    activePoint.offset = timing.offset;
+    if (!activePoint) return defaultPoint;
+    console.log(activePoint)
     return activePoint;
   }
 
@@ -523,16 +518,18 @@ class TimingSystem {
   }
 
   applySegmentStyles(timingPoint) {
-    if (timingPoint.style.segments) {
+    if (timingPoint.segments) {
       let previewers = game.gameState.elements.previewers;
-      previewers.forEach((previewer, index) => {
-        const segmentStyle = timingPoint.style.segments[index];
-        if (segmentStyle) {
-          Object.entries(segmentStyle).forEach(([key, value]) => {
-            previewer.style.setProperty(key, value);
-          });
+      for (let i = 0; i < previewers.length; i++) {
+        const previewer = previewers[i];
+        const segmentStyle = timingPoint.segments[i];
+        if (!segmentStyle) continue;
+        const entries = Object.entries(segmentStyle);
+        for (let j = 0; j < entries.length; j++) {
+          const [key, value] = entries[j];
+          previewer.style[key] = value;
         }
-      });
+      }
     }
   }
 
@@ -544,27 +541,27 @@ class TimingSystem {
     // If no transition, return the active point values
     if (!transition) {
       return {
-        speed: parseFloat(activePoint.speed ?? defaultPoint.speed),
-        offset: parseFloat(activePoint.offset ?? defaultPoint.offset)
+        speed: parseFloat(activePoint?.speed ?? defaultPoint?.speed),
+        offset: parseFloat(activePoint?.offset ?? defaultPoint?.offset)
       };
     }
 
     const endTime = startTime + transition;
 
-    let speedFrom = defaultPoint.speed, offsetFrom = defaultPoint.offset;
+    let speedFrom = defaultPoint?.speed, offsetFrom = defaultPoint?.offset;
 
     if (activePoint.from) {
-      speedFrom = parseFloat(activePoint.from.speed ?? defaultPoint.speed);
-      offsetFrom = parseFloat(activePoint.from.offset ?? defaultPoint.offset);
+      speedFrom = parseFloat(activePoint.from?.speed ?? defaultPoint?.speed);
+      offsetFrom = parseFloat(activePoint.from?.offset ?? defaultPoint?.offset);
     } else {
       return {
-        speed: parseFloat(activePoint.speed ?? defaultPoint.speed),
-        offset: parseFloat(activePoint.offset ?? defaultPoint.offset)
+        speed: parseFloat(activePoint?.speed ?? defaultPoint?.speed),
+        offset: parseFloat(activePoint?.offset ?? defaultPoint?.offset)
       }
     }
 
-    const speedTo = parseFloat(activePoint.speed ?? defaultPoint.speed);
-    const offsetTo = parseFloat(activePoint.offset ?? defaultPoint.offset);
+    const speedTo = parseFloat(activePoint?.speed ?? defaultPoint?.speed);
+    const offsetTo = parseFloat(activePoint?.offset ?? defaultPoint?.offset);
 
     // If we're past the transition end, return end values
     if (time >= endTime) {
@@ -1624,12 +1621,12 @@ class RenderingSystem {
 
   updateSliderPosition(note, currentTime, timing) {
     const sliderMaxHeight = CONFIG.ADJUSTED_MAX_TRAVEL;
-    const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / (timing.speed || 1);
-    const offset = timing.offset;
+    const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / (timing?.speed || 1);
+    const offset = timing?.offset;
     const sliderEnd = note.sliderEnd;
     const sliderStart = note.time;
     if (offset) {
-      currentTime = currentTime + offset;
+      currentTime = sliderStart + offset;
     }
 
     let spentHeight;
@@ -1645,7 +1642,7 @@ class RenderingSystem {
       note.element.style.translate = `0px ${sliderMaxHeight * -1}px`;
       note.endElement.style.translate = `0px ${currentHeight - (CONFIG.NOTE_RADIUS)}px`;
     } else {
-      note.element.style.translate = `0px ${(currentHeight) - (maxHeight - (sliderMaxHeight*-1))}px`;
+      note.element.style.translate = `0px ${(currentHeight) - (maxHeight - (sliderMaxHeight * -1))}px`;
     }
 
     this.updateSliderHoldStatus(note);
@@ -1721,7 +1718,7 @@ class RenderingSystem {
 
   updateRegularNotePosition(note, currentTime, timing) {
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY;
-    const offset = timing.offset || 0;
+    const offset = timing?.offset || 0;
     const noteTime = note.time;
 
     const noteTravelMax = CONFIG.ADJUSTED_MAX_TRAVEL;  // Use CONTAINER_REAL_RADIUS
@@ -2044,7 +2041,6 @@ class RhythmGame {
   }
 
 }
-
 // ============================================================================
 // INITIALIZATION
 // ============================================================================

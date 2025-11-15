@@ -261,7 +261,8 @@ const InputModeManager = {
       <video class="explanationVideo" src="../Assets/Misc/${this.gamepadMode}_FB_EXPLANATION.mp4" autoplay loop></video>
       <btext style="opacity: 0.5; font-size: 15px;">
         Your controller's face buttons are each assigned a segment. 
-        Press the button assigned to the segment to hit or hold the notes coming from it.<br>
+        Press the button assigned to the segment to hit notes in that segment.<br>
+        Hold the button assigned to the segment to hold notes in that segment. Release when the hold note is over<br>
         See the video above for your controller's mapping
       </btext>
     `;
