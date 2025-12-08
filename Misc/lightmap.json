@@ -1,0 +1,1018 @@
+[
+  {
+    "time": 0,
+    "playfield": {
+      "transition": "scale 0s linear",
+      "transitions": [
+        "scale 0s linear"
+      ],
+      "scale": "0.85"
+    }
+  },
+  {
+    "time": 769,
+    "playfield": {
+      "transition": "scale 8365ms ease",
+      "transitions": [
+        "scale 8365ms ease"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 9230,
+    "playfield": {
+      "transition": "scale 1539ms ease",
+      "transitions": [
+        "scale 1539ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 10769,
+    "playfield": {
+      "transition": "scale 1442ms ease",
+      "transitions": [
+        "scale 1442ms ease"
+      ],
+      "scale": "1.15"
+    }
+  },
+  {
+    "time": 12307,
+    "playfield": {
+      "transition": "scale 1539ms ease-in-out",
+      "transitions": [
+        "scale 1539ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 33846,
+    "playfield": {
+      "transition": "scale 1346ms ease",
+      "transitions": [
+        "scale 1346ms ease"
+      ],
+      "scale": "1.15"
+    }
+  },
+  {
+    "time": 35384,
+    "playfield": {
+      "transition": "scale 192ms ease-out",
+      "transitions": [
+        "scale 192ms ease-out"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 35769,
+    "playfield": {
+      "transition": "scale 192ms ease-in-out",
+      "transitions": [
+        "scale 192ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 36153,
+    "playfield": {
+      "transition": "scale 193ms ease",
+      "transitions": [
+        "scale 193ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 36538,
+    "playfield": {
+      "transition": "scale 192ms ease",
+      "transitions": [
+        "scale 192ms ease"
+      ],
+      "scale": "0.85"
+    }
+  },
+  {
+    "time": 36923,
+    "playfield": {
+      "transition": "scale 192ms ease-in-out",
+      "transitions": [
+        "scale 192ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 52307,
+    "playfield": {
+      "transition": "scale 1346ms ease",
+      "transitions": [
+        "scale 1346ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 53846,
+    "playfield": {
+      "transition": "scale 1538ms ease-in-out",
+      "transitions": [
+        "scale 1538ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 68461,
+    "playfield": {
+      "transition": "scale 769ms ease",
+      "transitions": [
+        "scale 769ms ease"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 69807,
+    "playfield": {
+      "transition": "scale 1346ms ease-in-out",
+      "transitions": [
+        "scale 1346ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 71538,
+    "playfield": {
+      "transition": "transform 769ms ease",
+      "transitions": [
+        "transform 769ms ease"
+      ],
+      "transform": "translateY(10px)"
+    }
+  },
+  {
+    "time": 73076,
+    "playfield": {
+      "transition": "transform 770ms ease",
+      "transitions": [
+        "transform 770ms ease"
+      ],
+      "transform": "translateY(-10px)"
+    }
+  },
+  {
+    "time": 74615,
+    "playfield": {
+      "transition": "transform 769ms ease",
+      "transitions": [
+        "transform 769ms ease"
+      ],
+      "transform": "translateY(10px)"
+    }
+  },
+  {
+    "time": 76153,
+    "playfield": {
+      "transition": "transform 770ms ease-in-out",
+      "transitions": [
+        "transform 770ms ease-in-out"
+      ],
+      "transform": null
+    }
+  },
+  {
+    "time": 77692,
+    "playfield": {
+      "transition": "scale 1923ms ease",
+      "transitions": [
+        "scale 1923ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 80769,
+    "playfield": {
+      "transition": "scale 1923ms ease-in-out",
+      "transitions": [
+        "scale 1923ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 83076,
+    "playfield": {
+      "transition": "scale 962ms ease",
+      "transitions": [
+        "scale 962ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 84615,
+    "playfield": {
+      "transition": "scale 1346ms ease",
+      "transitions": [
+        "scale 1346ms ease"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 86153,
+    "playfield": {
+      "transition": "scale 2116ms ease-in-out",
+      "transitions": [
+        "scale 2116ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 88461,
+    "playfield": {
+      "transition": "transform 385ms ease",
+      "transitions": [
+        "transform 385ms ease"
+      ],
+      "transform": "translateY(10px)"
+    }
+  },
+  {
+    "time": 89999,
+    "playfield": {
+      "transition": "transform 241ms ease-in-out, rotate 241ms ease-in-out",
+      "transitions": [
+        "transform 241ms ease-in-out",
+        "rotate 241ms ease-in-out"
+      ],
+      "transform": null,
+      "rotate": null
+    }
+  },
+  {
+    "time": 90384,
+    "playfield": {
+      "transition": "transform 1539ms ease",
+      "transitions": [
+        "transform 1539ms ease"
+      ],
+      "transform": "translateX(-30px)"
+    }
+  },
+  {
+    "time": 92307,
+    "playfield": {
+      "transition": "scale 3654ms ease",
+      "transitions": [
+        "scale 3654ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 96153,
+    "playfield": {
+      "transition": "scale 1539ms ease",
+      "transitions": [
+        "scale 1539ms ease"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 97692,
+    "playfield": {
+      "transition": "scale 1346ms ease-in-out",
+      "transitions": [
+        "scale 1346ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 99230,
+    "playfield": {
+      "transition": "transform 673ms ease-in",
+      "transitions": [
+        "transform 673ms ease-in"
+      ],
+      "transform": "translateY(30px)"
+    }
+  },
+  {
+    "time": 99999,
+    "playfield": {
+      "transition": "transform 1347ms ease-out",
+      "transitions": [
+        "transform 1347ms ease-out"
+      ],
+      "transform": "translateY(-30px)"
+    }
+  },
+  {
+    "time": 101538,
+    "playfield": {
+      "transition": "transform 769ms ease-in-out",
+      "transitions": [
+        "transform 769ms ease-in-out"
+      ],
+      "transform": null
+    }
+  },
+  {
+    "time": 110961,
+    "playfield": {
+      "transition": "rotate 1923ms ease",
+      "transitions": [
+        "rotate 1923ms ease"
+      ],
+      "rotate": "-10deg"
+    }
+  },
+  {
+    "time": 113076,
+    "playfield": {
+      "transition": "transform 1347ms ease",
+      "transitions": [
+        "transform 1347ms ease"
+      ],
+      "transform": "translateX(-10px)"
+    }
+  },
+  {
+    "time": 114615,
+    "playfield": {
+      "transition": "rotate 1346ms ease",
+      "transitions": [
+        "rotate 1346ms ease"
+      ],
+      "rotate": "-10deg"
+    }
+  },
+  {
+    "time": 116153,
+    "playfield": {
+      "transition": "transform 1346ms ease",
+      "transitions": [
+        "transform 1346ms ease"
+      ],
+      "transform": "translateX(-10px)"
+    }
+  },
+  {
+    "time": 117692,
+    "playfield": {
+      "transition": "rotate 2307ms ease-in-out",
+      "transitions": [
+        "rotate 2307ms ease-in-out"
+      ],
+      "rotate": null
+    }
+  },
+  {
+    "time": 120769,
+    "playfield": {
+      "transition": "transform 1346ms ease",
+      "transitions": [
+        "transform 1346ms ease"
+      ],
+      "transform": "translateX(-10px)"
+    }
+  },
+  {
+    "time": 122307,
+    "playfield": {
+      "transition": "scale 1346ms ease",
+      "transitions": [
+        "scale 1346ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 123846,
+    "playfield": {
+      "transition": "scale 11923ms ease",
+      "transitions": [
+        "scale 11923ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 136153,
+    "playfield": {
+      "transition": "scale 1154ms ease-out",
+      "transitions": [
+        "scale 1154ms ease-out"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 137692,
+    "playfield": {
+      "transition": "scale 1154ms ease-in-out",
+      "transitions": [
+        "scale 1154ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 139230,
+    "playfield": {
+      "transition": "transform 769ms ease",
+      "transitions": [
+        "transform 769ms ease"
+      ],
+      "transform": "translateX(-10px)"
+    }
+  },
+  {
+    "time": 140769,
+    "playfield": {
+      "transition": "rotate 769ms ease",
+      "transitions": [
+        "rotate 769ms ease"
+      ],
+      "rotate": "-10deg"
+    }
+  },
+  {
+    "time": 142307,
+    "playfield": {
+      "transition": "transform 769ms ease",
+      "transitions": [
+        "transform 769ms ease"
+      ],
+      "transform": "translateX(-10px)"
+    }
+  },
+  {
+    "time": 143846,
+    "playfield": {
+      "transition": "rotate 769ms ease-in-out",
+      "transitions": [
+        "rotate 769ms ease-in-out"
+      ],
+      "rotate": null
+    }
+  },
+  {
+    "time": 145384,
+    "playfield": {
+      "transition": "scale 1923ms ease",
+      "transitions": [
+        "scale 1923ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 148461,
+    "playfield": {
+      "transition": "scale 1923ms ease-in-out",
+      "transitions": [
+        "scale 1923ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 150769,
+    "playfield": {
+      "transition": "transform 192ms ease-out",
+      "transitions": [
+        "transform 192ms ease-out"
+      ],
+      "transform": "translateY(-10px)"
+    }
+  },
+  {
+    "time": 151153,
+    "playfield": {
+      "transition": "transform 193ms ease-out",
+      "transitions": [
+        "transform 193ms ease-out"
+      ],
+      "transform": "translateY(-30px)"
+    }
+  },
+  {
+    "time": 151538,
+    "playfield": {
+      "transition": "transform 192ms ease-out",
+      "transitions": [
+        "transform 192ms ease-out"
+      ],
+      "transform": "translateY(-30px)"
+    }
+  },
+  {
+    "time": 152307,
+    "playfield": {
+      "transition": "scale 577ms ease",
+      "transitions": [
+        "scale 577ms ease"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 153076,
+    "playfield": {
+      "transition": "scale 577ms ease",
+      "transitions": [
+        "scale 577ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 153846,
+    "playfield": {
+      "transition": "scale 577ms ease",
+      "transitions": [
+        "scale 577ms ease"
+      ],
+      "scale": "1.15"
+    }
+  },
+  {
+    "time": 154615,
+    "playfield": {
+      "transition": "scale 577ms ease-in-out",
+      "transitions": [
+        "scale 577ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 156153,
+    "playfield": {
+      "transition": "scale 770ms ease",
+      "transitions": [
+        "scale 770ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 157692,
+    "playfield": {
+      "transition": "scale 2115ms ease-in-out",
+      "transitions": [
+        "scale 2115ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 159999,
+    "playfield": {
+      "transition": "scale 3654ms ease",
+      "transitions": [
+        "scale 3654ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 163846,
+    "playfield": {
+      "transition": "scale 1346ms ease, filter 1153ms ease",
+      "transitions": [
+        "scale 1346ms ease",
+        "filter 1153ms ease"
+      ],
+      "scale": "1.07",
+      "filter": "blur(3px)"
+    }
+  },
+  {
+    "time": 165192,
+    "playfield": {
+      "transition": "filter 2307ms ease-in-out",
+      "transitions": [
+        "filter 2307ms ease-in-out"
+      ],
+      "filter": null
+    }
+  },
+  {
+    "time": 165384,
+    "playfield": {
+      "transition": "scale 1346ms ease-in-out",
+      "transitions": [
+        "scale 1346ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 166923,
+    "playfield": {
+      "transition": "scale 961ms ease, transform 961ms ease-in",
+      "transitions": [
+        "scale 961ms ease",
+        "transform 961ms ease-in"
+      ],
+      "scale": "1.07",
+      "transform": "translateY(30px)"
+    }
+  },
+  {
+    "time": 168076,
+    "playfield": {
+      "transition": "transform 770ms ease",
+      "transitions": [
+        "transform 770ms ease"
+      ],
+      "transform": "translateY(-10px)"
+    }
+  },
+  {
+    "time": 169230,
+    "playfield": {
+      "transition": "transform 1346ms ease, filter 769ms ease",
+      "transitions": [
+        "transform 1346ms ease",
+        "filter 769ms ease"
+      ],
+      "transform": "translateY(10px)",
+      "filter": "blur(3px)"
+    }
+  },
+  {
+    "time": 170096,
+    "playfield": {
+      "transition": "filter 769ms ease",
+      "transitions": [
+        "filter 769ms ease"
+      ],
+      "filter": "blur(3px)"
+    }
+  },
+  {
+    "time": 171153,
+    "playfield": {
+      "transition": "transform 962ms ease",
+      "transitions": [
+        "transform 962ms ease"
+      ],
+      "transform": "translateY(-10px)"
+    }
+  },
+  {
+    "time": 172307,
+    "playfield": {
+      "transition": "scale 769ms ease, transform 769ms ease-in-out",
+      "transitions": [
+        "scale 769ms ease",
+        "transform 769ms ease-in-out"
+      ],
+      "scale": "1.15",
+      "transform": null
+    }
+  },
+  {
+    "time": 173269,
+    "playfield": {
+      "transition": "scale 961ms ease-in-out",
+      "transitions": [
+        "scale 961ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 174615,
+    "playfield": {
+      "transition": "scale 1346ms ease, filter 2308ms ease",
+      "transitions": [
+        "scale 1346ms ease",
+        "filter 2308ms ease"
+      ],
+      "scale": "1.07",
+      "filter": "blur(3px)"
+    }
+  },
+  {
+    "time": 176153,
+    "playfield": {
+      "transition": "scale 1923ms ease",
+      "transitions": [
+        "scale 1923ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 177115,
+    "playfield": {
+      "transition": "filter 961ms ease-in-out",
+      "transitions": [
+        "filter 961ms ease-in-out"
+      ],
+      "filter": null
+    }
+  },
+  {
+    "time": 178461,
+    "playfield": {
+      "transition": "scale 4038ms ease-in-out",
+      "transitions": [
+        "scale 4038ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 189999,
+    "playfield": {
+      "transition": "transform 193ms ease",
+      "transitions": [
+        "transform 193ms ease"
+      ],
+      "transform": "translateY(-10px)"
+    }
+  },
+  {
+    "time": 190384,
+    "playfield": {
+      "transition": "transform 192ms ease-in-out",
+      "transitions": [
+        "transform 192ms ease-in-out"
+      ],
+      "transform": null
+    }
+  },
+  {
+    "time": 190769,
+    "playfield": {
+      "transition": "transform 192ms ease",
+      "transitions": [
+        "transform 192ms ease"
+      ],
+      "transform": "translateY(10px)"
+    }
+  },
+  {
+    "time": 191538,
+    "playfield": {
+      "transition": "transform 385ms ease-in-out, scale 192ms ease-in",
+      "transitions": [
+        "transform 385ms ease-in-out",
+        "scale 192ms ease-in"
+      ],
+      "transform": null,
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 191730,
+    "playfield": {
+      "transition": "scale 193ms ease-out",
+      "transitions": [
+        "scale 193ms ease-out"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 197692,
+    "playfield": {
+      "transition": "scale 2115ms ease-in-out",
+      "transitions": [
+        "scale 2115ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 199999,
+    "playfield": {
+      "transition": "scale 3077ms ease",
+      "transitions": [
+        "scale 3077ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 203076,
+    "playfield": {
+      "transition": "scale 1347ms ease",
+      "transitions": [
+        "scale 1347ms ease"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 204615,
+    "playfield": {
+      "transition": "transform 577ms ease",
+      "transitions": [
+        "transform 577ms ease"
+      ],
+      "transform": "translateX(-10px)"
+    }
+  },
+  {
+    "time": 205384,
+    "playfield": {
+      "transition": "transform 577ms ease-in-out",
+      "transitions": [
+        "transform 577ms ease-in-out"
+      ],
+      "transform": null
+    }
+  },
+  {
+    "time": 206153,
+    "playfield": {
+      "transition": "rotate 577ms ease",
+      "transitions": [
+        "rotate 577ms ease"
+      ],
+      "rotate": "-10deg"
+    }
+  },
+  {
+    "time": 206923,
+    "playfield": {
+      "transition": "rotate 576ms ease-in-out",
+      "transitions": [
+        "rotate 576ms ease-in-out"
+      ],
+      "rotate": null
+    }
+  },
+  {
+    "time": 207692,
+    "playfield": {
+      "transition": "transform 577ms ease",
+      "transitions": [
+        "transform 577ms ease"
+      ],
+      "transform": "translateX(-10px)"
+    }
+  },
+  {
+    "time": 208461,
+    "playfield": {
+      "transition": "scale 673ms ease, transform 577ms ease-in-out",
+      "transitions": [
+        "scale 673ms ease",
+        "transform 577ms ease-in-out"
+      ],
+      "scale": "0.95",
+      "transform": null
+    }
+  },
+  {
+    "time": 209230,
+    "playfield": {
+      "transition": "scale 1250ms ease",
+      "transitions": [
+        "scale 1250ms ease"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 210576,
+    "playfield": {
+      "transition": "scale 1154ms ease-in-out",
+      "transitions": [
+        "scale 1154ms ease-in-out"
+      ],
+      "scale": null
+    }
+  },
+  {
+    "time": 213076,
+    "playfield": {
+      "transition": "transform 1347ms ease",
+      "transitions": [
+        "transform 1347ms ease"
+      ],
+      "transform": "translateY(-10px)"
+    }
+  },
+  {
+    "time": 215384,
+    "playfield": {
+      "transition": "transform 5385ms ease",
+      "transitions": [
+        "transform 5385ms ease"
+      ],
+      "transform": "translateY(30px)"
+    }
+  },
+  {
+    "time": 216153,
+    "playfield": {
+      "transition": "scale 2981ms ease",
+      "transitions": [
+        "scale 2981ms ease"
+      ],
+      "scale": "1.07"
+    }
+  },
+  {
+    "time": 217692,
+    "playfield": {
+      "transition": "filter 1538ms ease",
+      "transitions": [
+        "filter 1538ms ease"
+      ],
+      "filter": "blur(3px)"
+    }
+  },
+  {
+    "time": 219230,
+    "playfield": {
+      "transition": "scale 1539ms ease-in-out, filter 1539ms ease-in-out",
+      "transitions": [
+        "scale 1539ms ease-in-out",
+        "filter 1539ms ease-in-out"
+      ],
+      "scale": null,
+      "filter": null
+    }
+  },
+  {
+    "time": 221346,
+    "playfield": {
+      "transition": "scale 769ms ease",
+      "transitions": [
+        "scale 769ms ease"
+      ],
+      "scale": "0.95"
+    }
+  },
+  {
+    "time": 221538,
+    "playfield": {
+      "transition": "filter 769ms ease",
+      "transitions": [
+        "filter 769ms ease"
+      ],
+      "filter": "blur(3px)"
+    }
+  },
+  {
+    "time": 222307,
+    "playfield": {
+      "transition": "scale 1923ms ease-in-out, filter 1923ms ease-in-out, transform 1923ms ease-in-out",
+      "transitions": [
+        "scale 1923ms ease-in-out",
+        "filter 1923ms ease-in-out",
+        "transform 1923ms ease-in-out"
+      ],
+      "scale": null,
+      "filter": null,
+      "transform": null
+    }
+  },
+  {
+    "time": 227692,
+    "playfield": {
+      "transition": "scale 769ms ease, filter 769ms ease",
+      "transitions": [
+        "scale 769ms ease",
+        "filter 769ms ease"
+      ],
+      "scale": "0.95",
+      "filter": "blur(3px)"
+    }
+  },
+  {
+    "time": 228461,
+    "playfield": {
+      "transition": "scale 3077ms ease-in-out, filter 3077ms ease-in-out",
+      "transitions": [
+        "scale 3077ms ease-in-out",
+        "filter 3077ms ease-in-out"
+      ],
+      "scale": null,
+      "filter": null
+    }
+  }
+]

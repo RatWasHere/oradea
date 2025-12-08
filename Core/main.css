@@ -336,6 +336,7 @@ body {
   z-index: 500;
   pointer-events: auto;
   position: relative;
+  shape-rendering: crispEdges;
   /* animation: note_in_classic 100ms ease; */
 }
 
@@ -410,7 +411,7 @@ body {
 
 .header {
   width: var(--note-radius);
-  height: 55px /* calc(var(--note-radius) / 2) */;
+  height: 55px; /* calc(var(--note-radius) / 2) */
   background-size: cover !important;
   background-repeat: no-repeat !important;
   shape-rendering: geometricPrecision;
@@ -431,16 +432,20 @@ body {
   content: '';
   width: 740px;
   height: 740px;
-  /* top: -630px; */
-  bottom: 0;
-  left: -320px;
+  bottom: 50;
+  left: -315px;
   position: absolute;
   transform-origin: bottom;
-  background: url('../Assets/Playfield/sync_frame.svg') no-repeat center/contain;
+  margin: auto;
+  margin-bottom: 0px;
+  background: url('../Assets/Playfield/sync_frame.svg') no-repeat center/cover;
   image-rendering: optimizeSpeed;
   display: block;
   will-change: transform;
   contain: layout paint size;
+}
+.end > .hint {
+
 }
 
 .header.start {
@@ -607,7 +612,7 @@ btextm {
 }
 
 btn {
-  background: #FFFFFF30;
+  background: #FFFFFF20;
   transition: all ease .07s;
   position: initial;
   width: auto;
@@ -626,11 +631,11 @@ btn:has(.image) {
 }
 
 btn:hover {
-  background: #FFFFFF50;
+  background: #FFFFFF30;
 }
 
 btn:active {
-  background: #FFFFFF20;
+  background: #FFFFFF10;
 }
 
 .comeIn {
@@ -651,11 +656,11 @@ btn:active {
 
 .noteContainer {
   width: 100%;
-  height: 315px;
+  height: 315px; /* from 315px */
   overflow: visible;
   /* scale: 1 -1; */
   /* transform: translateY(calc(-100% - (var(--note-radius) / 2))); */
-  transform: translateY(370px);
+  transform: translateY(370px); /* from 370px */
   transition: all var(--long) ease;
 }
 
@@ -1540,7 +1545,7 @@ btn:has(.pause) {
   --border-color: #00FF00;
 }
 
-.normal {
+.medium {
   --diff-color: #FFA50030;
   --border-color: #FFA500;
 }
@@ -1621,12 +1626,13 @@ difficulty {
 .scoreIndicator {
   font-family: 'Modern';
   font-weight: 100;
-  font-size: 30px;
+  font-size: 25px;
   line-height: 33px;
   color: #FFFFFF;
-  padding: 10px;
+  padding: 7px;
+  padding-left: 13px; padding-right: 13px;
   border-radius: 5px;
-  width: calc(100% - 20px);
+  width: calc(100% - 26px);
 }
 .scoreIndicator:nth-of-type(odd) {
   background: #00000050;
@@ -1681,7 +1687,6 @@ difficulty {
   margin-top: 0px;
   display: block;
   height: fit-content;
-  margin-top: 20px;
 }
 
 #grade>btextm {
@@ -1696,7 +1701,7 @@ difficulty {
   display: block;
   text-align: center;
   border-width: 0px;
-  padding: 30px;
+  padding: 20px;
   border-style: solid;
   color: #000000;
   border-radius: 100%;
@@ -1762,8 +1767,9 @@ difficulty {
 
 #gradeParent {
   width: 500px;
-  height: calc(100vh - 37px);
+  height: 730px;
   margin: auto;
+  margin-top: calc((100vh - 800px) / 2);
   margin-left: 0px;
   padding: 10px;
   border-radius: 10px;
@@ -1772,6 +1778,7 @@ difficulty {
 }
 
 .end_gradeParent {
+  margin-left: auto !important;
   display: flex !important;
 }
 

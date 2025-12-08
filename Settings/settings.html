@@ -21,8 +21,8 @@
       <div class="category" id="category_misc"></div>
     </div>
     <div id="results">
-      <div class="category_contents" data-associated-function="initPlayfieldConfig()" data-category="Playfield"
-        data-associate="category_basics">
+      <div class="category_contents" data-associated-function="initPlayfieldConfig()" data-id="bscs_pf"
+        data-category="Playfield" data-associate="category_basics">
         <div></div>
         <btext>Note Speed <span style="opacity: 0.5;" id="note_speed"></span></btext>
         <div class="preview_window flexbox">
@@ -35,7 +35,7 @@
             style="width: 300px; height: 300px; margin: auto; margin-top: 10px; margin-bottom: 10px; position: relative !important; background: url('../Assets/Playfield/frame.svg'); background-size: cover;">
             <div style="width: 100px; height: 100%; margin: auto; rotate: 30deg; position: relative !important;">
               <div id="noteForDemonstration"
-                style="width: 100%; height: 100%; background-image: url('../Assets/Headers/Note.svg'); background-repeat: no-repeat; animation: noteDemonstration infinite 2s linear;">
+                style="width: 100%; height: 100%; background-image: url('../Assets/Headers/Note.svg'); background-repeat: no-repeat; background-size: contain; animation: noteDemonstration infinite 2s linear;">
               </div>
             </div>
             <btext id="note_speed_preview">[]</btext>
@@ -54,12 +54,115 @@
         <btext style="font-size: 15px; opacity: 0.5;">Hold to preview. Some songs may temporarily affect this setting.
         </btext><br>
       </div>
-      <div class="category_contents" data-associated-function="initAudio()" data-category="Audio" data-id="hw_audio"
+      <div class="category_contents" data-function="initVisualsConfig()" data-category="Visuals"
+        data-associate="category_basics" data-id="bscs_vs">
+        <div></div>
+        <div class="preview_window flexbox">
+          <div style="width: 50%;" class="flexbox">
+            <div>
+              <div id="Note:Note" class="note_design_preview" style="background-image: url('../Assets/Headers/Note.svg');"></div>
+              <div id="Note:Note Golden" class="note_design_preview" style="background-image: url('../Assets/Headers/Note\ Golden.svg');"></div>
+              <div id="Note:Note Holdable" class="note_design_preview" style="background-image: url('../Assets/Headers/Note\ Holdable.svg');"></div>
+            </div>
+          </div>
+          <div style="width: 50%;" class="flexbox">
+            <div>
+              <div class="flexbox">
+                <div id="Note:Top Holdable" class="note_design_preview special" style="background-position: bottom; background-image: url('../Assets/Headers/Top Holdable.svg');"></div>
+                <div id="Note:Top" class="note_design_preview special" style="background-position: bottom; background-image: url('../Assets/Headers/Top.svg');"></div>
+                <div id="Note:Top Golden" class="note_design_preview special" style="background-position: bottom; background-image: url('../Assets/Headers/Top Golden.svg');"></div>
+              </div>
+
+              <div class="flexbox">
+                <div id="Note:Frame" class="note_design_preview special sframe" style="background-image: url('../Assets/Headers/Frame.svg');"></div>
+                <div id="Note:Frame." class="note_design_preview special sframe" style="background-image: url('../Assets/Headers/Frame.svg');"></div>
+                <div id="Note:Frame Golden" class="note_design_preview special sframe" style="background-image: url('../Assets/Headers/Frame Golden.svg');"></div>
+              </div>
+
+              <div class="flexbox">
+                <div id="Note:Bottom Holdable" class="note_design_preview special" style="background-position: top; background-image: url('../Assets/Headers/Bottom Holdable.svg');"></div>
+                <div id="Note:Bottom" class="note_design_preview special" style="background-position: top; background-image: url('../Assets/Headers/Bottom.svg');"></div>
+                <div id="Note:Bottom Golden" class="note_design_preview special" style="background-position: top; background-image: url('../Assets/Headers/Bottom Golden.svg');"></div>
+              </div>
+
+            </div>
+          </div>
+        </div>
+        <div class="flexbox">
+          <div style="width: calc(50% - 5px);">
+            <btext>Note Design</btext>
+            <select id="noteDesign">
+              <option value="geometrical">Geometrical</option>
+              <option value="thin">Thin</option>
+              <option value="rounded">Rounded</option>
+            </select>
+          </div>
+          <div style="width: calc(50% - 5px); margin-left: 10px;">
+            <btext>Hold Note Design</btext>
+            <select id="holdNoteDesign">
+              <option value="geometrical">Geometrical</option>
+              <option value="thin">Thin</option>
+              <option value="rounded">Rounded</option>
+            </select>
+          </div>
+        </div>
+        <br>
+
+        <btext>Note Hint</btext>
+        <select id="noteHint">
+          <option value="0">Disabled</option>
+          <option value="0.5">Enabled, Faint</option>
+          <option value="1">Enabled, Full Visibility</option>
+        </select>
+        <btext style="font-size: 15px; opacity: 0.5; display: block; text-align: left;">
+          Notes will be accompanied by a hint line to help you time hits better. If you don't have issues with timing notes perfectly, feel free to disable this to improve performance.<br>
+        </btext><br>
+
+        <btext>Flashing Lights</btext>
+        <select id="flashingLightsState">
+          <option value="0">Disabled</option>
+          <option value="0.5">Enabled, Faint</option>
+          <option value="1">Enabled, Full Visibility</option>
+        </select>
+        <btext style="font-size: 15px; opacity: 0.5; display: block; text-align: left;">
+          Some songs offer flashing lights for certain difficulties.<br>
+          Please disable this if you're sensitive to flashing lights.
+        </btext><br>
+
+        <btext>Gimmicks</btext>
+        <select id="gimmicksState">
+          <option value="0">Disabled</option>
+          <option value="1">Enabled</option>
+        </select>
+        <btext style="font-size: 15px; opacity: 0.5; display: block; text-align: left;">
+          Some songs offer gimmicks. Some gimmicks might reduce performance.<br>
+          Certain gimmicks may have flickers.<br>
+        </btext><br>
+
+        <btext>VFX Cache Size</btext>
+        <select id="vfxCache">
+          <option value="1">Way Lower</option>
+          <option value="2">Lower</option>
+          <option value="3">Normal</option>
+          <option value="4">Higher</option>
+          <option value="5">Way Higher</option>
+          <option value="6">Way Too High</option>
+        </select>
+        <btext style="font-size: 15px; opacity: 0.5; display: block; text-align: left;">
+          The game pre-creates visual effects and stores them in your VRAM to run faster. The amount of created visual items can be modified from
+          here. If you're having performance issues, use a lower setting.<br>
+          Lower settings may skip playing some VFX in spammy sections.
+        </btext><br>
+
+
+      </div>
+      <div class="category_contents" data-function="initAudio()" data-category="Audio" data-id="hw_audio"
         data-associate="category_hardware">
         <div></div>
         <btext>Offset <span style="opacity: 0.5;" id="audio_offset_preview">(0ms)</span></btext><br>
         <input type="range" min="-750" max="750" step="5" value="0" oninput="updateOffsetAmount(this.value)"
           id="audio_offset" class="range_slider controller_selectable">
+        <btn style="width: fit-content; margin-left: 2px;" onclick="window.location.href = './calibration.html'">Calibration Wizard</btn>
         <btext style="font-size: 15px; opacity: 0.5; display: block; text-align: left;">
           Bluetooth audio devices typically have a delay of ~200ms.<br>
           We recommend you go through the calibration wizard no matter your PC's specs.
@@ -70,8 +173,8 @@
           id="music_volume" class="range_slider controller_selectable">
         <br>
         <btext>SFX Volume <span style="opacity: 0.5;" id="sfx_volume_preview">(%)</span></btext><br>
-        <input type="range" min="0" max="100" step="1" value="0" oninput="updateSFXVolume(this.value)"
-          id="sfx_volume" class="range_slider controller_selectable">
+        <input type="range" min="0" max="100" step="1" value="0" oninput="updateSFXVolume(this.value)" id="sfx_volume"
+          class="range_slider controller_selectable">
       </div>
 
       <div class="category_contents" data-associated-function="initDisplay()" data-category="Display"

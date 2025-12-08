@@ -16,7 +16,7 @@
   <btext style="display: block; margin-top: 10px; opacity: 0.3; font-size: 12px;">We're syncing up your visuals and easing. Don't rely on what you see</btext>
 
   <div id="procedure">
-    <btn style="width: fit-content; margin: auto;">Proceed</btn>
+    <btn style="width: fit-content; margin: auto; margin-top: 10px;" onclick="window.location.href = './settings.html'">Back</btn>
   </div>
   </div>
 
@@ -31,25 +31,21 @@ class CalibrationSystem {
     this.audioContext = new window.AudioContext();
     this.loadAudio();
     
-    // Timing configuration
-    this.bpm = 80; // 80 BPM = 750ms per beat
-    this.beatInterval = 60000 / this.bpm; // 750ms
+    this.bpm = 80;
+    this.beatInterval = 60000 / this.bpm;
     this.beatsPerMeasure = 4;
     
-    // Calibration state
     this.startTime = null;
     this.tapTimestamps = [];
     this.offsets = [];
     this.isCalibrating = false;
     this.currentBeat = 0;
     
-    // Calibration parameters
-    this.minTaps = 8; // Minimum valid taps needed
-    this.maxTaps = 16; // Maximum taps to collect
-    this.warmupTaps = 2; // Taps to ignore at start
-    this.timingWindow = 400; // Accept taps within ±400ms of beat
+    this.minTaps = 8;
+    this.maxTaps = 16;
+    this.warmupTaps = 2;
+    this.timingWindow = 400;
     
-    // Results
     this.finalOffset = 0;
     this.calibrationComplete = false;
     
@@ -79,11 +75,8 @@ class CalibrationSystem {
   }
 
   startMetronome() {
-    // Record precise start time
     this.startTime = performance.now();
     this.isCalibrating = true;
-    
-    // Schedule beats using precise timing
     this.scheduleNextBeat();
   }
 
@@ -98,15 +91,10 @@ class CalibrationSystem {
       if (!this.isCalibrating) return;
       
       const beatIndex = this.currentBeat % this.beatsPerMeasure;
-      const isAccent = beatIndex === 3; // Fourth beat is accented
+      const isAccent = beatIndex === 3;
       
-      // Play audio
       this.playSound(isAccent);
-      
-      // Update visual indicators
       this.updateVisuals(beatIndex);
-      
-      // Continue to next beat
       this.currentBeat++;
       this.scheduleNextBeat();
       
@@ -123,14 +111,13 @@ class CalibrationSystem {
 
   setupEventListeners() {
     const tapHandler = (e) => {
-      if (e.type === 'keydown' && e.repeat) return; // Ignore key repeats
+      if (e.type === 'keydown' && e.repeat) return;
       this.handleTap();
     };
     
     document.addEventListener('click', tapHandler);
     document.addEventListener('keydown', tapHandler);
     
-    // Proceed button
     document.querySelector('#procedure btn').addEventListener('click', () => {
       if (this.calibrationComplete) {
         this.saveAndProceed();
@@ -144,54 +131,34 @@ class CalibrationSystem {
     const tapTime = performance.now();
     const timeSinceStart = tapTime - this.startTime;
     
-    // The 4th beat is at beat index 3 (0,1,2,3)
-    // So it plays at: startTime + (0*interval), then startTime + (4*interval), then (8*interval), etc.
-    // But the beat INDEX is 3, so actual times are: startTime + (3*interval), (7*interval), (11*interval)...
-    
-    // Find the nearest 4th beat occurrence
     const beatsSinceStart = timeSinceStart / this.beatInterval;
-    
-    // Find nearest beat that is a 4th beat (3, 7, 11, 15, 19...)
-    // These are beats where (beatNumber - 3) % 4 === 0
     const nearest4thBeat = Math.round((beatsSinceStart - 3) / 4) * 4 + 3;
-    
-    // Calculate expected time of that beat
     const expectedTime = this.startTime + (nearest4thBeat * this.beatInterval);
-    
-    // Calculate offset (positive = late, negative = early)
     const offset = tapTime - expectedTime;
     
-    // Only accept taps within timing window
     if (Math.abs(offset) > this.timingWindow) return;
     
     this.tapTimestamps.push(tapTime);
     
-    // Skip warmup taps
     if (this.tapTimestamps.length <= this.warmupTaps) {
       this.updateUI(`Warming up... (${this.tapTimestamps.length}/${this.warmupTaps})`, null, true);
       return;
     }
     
-    // Record offset for calibration
     this.offsets.push(offset);
-    
-    // Calculate current statistics
     const stats = this.calculateStats();
     const validTaps = this.offsets.length;
     
-    // Update UI with progress
     this.updateUI(
       `${Math.abs(stats.median).toFixed(0)}ms ${stats.direction}`,
       `${validTaps}/${this.minTaps} samples`,
       false
     );
     
-    // Check if calibration is complete
     if (validTaps >= this.minTaps) {
       this.completeCalibration(stats);
     }
     
-    // Stop accepting taps after max
     if (validTaps >= this.maxTaps) {
       this.calibrationComplete = true;
     }
@@ -204,7 +171,6 @@ class CalibrationSystem {
       ? (sorted[mid - 1] + sorted[mid]) / 2 
       : sorted[mid];
     
-    // Also calculate mean and standard deviation
     const mean = this.offsets.reduce((sum, val) => sum + val, 0) / this.offsets.length;
     const variance = this.offsets.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / this.offsets.length;
     const stdDev = Math.sqrt(variance);
@@ -274,7 +240,6 @@ class CalibrationSystem {
       
       ipcRenderer.send('calibration-complete', this.finalOffset);
       
-      // window.location.href = '../next-page.html';
     } catch (error) {
       console.error('Failed to save calibration:', error);
       alert('Failed to save calibration settings');
@@ -282,8 +247,8 @@ class CalibrationSystem {
   }
 }
 
-// Initialize calibration
-const calibration = new CalibrationSystem();</script>
+const calibration = new CalibrationSystem();
+</script>
 <style>
   body {
     background: url('../Assets/SFX/Page\ Background.png') !important;

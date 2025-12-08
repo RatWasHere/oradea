@@ -351,6 +351,64 @@ const PlayfieldConfig = {
   }
 };
 
+const VisualsConfig = {
+  init() {
+    this.noteHint = selectMenuFactory.create({
+      id: 'noteHint',
+      settingKey: 'note_hint',
+      defaultValue: '0.5'
+    })
+    this.flashingLightsState = selectMenuFactory.create({
+      id: 'flashingLightsState',
+      settingKey: 'flashing_lights',
+      defaultValue: '1'
+    });
+    this.gimmicksState = selectMenuFactory.create({
+      id: 'gimmicksState',
+      settingKey: 'gimmicks',
+      defaultValue: '1'
+    });
+    this.vfxCache = selectMenuFactory.create({
+      id: 'vfxCache',
+      settingKey: 'vfx_cache',
+      defaultValue: '3'
+    });
+    this.noteDesign = selectMenuFactory.create({
+      id: 'noteDesign',
+      settingKey: 'noteDesign',
+      defaultValue: 'geometrical',
+      onAfterClose: () => this.updateDesigns()
+    });
+    this.holdNoteDesign = selectMenuFactory.create({
+      id: 'holdNoteDesign',
+      settingKey: 'holdNoteDesign',
+      defaultValue: 'geometrical',
+      onAfterClose: () => this.updateDesigns()
+    });
+
+    this.updateDesigns();
+  },
+
+  updateDesigns() {
+    let noteDesigns = [
+      'Note', 'Note Golden', 'Note Holdable',
+    ]
+    let sliderDesigns = [
+      'Top', 'Top Golden', 'Top Holdable',
+      'Frame', 'Frame.', 'Frame Golden',
+      'Bottom', 'Bottom Golden', 'Bottom Holdable'
+    ]
+
+    noteDesigns.forEach(design => {
+      document.getElementById(`Note:${design}`).style.backgroundImage = `url('../Assets/Headers/${document.getElementById('noteDesign').value}/${design}.svg')`;
+    })
+    sliderDesigns.forEach(design => {
+      document.getElementById(`Note:${design}`).style.backgroundImage = `url('../Assets/Headers/${document.getElementById('holdNoteDesign').value}/${design.replaceAll('.', '')}.svg')`;
+    })
+  }
+}
+
+
 const DisplayConfig = {
   init() {
     this.defaultScreenState = selectMenuFactory.create({
@@ -376,7 +434,7 @@ const AudioConfig = {
     this.updateOffsetAmount();
     this.updateSFXVolume();
     this.updateMusicVolume();
-    
+
     // Initialize audio context and buffer
     this.audioContext = new window.AudioContext();
     const data = fs.readFileSync('./Assets/hit_normal.mp3');
@@ -389,7 +447,7 @@ const AudioConfig = {
     const source = this.audioContext.createBufferSource();
     const gainNode = this.audioContext.createGain();
     gainNode.gain.value = volume / 100;
-    
+
     source.buffer = this.audioBuffer;
     source.connect(gainNode);
     gainNode.connect(this.audioContext.destination);
@@ -445,6 +503,7 @@ window.initInputMode = () => InputModeManager.detectInputDevices();
 window.initDisplayConfig = () => InputModeManager.detectInputDevices();
 window.updateInputExplanations = () => InputModeManager.updateInputExplanations();
 window.initPlayfieldConfig = () => PlayfieldConfig.init();
+window.initVisualsConfig = () => VisualsConfig.init();
 window.updateNS = () => PlayfieldConfig.updateNoteSpeed();
 window.addToNS = (val) => PlayfieldConfig.addToNoteSpeed(val);
 window.updateSE = () => PlayfieldConfig.updateSnapExtension();

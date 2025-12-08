@@ -26,13 +26,13 @@ document.getElementById('amount').innerHTML = `${levels.length} Songs`;
 
 let difficultyMap = {
   1: "Easy",
-  2: "Normal",
+  2: "Medium",
   3: "Hard",
   4: "Expert"
 }
 
 levelsDisplay.innerHTML = `
-  <div class="songTile" style="min-width: 50vw"></div>
+  <div class="songTile" style="width: 500px" data-name=""></div>
 `
 
 levels.forEach((level, index) => {
@@ -46,8 +46,10 @@ levels.forEach((level, index) => {
     item.className = 'songTile flexbox'
     item.id = `level-${index}`
     level.difficulties = difficulties;
+    item.dataset.name = level.information.name.toLowerCase();
+    item.dataset.artist = level.information.artist.toLowerCase();
     item.innerHTML = `
-    <div class="song-cover controller_selectable" data-hitc="play()" data-highlight="highlightSong(${index})" style="background-image: url('${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}/${level.information.cover}')">
+    <div class="song-cover controller_selectable" onclick="highlightSong(${index})" data-hitc="play()" data-highlight="highlightSong(${index})" style="background-image: url('${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}/${level.information.cover}')">
       <div class="flexbox difficulties-preview">${difficulties}</div>
     </div>
     <div class="song-details">
@@ -67,7 +69,10 @@ let currentAudio = null;
 let currentAudioStopTimer = null;
 let lastSelectedDifficulty = 0;
 
-async function highlightSong(index) {
+async function highlightSong(index, scrollOffset = 0) {
+  if (levels[index].element.style.display == 'none') {
+    return;
+  };
   // Remove highlight from previous song
   document.getElementById('level-' + chosenSong)?.classList.remove('highlighted');
   // Add highlight to new song
@@ -209,20 +214,22 @@ function play() {
   }, 400);
 }
 
-document.addEventListener('wheel', event => {
+let wheelEvent = (event) => {
   event.preventDefault();
   if (event.deltaY > 0) {
     highlightSong((chosenSong + 1) % levels.length);
   } else if (event.deltaY < 0) {
     highlightSong((chosenSong + levels.length - 1) % levels.length);
   }
-}, { passive: false });
+}
+
+document.addEventListener('wheel', wheelEvent, { passive: false });
 
 globalControllerActions.leftTrigger = () => {
   let supposedDifficulty = lastSelectedDifficulty - 1
   let difficultyElement = document.getElementById(`difficulty-${supposedDifficulty}`);
   if (!difficultyElement) return
-  
+
   selectDifficulty(supposedDifficulty);
 }
 
@@ -231,6 +238,50 @@ globalControllerActions.rightTrigger = () => {
   let supposedDifficulty = Number(lastSelectedDifficulty) + 1
   let difficultyElement = document.getElementById(`difficulty-${supposedDifficulty}`);
   if (!difficultyElement) return
-  
+
   selectDifficulty(supposedDifficulty);
+}
+
+let mouseDownStarted = null;
+document.addEventListener('mousedown', (event) => {
+  console.log('md')
+  mouseDownStarted = { x: event.x };
+});
+document.addEventListener('mouseup', () => {
+  mouseDownStarted = null;
+})
+
+document.addEventListener('mousemove', (event) => {
+  if (mouseDownStarted) {
+    let movement = Math.abs(event.x - mouseDownStarted.x);
+    let addition = -1;
+    if (event.x < mouseDownStarted.x) {
+      addition = 1;
+    }
+    if (movement > 90) {
+      wheelEvent({ deltaY: addition, preventDefault: () => { } });
+      mouseDownStarted = { x: event.x };
+    }
+  }
+})
+
+function startSearch(query) {
+  let possibleMatches = document.querySelectorAll('.songTile');
+  let firstSelected = null;
+  for (let i = 0; i < possibleMatches.length; i++) {
+    console.log(possibleMatches[i].dataset.name)
+    if ((possibleMatches[i].dataset.name?.includes(query.toLowerCase()) || query == "")) {
+      if (firstSelected == null) {
+        firstSelected = i - 1;
+      }
+      possibleMatches[i].style.display = 'block';
+      possibleMatches[i].style.scale = '1';
+    } else if (i != 0) {
+      possibleMatches[i].style.display = 'none';
+      possibleMatches[i].style.scale = '0';
+    }
+  }
+  if (firstSelected != null) {
+    highlightSong(firstSelected);
+  }
 }

@@ -4,8 +4,8 @@ const { BrowserWindow, app, screen } = require('electron');
 var client;
 var workshop;
 try {
-  // const steamworks = require('steamworks.js');
-  // var client = steamworks.init(3994990);
+  const steamworks = require('steamworks.js');
+  var client = steamworks.init(3994990);
   var workshop = client.workshop;
   // client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, 'Search Workshop', '', 256, false);
 } catch (error) { }
@@ -31,7 +31,7 @@ app.on('ready', () => {
     titleBarOverlay: {
       height: 32
     },
-    title: "Oradea",
+    title: "ORADEA",
     icon: './Assets/Glyphs/Logo.png',
     webPreferences: {
       nodeIntegration: true,

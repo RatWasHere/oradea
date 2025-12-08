@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
-  <title>Wacca Style Tunnel</title>
   <style>
     :root {
       --tunnel-size: 100px;
       --ring-inner: 30%;
       --ring-outer: 70%;
       --arc-start: 10deg;
-      --arc-angle: 60deg; /* NEW: arc size */
+      --arc-angle: 60deg;
+      /* NEW: arc size */
       --arc-end: calc(var(--arc-start) + var(--arc-angle));
       --ring-color: cyan;
     }
@@ -18,7 +19,7 @@
       perspective: 800px;
       /* Controls the strength of the 3D effect */
       overflow: hidden;
-      width: 100vw;   
+      width: 100vw;
       height: 100vh;
       background: black;
       position: relative;
@@ -45,6 +46,7 @@
       0% {
         rotate: 0deg;
       }
+
       100% {
         rotate: -360deg;
       }
@@ -67,6 +69,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <a href="../Picker/LevelPicker.html">back</a>
@@ -76,124 +79,100 @@
   let parser = require('osu-mania-parser');
   let beatmap = parser.parseFileSync('./Misc/lightmap.osu');
   let sheet = [];
-  function swap(json){
-  var ret = {};
-  for(var key in json){
-    ret[json[key]] = key;
+  function swap(json) {
+    var ret = {};
+    for (var key in json) {
+      ret[json[key]] = key;
+    }
+    return ret;
   }
-  return ret;
-}
+
+
+  let unprocessedSheet = {};
 
   let keyPositions = swap(beatmap.keyPositions);
 
-  beatmap.hitObjects.forEach((hitObject, index) => {
-    if (!sheet.find(styleParent => styleParent.time == hitObject.time)) {
-      sheet.push({
-        time: hitObject.time,
-        speed: 1,
-        offset: 0
-      })
+  function getEasing(effect) {
+    if (effect.hitSound.includes('whistle') && effect.hitSound.includes('clap')) {
+      return 'ease-in-out'
+    } else if (effect.hitSound.includes('whistle')) {
+      return 'ease-in'
+    } else if (effect.hitSound.includes('clap')) {
+      return 'ease-out'
+    } else return 'ease'
+  }
+
+  function createTransition(effect, property) {
+    if (effect.type == "note") {
+      return `${property} 0s linear`
+    } else {
+      return `${property} ${effect.endTime - effect.time}ms ${getEasing(effect)}`
     }
-    if (hitObject.type == "note") {
-      let additionalOptions = {};
-      if (hitObject.hitSound.includes("clap") && hitObject.hitSound.includes("whistle")) {
-        additionalOptions.golden = true
-      } else if (hitObject.hitSound.includes("clap")) {
-        additionalOptions.flickDirection = 1;
-        additionalOptions.flick = true;
-      } else if (hitObject.hitSound.includes("whistle")) {
-        additionalOptions.flickDirection = 2;
-        additionalOptions.flick = true;
-      } else if (hitObject.hitSound.includes("finish")) {
-        additionalOptions.hold = true;
-      }
-      sheet.push({
-        time: hitObject.time,
-        angle: keyPositions[hitObject.x],
-        ...additionalOptions
-      });
-    } else if (hitObject.type == "hold") {
-      let additionalOptions = {};
-      if (hitObject.hitSound.includes("finish") && hitObject.hitSound.includes("whistle")) {
-        additionalOptions.holdableEnd = true;
-        additionalOptions.flickableAway = true;
-        if (hitObject.hitSound.includes("clap")) {
-          additionalOptions.holdableStart = true;
-        }
-      } else if (hitObject.hitSound.includes("clap")) {
-        additionalOptions.holdableStart = true;
-      } else if (hitObject.hitSound.includes("whistle")) {
-        additionalOptions.golden = true;
-      } else if (hitObject.hitSound.includes("finish")) {
-        additionalOptions.holdableStart = true;
-        additionalOptions.holdableEnd = true;
-      }
-      sheet.push({
-        time: hitObject.time,
-        angle: keyPositions[hitObject.x],
-        slider: true,
-        sliderEnd: hitObject.endTime,
-      });
+  }
+
+  function getIntensity(effect, regular, alternative) {
+    if (effect.hitSound.includes('finish') && effect.hitSound.includes('clap') && effect.hitSound.includes('whistle')) return null;
+    if (!effect.hitSound.includes('finish')) { return regular } else return alternative;
+  }
+
+  beatmap.hitObjects.forEach((effect, index) => {
+    let effectType = Number(keyPositions[effect.x]) + 1;
+    let effects = {};
+    let transitions = {};
+
+    if (effectType == 0) { // rotate negative degrees
+      transitions['rotate'] = createTransition(effect, 'rotate')
+      effects['rotate'] = getIntensity(effect, '-10deg', '-30deg')
+    } else if (effectType == 1) {
+      transitions['transform'] = createTransition(effect, 'transform')
+      effects['transform'] = getIntensity(effect, 'translateX(-10px)', 'translateX(-30px)')
+    } else if (effectType == 2) {
+      transitions['transform'] = createTransition(effect, 'transform')
+      effects['transform'] = getIntensity(effect, 'translateY(-10px)', 'translateY(-30px)')
+    } else if (effectType == 3) {
+      transitions['scale'] = createTransition(effect, 'scale')
+      effects['scale'] = getIntensity(effect, '1.07', '1.15')
+    } else if (effectType == 4) {
+      transitions['scale'] = createTransition(effect, 'scale')
+      effects['scale'] = getIntensity(effect, '0.95', '0.85')
+    } else if (effectType == 5) {
+      transitions['transform'] = createTransition(effect, 'transform')
+      effects['transform'] = getIntensity(effect, 'translateY(10px)', 'translateY(30px)')
+    } else if (effectType == 6) {
+      transitions['transform'] = createTransition(effect, 'transform')
+      effects['transform'] = getIntensity(effect, 'translateX(10px)', 'translateX(30px)')
+    } else if (effectType == 7) {
+      transitions['rotate'] = createTransition(effect, 'rotate')
+      effects['rotate'] = getIntensity(effect, '-10deg', '-30deg')
+    } else if (effectType == 8) {
+      transitions['filter'] = createTransition(effect, 'filter')
+      effects['filter'] = getIntensity(effect, 'blur(3px)', 'blur(5px)')
     }
+
+    if (!unprocessedSheet[effect.time]) {
+      unprocessedSheet[effect.time] = {
+        transitions: []
+      }
+    }
+    unprocessedSheet[effect.time] = {...unprocessedSheet[effect.time], ...effects};
+    unprocessedSheet[effect.time].transitions.push(transitions[Object.keys(transitions)[0]])
   });
 
-  // ...existing code...
-  // after building `sheet` from beatmap.hitObjects, add this block:
-  (function combineSimultaneousSliders() {
-    // group slider entries by start+end time
-    let sliderGroups = {};
-    sheet.forEach((entry, idx) => {
-      if (entry.slider) {
-        const key = `${entry.time}_${entry.sliderEnd}`;
-        sliderGroups[key] = sliderGroups[key] || [];
-        sliderGroups[key].push({ entry, idx });
+  let finalSheet = [];
+  
+  for (let i in unprocessedSheet) {
+    finalSheet.push({
+      time: Number(i),
+      playfield: {
+        transition: unprocessedSheet[i].transitions.join(', '),
+        ...unprocessedSheet[i]
       }
-    });
+    })
+  }
 
-    // find groups of size 3 or 4
-    const combineKeys = Object.keys(sliderGroups).filter(k => {
-      const c = sliderGroups[k].length;
-      return c === 3 || c === 4;
-    });
 
-    if (combineKeys.length === 0) return;
-
-    const skip = new Set();
-    const combinedEntries = [];
-
-    combineKeys.forEach(key => {
-      const group = sliderGroups[key];
-      // mark original entries to be removed
-      group.forEach(g => skip.add(g.idx));
-
-      // compute average angle for the new long flick
-      const angles = group.map(g => g.entry.angle);
-      const avgAngle = angles.reduce((a, b) => a + b, 0) / angles.length;
-
-      const startTime = group[0].entry.time;
-      const endTime = group[0].entry.sliderEnd;
-      const distance = group.length === 3 ? 2 : 3;
-
-      combinedEntries.push({
-        time: startTime,
-        flickEnd: endTime,
-        angle: avgAngle,
-        largeFlick: true,
-        flickDirection: 1,
-        direction: distance,
-      });
-    });
-
-    // build a new sheet without the original combined sliders, then add combined entries
-    const newSheet = sheet.filter((_, idx) => !skip.has(idx));
-    newSheet.push(...combinedEntries);
-
-    // keep sheet sorted by time (and angle as tie-breaker)
-    newSheet.sort((a, b) => (a.time - b.time) || ((a.angle || 0) - (b.angle || 0)));
-
-    sheet = newSheet;
-  })();
-  require('fs').writeFileSync('./Misc/lightmap.json', JSON.stringify(sheet, null, 2));
+  require('fs').writeFileSync('./Misc/lightmap.json', JSON.stringify(finalSheet, null, 2));
 
 </script>
+
 </html>

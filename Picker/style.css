@@ -48,6 +48,7 @@ body {
   transition: all 0.2s cubic-bezier(.17, .67, 0, .95), margin-top 0.2s linear, margin-bottom 0.2s linear !important;
   display: block;
   content-visibility: auto;
+  contain-intrinsic-size: auto 1000px;
 }
 
 .songTile>btextm {
@@ -203,6 +204,11 @@ body {
   margin-top: 60px;
   box-shadow: 0px 0px 5px 5px #00000020;
   mask-position: 100% 100%;
+}
+
+.song-cover.selected {
+  box-shadow: none !important;
+  outline: none !important;
 }
 
 .difficulties-preview {
@@ -362,6 +368,7 @@ body {
   border-radius: 10px;
   width: 380px;
   height: 380px;
+  background-position: center;
   box-shadow: #00000020 0px 0px 5px 5px;
 }
 

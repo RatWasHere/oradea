@@ -52,5 +52,5 @@ function saveSettings() {
 }
 
 function getSetting(label, defaultValue) {
-  return (settings[label] ? settings[label] : defaultValue);
+  return (settings[label] != undefined ? settings[label] : defaultValue);
 }

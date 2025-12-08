@@ -233,15 +233,27 @@ btn {
   opacity: 0.8;
 }
 
+.note_design_preview {
+  width: 70px;
+  height: 70px;
+  background-size: contain;
+  background-position: center;
+  margin: auto;
+  margin-bottom: 5px;
+  margin-top: 5px;
+  background-repeat: no-repeat !important;
+  shape-rendering: geometricPrecision;
+}
+.note_design_preview.special {
+  margin-top: 0px !important;
+  margin-bottom: 0px !important;
+  margin-right: 5px !important;
+  margin-left: 5px !important;
+}
 
 @keyframes noteDemonstration {
   0% {
-    opacity: 0;
     transform: translateY(90px);
-  }
-
-  30% {
-    opacity: 1;
   }
 
   60% {
@@ -249,9 +261,14 @@ btn {
     scale: 1;
   }
 
-  100% {
+  90% {
     transform: translateY(-26px);
     opacity: 1;
+  }
+
+  100% {
+    transform: translateY(-26px);
+    opacity: 0;
   }
 }
 

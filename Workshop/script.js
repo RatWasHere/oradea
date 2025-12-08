@@ -51,19 +51,23 @@ if (!fs.existsSync(workshopPath)) {
 let currentlyPlayingPreviewAudio;
 
 function previewWorkshopItem(publishedFileId, button) {
+  console.log('')
   button.classList.add('buffering')
   workshop.download(BigInt(publishedFileId), true);
   let getItemProgress = () => {
     let current = workshop.downloadInfo(BigInt(publishedFileId)).current;
     let total = workshop.downloadInfo(BigInt(publishedFileId)).total;
-    console.log(current, total)
-    if (current == total) {
+    let exists = fs.existsSync(`${workshopPath}/${publishedFileId}/audio.mp3`);
+    if (current == total && exists) {
       if (currentlyPlayingPreviewAudio) { currentlyPlayingPreviewAudio.pause(); currentlyPlayingPreviewAudio.remove() };
       let audio = new Audio(`${workshopPath}/${publishedFileId}/audio.mp3`);
       currentlyPlayingPreviewAudio = audio;
-      audio.play().then(() => {
-        audio.currentTime = Math.round(audio.duration / 2);
-      });
+      setTimeout(() => {
+        audio.play().then(() => {
+          audio.currentTime = Math.round(audio.duration / 2);
+        });
+      }, 300);
+    button.classList.remove('buffering');
     } else setTimeout(() => {
       getItemProgress();
     }, 100);

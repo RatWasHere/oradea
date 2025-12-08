@@ -19,7 +19,7 @@ const CONFIG = {
 
   NOTE_RADIUS: 110,
 
-  SCALE_DURATION: 0,
+  SCALE_DURATION: 300,
 
   NOTE_PREVIEW_DELAY: 400,
   CREATE_AT_DISTANCE_OF: 0,
@@ -27,7 +27,7 @@ const CONFIG = {
   // ===== CONTAINERS =====
   CONTAINER_RADIUS: 220,
   // CONTAINER_REAL_RADIUS: 400,
-  CONTAINER_REAL_RADIUS: 630,
+  CONTAINER_REAL_RADIUS: 470, // WAS 630
   ADJUSTED_MAX_TRAVEL: 0,
   START_OFFSET: 0,
   CREATION_ANTIDELAY: 5000,
@@ -40,6 +40,8 @@ const CONFIG = {
   FLICK_THRESHOLD: 13,
   FLICK_OFFSET: 20,
   LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD: 0.99,
+  INITIAL_DELAY: 0,
+  HINT_VISIBILITY: 0.5,
 
   // SCORING
   ACCEPTANCE_THRESHOLD: 300,
@@ -70,13 +72,18 @@ const CONFIG = {
   },
 
   AUTOPLAY: false,
-  BUTTONS: true
+  BUTTONS: true,
+
+  FLASHING_LIGHTS: 1,
+  GIMMICKS: 1,
+  VFX_CACHE_MULTIPLIER: 1
 };
 
 function getProgress(value, min, max) {
   return Math.max(0, (value - min) / (max - min));
 }
 
+var loadTime = 0;
 
 // translateY(calc((var(--sr) + (var(--s) - var(--sr)) * 2) / 2))
 // calc((var(--sr) / 2) - var(--tlr))
@@ -110,6 +117,10 @@ class GameState {
     this.score = 0;
 
     CONFIG.AUDIO_OFFSET = getSetting('audio_offset', 0);
+    CONFIG.HINT_VISIBILITY = getSetting('note_hint', 0.5);
+    CONFIG.FLASHING_LIGHTS = getSetting('flashing_lights', 1);
+    CONFIG.GIMMICKS = getSetting('gimmicks', 1);
+    CONFIG.VFX_CACHE_MULTIPLIER = getSetting('vfx_cache', 3);
 
     let lastNote = this.sheet[this.sheet.length - 1];
     let determinedTime = lastNote.time;
@@ -205,7 +216,7 @@ class GameState {
     this.elements.overlay.style.scale = getSetting('hexagon_size', 1);
 
     this.effectItems = []
-    for (let i = 0; i < 10; i++) {
+    for (let i = 0; i < 4 * CONFIG.VFX_CACHE_MULTIPLIER; i++) {
       let parent = document.createElement('div');
       parent.classList.add('sfx_container');
       parent.style.display = 'none';
@@ -227,7 +238,8 @@ class GameState {
         type: 'particles'
       });
     }
-    for (let i = 0; i < 10; i++) {
+
+    for (let i = 0; i < 4 * CONFIG.VFX_CACHE_MULTIPLIER; i++) {
       let parent = document.createElement('div');
       parent.classList.add('sfx_container');
       parent.style.display = 'none';
@@ -256,7 +268,7 @@ class GameState {
       });
     }
 
-    for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 3 * CONFIG.VFX_CACHE_MULTIPLIER; i++) {
       let parent = document.createElement('div');
       parent.classList.add('sfx_container');
       parent.style.display = 'none';
@@ -274,7 +286,7 @@ class GameState {
       })
     }
 
-    for (let i = 0; i < 7; i++) {
+    for (let i = 0; i < 2 * CONFIG.VFX_CACHE_MULTIPLIER; i++) {
       let parent = document.createElement('div');
       parent.classList.add('sfx_container');
       parent.style.display = 'none';
@@ -293,23 +305,23 @@ class GameState {
       })
     }
 
-    for (let i = 0; i < 6; i++) {
-      let parent = document.createElement('div');
-      parent.classList.add('sfx_container');
-      parent.style.display = 'none';
+    // for (let i = 0; i < 6; i++) {
+    //   let parent = document.createElement('div');
+    //   parent.classList.add('sfx_container');
+    //   parent.style.display = 'none';
 
-      let header = document.createElement('div');
-      header.classList.add('sfx_flick_particle');
-      parent.appendChild(header);
+    //   let header = document.createElement('div');
+    //   header.classList.add('sfx_flick_particle');
+    //   parent.appendChild(header);
 
-      this.elements.container.appendChild(parent);
-      this.effectItems.push({
-        parent,
-        element: header,
-        inUse: false,
-        type: 'flick_particles'
-      });
-    }
+    //   this.elements.container.appendChild(parent);
+    //   this.effectItems.push({
+    //     parent,
+    //     element: header,
+    //     inUse: false,
+    //     type: 'flick_particles'
+    //   });
+    // }
 
 
     const rect = this.elements.container.getBoundingClientRect();
@@ -325,53 +337,48 @@ class GameState {
   }
 
   async initializeAudio() {
-    // Load beatmap audio into an AudioBuffer and start playback via AudioContext
     const filePath = `./Beatmaps/${this.crossDetails.location}/audio.mp3`;
     const fileBuf = fs.readFileSync(filePath);
     const arrayBuffer = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.length);
-    // decodeAudioData returns a Promise on modern browsers; handle both signatures
     this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
-    // Create a source and start immediately
     if (this.audioSource) {
       try { this.audioSource.stop(); } catch (e) { }
       this.audioSource.disconnect();
     }
+
+    this.gainNode = this.audioContext.createGain();
+    this.gainNode.connect(this.audioContext.destination);
+
     this.audioSource = this.audioContext.createBufferSource();
     this.audioSource.buffer = this.audioBuffer;
-    this.audioSource.connect(this.audioContext.destination);
+    this.audioSource.connect(this.gainNode);
     this.audioSource.start(0);
     this.audioStartTime = this.audioContext.currentTime;
     this.paused = false;
+    this.gainNode.gain.value = Number(getSetting('music_volume', 90)) / 100;
   }
 
   get currentTime() {
-    if (!this.audioBuffer || !this.audioStartTime) return 0;
+    if (!this.audioBuffer || !this.audioStartTime) return (Performance.now() - (loadTime + CONFIG.AUDIO_OFFSET));
     return ((this.audioContext.currentTime - this.audioStartTime) * 1000) - CONFIG.AUDIO_OFFSET
   }
 
   seekToTime(timeInMs) {
     if (!this.audioSource || !this.audioBuffer) return;
 
-    // Stop current playback
     this.audioSource.stop();
     this.audioSource.disconnect();
 
-    // Create new source
     this.audioSource = this.audioContext.createBufferSource();
     this.audioSource.buffer = this.audioBuffer;
     this.audioSource.connect(this.audioContext.destination);
 
-    // Calculate new start time
     const timeInSeconds = timeInMs / 1000;
     this.audioStartTime = this.audioContext.currentTime - timeInSeconds;
 
-    // Start playback from specified offset
     this.audioSource.start(0, timeInSeconds);
   }
 }
-// ============================================================================
-// TIMING SYSTEM - FIXED VERSION
-// ============================================================================
 class TimingSystem {
   constructor() {
     this.globalTimingPoint = { speed: 1, offset: 0 };
@@ -386,21 +393,57 @@ class TimingSystem {
    */
 
   getTiming(note, time) {
-    const timingPoint = note.timeSheet ? this.getTimingPointAt(time, note.timeSheet, note) : null;
-    if (!timingPoint || timingPoint.applied) return;
+    const timingPoint = note.timeSheet ? this.getTimingPointAt(time, note.timeSheet, note.time) : null;
+    if (!timingPoint) return undefined;
     if (timingPoint.style) {
       this.applyNoteStyles(timingPoint, note);
-    }
-    if (note.timeSheet) {
-      timingPoint.default = false;
-    } else {
-      timingPoint.default = true;
     }
     return timingPoint;
   }
 
+  getTimingPointAt(time, timingSheet, relativeTime = 0) {
+    if (!timingSheet?.length) return { speed: 1, offset: null };
+
+
+    let activePoint = null;
+    let activeIndex = -1;
+
+    for (let i = 0; i < timingSheet.length; i++) {
+      const point = timingSheet[i];
+
+      if (point.applied) break;
+
+      let pointTime;
+      if (typeof point.time === 'object') {
+        pointTime = this.fromSpecial(point.time);
+      } else {
+        pointTime = parseFloat(point.time);
+      }
+
+      if (typeof point.offset == 'object') {
+        point.offset = this.fromSpecial(point.offset);
+      }
+
+      if (typeof point.transition)
+
+        if (point.from && point.from.offset && typeof point.from.offset === 'object') {
+          point.from.offset = this.fromSpecial(point.from.offset);
+        }
+
+      const pointStartTime = pointTime;
+
+      if ((pointStartTime + relativeTime) <= time) {
+        activePoint = point;
+        activeIndex = i;
+      } else break;
+    }
+
+    if (!activePoint) return { speed: 1, offset: null };
+    return activePoint;
+  }
+
   updateGlobalTimingPoint(sheet, time) {
-    const timingPoint = this.getTimingPointAt(time, sheet, { speed: 1, offset: 0 });
+    const timingPoint = this.getTimingPointAt(time, sheet);
     this.globalTimingPoint = timingPoint;
     if (game.gameState?.timeSheet?.[timingPoint?.index]?.applied) return;
     if (timingPoint.segments) {
@@ -437,41 +480,6 @@ class TimingSystem {
         flicker.style.opacity = modifier.strength || '1';
       }
     }
-  }
-
-  getTimingPointAt(time, timingSheet, defaultPoint = { speed: 1, offset: 0 }) {
-    if (!timingSheet?.length) return defaultPoint;
-
-    const defaultTime = defaultPoint.time ? parseFloat(defaultPoint.time) : 0;
-
-    let activePoint = null;
-    let activeIndex = -1;
-
-    for (let i = 0; i < timingSheet.length; i++) {
-      const point = timingSheet[i];
-
-      if (point.applied) {
-        break;
-      }
-
-      let pointTime;
-      if (typeof point.time === 'object') {
-        pointTime = this.fromSpecial(point.time);
-      } else {
-        pointTime = parseFloat(point.time);
-      }
-
-      const pointStartTime = pointTime + defaultTime;
-
-      if (pointStartTime <= time) {
-        activePoint = point;
-        activeIndex = i;
-      } else break;
-    }
-
-    if (!activePoint) return defaultPoint;
-    console.log(activePoint)
-    return activePoint;
   }
 
   applyNoteStyles(timingPoint, note) {
@@ -534,11 +542,8 @@ class TimingSystem {
   }
 
   interpolateTimingPoint(time, activePoint, defaultPoint) {
-    const startTime = parseFloat(activePoint.time);
-    // console.log(startTime, activePoint.time, defaultPoint?.time)
-    const transition = parseFloat(activePoint.transition || 0);
-
-    // If no transition, return the active point values
+    const startTime = parseFloat(this.fromSpecial(activePoint.time));
+    const transition = parseFloat(this.fromSpecial(activePoint.transition) || 0);
     if (!transition) {
       return {
         speed: parseFloat(activePoint?.speed ?? defaultPoint?.speed),
@@ -552,7 +557,7 @@ class TimingSystem {
 
     if (activePoint.from) {
       speedFrom = parseFloat(activePoint.from?.speed ?? defaultPoint?.speed);
-      offsetFrom = parseFloat(activePoint.from?.offset ?? defaultPoint?.offset);
+      offsetFrom = parseFloat(this.fromSpecial(activePoint.from?.offset) ?? defaultPoint?.offset);
     } else {
       return {
         speed: parseFloat(activePoint?.speed ?? defaultPoint?.speed),
@@ -561,9 +566,8 @@ class TimingSystem {
     }
 
     const speedTo = parseFloat(activePoint?.speed ?? defaultPoint?.speed);
-    const offsetTo = parseFloat(activePoint?.offset ?? defaultPoint?.offset);
+    const offsetTo = parseFloat(this.fromSpecial(activePoint?.offset) ?? defaultPoint?.offset);
 
-    // If we're past the transition end, return end values
     if (time >= endTime) {
       return {
         speed: speedTo,
@@ -571,7 +575,6 @@ class TimingSystem {
       };
     }
 
-    // If we're before the transition start, return start values
     if (time < startTime) {
       return {
         speed: speedFrom,
@@ -579,11 +582,9 @@ class TimingSystem {
       };
     }
 
-    // Calculate interpolation progress (0 to 1)
     const progress = (time - startTime) / transition;
-    // Apply easing function if specified
     const easedProgress = this.applyEasing(progress, activePoint.easing);
-
+    console.log(startTime, transition)
     return {
       speed: this.lerp(speedFrom, speedTo, easedProgress),
       offset: this.lerp(offsetFrom, offsetTo, easedProgress)
@@ -629,10 +630,10 @@ class TimingSystem {
 
   fromSpecial(value) {
     if (typeof value === 'object') {
-      let endValue = CONFIG.NOTE_PREVIEW_DELAY;
-      value.forEach((item) => {
-        endValue = this.processSpecialItem(item, endValue);
-      });
+      let endValue = CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION;
+      for (let i = 0; i < value.length; i++) {
+        endValue = this.processSpecialItem(value[i], endValue);
+      }
       return endValue;
     } else {
       return value;
@@ -1153,7 +1154,7 @@ class InputSystem {
   }
 
   hitNote(note, pointID) {
-    this.gameState.scoringSystem.judge(note.time);
+    this.gameState.scoringSystem.judge(note.time, true, note);
 
     if (note.flick || note.largeFlick) {
       this.startFlick(note);
@@ -1463,13 +1464,14 @@ class RenderingSystem {
         }
       }
 
-      // const hint = document.createElement('div');
-      // hint.classList.add('hint');
-      // header2.appendChild(hint);
+      const hint = document.createElement('div');
+      hint.classList.add('hint');
+      header2.appendChild(hint);
+      hint.style.scale = 0;
 
       note.endElement = header2;
       note.startElement = header;
-      // note.hint = hint;
+      note.hint = hint;
 
       noteElement.appendChild(header2);
 
@@ -1487,6 +1489,12 @@ class RenderingSystem {
         }
       }
       noteElement.appendChild(header);
+
+      const hint = document.createElement('div');
+      hint.classList.add('hint');
+
+      header.appendChild(hint);
+      note.hint = hint;
 
       if (note.holdable) {
         noteElement.classList.add('holdable');
@@ -1538,31 +1546,39 @@ class RenderingSystem {
   }
 
   updateNote(note, currentTime) {
-    const noteTiming = this.timingSystem.getTiming(note, currentTime);
+    let noteTiming = this.timingSystem.getTiming(note, currentTime);
+    var noteOffset = noteTiming?.offset;
+
+    if (noteOffset != undefined && noteTiming?.from) {
+      noteTiming = this.timingSystem.interpolateTimingPoint(currentTime - note.time, noteTiming, noteTiming.from)
+    }
+
 
     if (note.slider) {
       return this.updateSliderPosition(note, currentTime, noteTiming);
-    } else if (note.flick && !note.largeFlick) {
-      this.updateFlickState(note, currentTime);
-    } else if (note.largeFlick) {
-      this.updateLargeFlickState(note, currentTime);
-      let duration = note.flickEnd - note.time;
-
-      const elapsed = currentTime - note.time;
-
-      const progress = Math.min(Math.max(elapsed / duration, 0), 1);
-      duration = Math.max(duration, CONFIG.NOTE_PREVIEW_DELAY);
-      const preprogress = Math.min(Math.max((elapsed + duration) / duration, 0), 1);
-      note.traceParent.style.opacity = preprogress;
-      note.traceParent.style.setProperty('--progression', 1 - progress);
-      note.lastProgress = progress;
-    } else if (note.holdable && note.time < currentTime) {
-      let isInArc0 = this.inputSystem.isInArc(note, this.gameState.rotations[0]);
-      let isInArc1 = this.inputSystem.isInArc(note, this.gameState.rotations[1]);
-      if ((isInArc0 && this.gameState.keysPressed['w']) || (isInArc1 && this.gameState.keysPressed['s'])) {
-        this.inputSystem.hitNote(note, isInArc0 ? 0 : 1);
-      }
     }
+    // rest in peace flicks, you won't be missed
+    // else if (note.flick && !note.largeFlick) {
+    //   this.updateFlickState(note, currentTime);
+    // } else if (note.largeFlick) {
+    //   this.updateLargeFlickState(note, currentTime);
+    //   let duration = note.flickEnd - note.time;
+
+    //   const elapsed = currentTime - note.time;
+
+    //   const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+    //   duration = Math.max(duration, CONFIG.NOTE_PREVIEW_DELAY);
+    //   const preprogress = Math.min(Math.max((elapsed + duration) / duration, 0), 1);
+    //   note.traceParent.style.opacity = preprogress;
+    //   note.traceParent.style.setProperty('--progression', 1 - progress);
+    //   note.lastProgress = progress;
+    // } else if (note.holdable && note.time < currentTime) {
+    //   let isInArc0 = this.inputSystem.isInArc(note, this.gameState.rotations[0]);
+    //   let isInArc1 = this.inputSystem.isInArc(note, this.gameState.rotations[1]);
+    //   if ((isInArc0 && this.gameState.keysPressed['w']) || (isInArc1 && this.gameState.keysPressed['s'])) {
+    //     this.inputSystem.hitNote(note, isInArc0 ? 0 : 1);
+    //   }
+    // }
     this.updateRegularNotePosition(note, currentTime, noteTiming);
   }
 
@@ -1629,13 +1645,35 @@ class RenderingSystem {
       currentTime = sliderStart + offset;
     }
 
-    let spentHeight;
-    const scaleStart = sliderStart - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION);
-    const scaleEnd = sliderStart - CONFIG.NOTE_PREVIEW_DELAY;
 
+
+    let scale = 1; // default once scaling is done
+    let scaleStart = (sliderStart) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
+    let scaleEnd = (sliderStart) - CONFIG.NOTE_PREVIEW_DELAY;
+    if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
+      // progress from 0 → 1 during the scale duration
+      let progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
+      scale = game.timingSystem.applyEasing(progress, '[0.49,0.14,0.74,0.96]');
+    } else if (currentTime < scaleStart) {
+      scale = 0;
+    } else if (!note.endedScale && currentTime > scaleEnd) {
+      scale = 1;
+    }
+
+    if ((Number(note.sliderEnd) + (CONFIG.ACCEPTANCE_THRESHOLD / 2)) <= currentTime) {
+      let start = Number(note.sliderEnd) + Number(CONFIG.ACCEPTANCE_THRESHOLD / 2);
+      let end = Number(note.sliderEnd) + Number(CONFIG.ACCEPTANCE_THRESHOLD);
+      note.element.style.opacity = 1 - getProgress(currentTime, start, end);
+    } else if (note.element.style.opacity != 1) {
+      note.element.style.opacity = 1;
+    }
+
+    note.startElement.style.transform = `scale(${scale})`;
+    note.endElement.style.transform = `scale(${scale})`;
 
     const maxHeight = ((sliderEnd - sliderStart) / previewDelay) * sliderMaxHeight;
     const progress = getProgress(currentTime + previewDelay, sliderStart, sliderEnd);
+    note.hint.style.scale = getProgress(currentTime, sliderStart - previewDelay, sliderStart);
     let currentHeight = progress * maxHeight;
     if ((currentTime + previewDelay) <= sliderEnd) {
       note.midframe.style.scale = `1 ${(currentHeight) / CONFIG.NOTE_RADIUS}`;
@@ -1647,59 +1685,6 @@ class RenderingSystem {
 
     this.updateSliderHoldStatus(note);
     return
-
-    // (value - min) / (max - min)
-    let distanceFromStart = getProgress(currentTime, sliderStart - CONFIG.NOTE_PREVIEW_DELAY, sliderStart);
-    spentHeight = distanceFromStart * sliderMaxHeight;
-
-    let toTranslate = Math.max(spentHeight - currentHeight, sliderMaxHeight * -1);
-    note.element.style.translate = `0px ${Math.max(distanceFromStart - maxHeight, sliderMaxHeight * -1)}px`;
-
-    return
-
-    if (!offset) {
-
-    }
-
-    return;
-    if (!offset) {
-      let scale = 1;
-      const scaleStart = sliderStart - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION);
-      const scaleEnd = sliderStart - CONFIG.NOTE_PREVIEW_DELAY;
-
-      if (currentTime < scaleStart) {
-        scale = 0;
-      } else if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
-        const progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
-        scale = game.timingSystem.applyEasing(progress, '[0.49,0.14,0.74,0.96]');
-      }
-
-      // if (note.startElement.style.scale != scale) {
-      //   note.startElement.style.scale = scale;
-      //   note.endElement.style.scale = scale;
-      // }
-
-      const maxHeight = ((sliderEnd - sliderStart) / previewDelay) * sliderMaxHeight;
-      if ((currentTime + previewDelay) <= sliderEnd) {
-        const currentHeight = getProgress(currentTime + previewDelay, sliderStart, sliderEnd) * maxHeight;
-        note.midframe.style.scaleY = currentHeight / CONFIG.NOTE_RADIUS;
-        spentHeight = sliderMaxHeight;
-      } else {
-        let heightTranslatedToScale = maxHeight / CONFIG.NOTE_RADIUS;
-        note.midframe.style.scaleY = heightTranslatedToScale;
-        spentHeight = sliderMaxHeight;
-        spentHeight = ((sliderEnd - currentTime) / previewDelay) * sliderMaxHeight;
-      }
-    } else {
-      spentHeight = ((sliderEnd - (sliderStart + offset)) / previewDelay) * sliderMaxHeight;
-    }
-
-    // const hintProgression = getProgress(currentTime, sliderStart - previewDelay, sliderStart);
-    // note.hint.style.scale = hintProgression;
-
-    if (note.isBeingHeld || currentTime <= note.sliderEnd) {
-      this.updateSliderHoldStatus(note);
-    }
   }
 
   updateSliderHoldStatus(note) {
@@ -1716,37 +1701,45 @@ class RenderingSystem {
     }
   }
 
-  updateRegularNotePosition(note, currentTime, timing) {
+  updateRegularNotePosition(note, actualCurrentTime, timing) {
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY;
-    const offset = timing?.offset || 0;
     const noteTime = note.time;
+    let timeIntoPreview;
+    let currentTime = actualCurrentTime;
+    if (timing?.offset != undefined) {
+      currentTime = noteTime + timing.offset;
+    }
 
     const noteTravelMax = CONFIG.ADJUSTED_MAX_TRAVEL;  // Use CONTAINER_REAL_RADIUS
-
-    let timeIntoPreview;
-    if (!offset) {
-      let scale = 1; // default once scaling is done
-      let scaleStart = (noteTime) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
-      let scaleEnd = (noteTime) - CONFIG.NOTE_PREVIEW_DELAY;
-      if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
-        // progress from 0 → 1 during the scale duration
-        let progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
-        scale = game.timingSystem.applyEasing(progress, '[0.49,0.14,0.74,0.96]');
-      } else if (currentTime < scaleStart) {
-        scale = 0;
-      } else if (!note.endedScale && currentTime > scaleEnd) {
-        scale = 1;
-      }
-      note.element.style.transform = `scale(${scale})`;
-
-
-      timeIntoPreview = Math.min(
-        ((noteTime - currentTime) / previewDelay) * noteTravelMax,
-        noteTravelMax
-      );
-    } else {
-      timeIntoPreview = (-offset / previewDelay) * noteTravelMax;
+    let scale = 1; // default once scaling is done
+    let scaleStart = (noteTime) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
+    let scaleEnd = (noteTime) - CONFIG.NOTE_PREVIEW_DELAY;
+    if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
+      let progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
+      scale = game.timingSystem.applyEasing(progress, '[0.49,0.14,0.74,0.96]');
+    } else if (currentTime < scaleStart) {
+      scale = 0;
+    } else if (!note.endedScale && currentTime > scaleEnd) {
+      scale = 1;
     }
+
+    if ((Number(note.time) + (CONFIG.ACCEPTANCE_THRESHOLD / 2)) <= currentTime) {
+      let start = Number(note.time) + Number(CONFIG.ACCEPTANCE_THRESHOLD / 2);
+      let end = Number(note.time) + Number(CONFIG.ACCEPTANCE_THRESHOLD);
+      note.element.style.opacity = 1 - getProgress(currentTime, start, end);
+    } else if (note.element.style.opacity != 1) {
+      note.element.style.opacity = 1;
+    }
+
+    note.element.style.transform = `scale(${scale})`;
+
+
+    timeIntoPreview = Math.min(
+      ((noteTime - currentTime) / previewDelay) * noteTravelMax,
+      noteTravelMax
+    );
+
+    note.hint.style.scale = getProgress(currentTime + previewDelay, noteTime, noteTime + previewDelay);
 
     const newTranslate = `0px ${timeIntoPreview * -1}px`;
     if (note.element.style.translate !== newTranslate) {
@@ -1881,16 +1874,16 @@ class RhythmGame {
 
 
     // initialize audio and then start loop
-    this.init();
+    requestAnimationFrame(() => {
+      this.init();
+    })
   }
 
   async init() {
-    // Ensure audio for the beatmap is decoded and playing
-    await this.gameState.initializeAudio();
-
     let audioPaths = {
       'hit': './Assets/hit_normal.mp3',
-      'flick': './Assets/flick.mp3'
+      'flick': './Assets/flick.mp3',
+      'golden': './Assets/golden_hit.mp3'
     };
 
     this.gameState.loadedAudios = {};
@@ -1903,6 +1896,16 @@ class RhythmGame {
 
     // Start game loop now that audio is ready
     this.gameState.playHitSound = this.playHitSound.bind(this);
+
+    await new Promise((res) => {
+      setTimeout(() => {
+        res()
+      }, CONFIG.INITIAL_DELAY);
+    })
+    loadTime = performance.now();
+
+    await this.gameState.initializeAudio();
+
     this.startGameLoop();
   }
 
@@ -1911,6 +1914,9 @@ class RhythmGame {
     let determinedBuffer = this.gameState.loadedAudios['hit'];
     if (note?.flick) {
       determinedBuffer = this.gameState.loadedAudios['flick'];
+    }
+    if (note?.golden) {
+      determinedBuffer = this.gameState.loadedAudios['golden']
     }
     source.buffer = determinedBuffer;
     source.connect(this.gameState.audioContext.destination);
@@ -1995,7 +2001,6 @@ class RhythmGame {
     setTimeout(() => {
       document.getElementById('buttons').remove();
       this.gameState.elements.controls.classList.add('end_controls');
-      this.gameState.elements.songArt.classList.add('viewing');
       document.getElementById('gradeParent').classList.add('end_gradeParent');
     }, CONFIG.LONG_ANIMATION);
     setTimeout(() => {
@@ -2007,9 +2012,8 @@ class RhythmGame {
       let totalNotesHit = this.gameState.scoringPad.perfect.length + this.gameState.scoringPad.great.length + this.gameState.scoringPad.ok.length + this.gameState.scoringPad.bad.length;
       let totalNotes = this.gameState.sheet.length;
       scoreStats.innerHTML = `
-      <btext id="hitCounts"><span>${(totalNotesHit / totalNotes) * 100}%</span> <span>${totalNotesHit}/${totalNotes}</span></btext><br>
+      <btext id="hitCounts"><span>${(totalNotesHit / totalNotes) * 100}%</span> <span>${totalNotesHit}/${totalNotes}</span></btext> • 
       <btext id="maxCombo"><span>Max Combo</span> <span>Unknown</span></btext>
-      <br>
       <br>
         <div class="scoreIndicator flexbox perfect"><div class="label">PERFECT</div><div class="count">${this.gameState.scoringPad.perfect.length}</div></div>
         <div class="scoreIndicator flexbox great"><div class="label">GREAT</div><div class="count">${this.gameState.scoringPad.great.length}</div></div>

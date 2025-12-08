@@ -1,5 +1,5 @@
 {
-  "location": "Frozen Heart",
-  "difficulty": 3,
-  "map": "hard.json"
+  "location": "Dokushite Chodai",
+  "difficulty": 4,
+  "map": "insane.json"
 }
