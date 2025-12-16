@@ -106,7 +106,7 @@ let angleMap = {
         additionalOptions.flickDirection = 2;
         additionalOptions.flick = true;
       } else if (hitObject.hitSound.includes("finish")) {
-        additionalOptions.hold = true;
+        additionalOptions.holdable = true;
       }
       sheet.push({
         time: hitObject.time,

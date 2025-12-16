@@ -1,6 +1,6 @@
 {
   "note_speed": 15.6,
-  "hexagon_size": "1.1",
+  "hexagon_size": "1",
   "input_mode": "buttons",
   "snap_extension": "0",
   "default_screen_state": "full",

@@ -13,7 +13,7 @@
 }
 
 .sfx_outwards_particle {
-  background: url('../Assets/SFX/Sublayer_Burst.svg');
+  background-image: url('../Assets/SFX/Sublayer_Burst.svg');
   background-repeat: no-repeat;
   background-size: cover;
   width: calc(var(--raw-size) / 2);
@@ -25,6 +25,23 @@
   scale: 1 0.5;
   border-radius: 5px;
   translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance) + -75px) / -2);
+}
+.sfx_outwards_particle.sfx_outwards_chevron {
+  background-image: url('../Assets/SFX/Sublayer_Chevron.svg');
+}
+.sfx_outwards_chevron::before {
+  width: 100%;
+  content: '';
+  height: 100%;
+  position: absolute;
+  top: 0px;
+  left: 0px;
+  background-image: url('../Assets/SFX/Sublayer_Chevron.svg');
+  background-repeat: no-repeat;
+  background-size: cover;
+  transform: scaleY(0.5) translateY(-1110px);
+  rotate: 180deg;
+  transform-origin: top;
 }
 
 .sfx_constant_particle {
@@ -80,6 +97,40 @@
   translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance) + -75px) / -2);
 }
 
+.sfx_outwards_chevrons {
+  width: calc(var(--raw-size) / 2);
+  aspect-ratio: 1/1;
+  margin: auto;
+  opacity: 1;
+  transform-origin: bottom;
+  /* scale: 1 0.5; */
+  border-radius: 5px;
+  margin-top: calc(var(--raw-size) / -2) !important;
+  translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance) + -75px) / -2);
+}
+.sfx_outwards_chevrons::after,
+.sfx_outwards_chevrons::before {
+  transform-origin: bottom;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-image: url('../Assets/SFX/Chevron_Particles_Above.svg');
+  content: '';
+  animation: ease sfx_outwards_particles 0.75s forwards;
+  width: 100%;
+  height: 100%;
+  display: block;
+  position: absolute;
+}
+
+
+.sfx_outwards_chevrons::before {
+  background-image: url('../Assets/SFX/Chevron_Particles_Below.svg');
+  animation-delay: 60ms;
+  animation-duration: 0.7s;
+  opacity: 0;
+}
+
+
 .sfx_outwards_particles::after,
 .sfx_outwards_particles::before {
   transform-origin: bottom;
@@ -126,7 +177,9 @@
     /* translate: 0px calc((var(--raw-size) + var(--outer-container-note-distance)) * -1); */
   }
 }
-.sfx_constant_particles::before, .sfx_constant_particles::after {
+
+.sfx_constant_particles::before,
+.sfx_constant_particles::after {
   opacity: 0;
   animation-iteration-count: infinite;
   animation-duration: 1250ms !important;
@@ -141,6 +194,7 @@
   background-image: url('../Assets/SFX/Layer_Particles_Constant_Above.svg') !important;
   animation-delay: 500ms !important;
 }
+
 .sfx_constant_particles_repeat::before {
   animation-delay: 400ms !important;
   animation-duration: 1750ms;
@@ -148,7 +202,7 @@
 }
 
 .sfx_header {
-  background: url('../Assets/SFX/Header.svg');
+  background-image: url('../Assets/SFX/Header.svg');
   background-repeat: no-repeat;
   background-size: cover;
   width: calc(var(--raw-size) / 2);
@@ -186,6 +240,7 @@
   background-repeat: repeat-y !important;
   animation: sfx_flicker 0.12s ease-in-out infinite alternate;
 }
+
 @keyframes sfx_flicker {
   0% {
     opacity: 1;
@@ -247,21 +302,32 @@
 .lightshow_item:nth-of-type(2) {
   translate: 0 33.3vh;
 }
+
 .lightshow_item:nth-of-type(3) {
   translate: 0 66.6vh;
 }
+
 .lightshow_item:nth-of-type(4) {
   translate: 70vw 0;
 }
+
 .lightshow_item:nth-of-type(5) {
   translate: 70vw 33.3vh;
 }
+
 .lightshow_item:nth-of-type(6) {
   translate: 70vw 66.6vh;
 }
+
 .lightshow_item:nth-of-type(7) {
   translate: 35vw 0vh;
 }
+
 .lightshow_item:nth-of-type(8) {
   translate: 35vw 66.6vh;
+}
+
+.swipe_header {
+  background-image: url('../Assets/SFX/Header_Swipe.svg');
+  animation: sfx_header_burst 0.3s ease forwards;
 }

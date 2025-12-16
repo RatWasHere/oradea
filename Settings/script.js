@@ -399,11 +399,13 @@ const VisualsConfig = {
       'Bottom', 'Bottom Golden', 'Bottom Holdable'
     ]
 
-    noteDesigns.forEach(design => {
-      document.getElementById(`Note:${design}`).style.backgroundImage = `url('../Assets/Headers/${document.getElementById('noteDesign').value}/${design}.svg')`;
-    })
-    sliderDesigns.forEach(design => {
-      document.getElementById(`Note:${design}`).style.backgroundImage = `url('../Assets/Headers/${document.getElementById('holdNoteDesign').value}/${design.replaceAll('.', '')}.svg')`;
+    requestAnimationFrame(() => {
+      noteDesigns.forEach(design => {
+        document.getElementById(`Note:${design}`).style.backgroundImage = `url('../Assets/Headers/${document.getElementById('noteDesign').value}/${design}.svg')`;
+      })
+      sliderDesigns.forEach(design => {
+        document.getElementById(`Note:${design}`).style.backgroundImage = `url('../Assets/Headers/${document.getElementById('holdNoteDesign').value}/${design.replaceAll('.', '')}.svg')`;
+      })
     })
   }
 }

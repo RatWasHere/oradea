@@ -28,6 +28,7 @@ const CONFIG = {
   CONTAINER_RADIUS: 220,
   // CONTAINER_REAL_RADIUS: 400,
   CONTAINER_REAL_RADIUS: 470, // WAS 630
+  RAW_RADIUS: 740, // WAS 630
   ADJUSTED_MAX_TRAVEL: 0,
   START_OFFSET: 0,
   CREATION_ANTIDELAY: 5000,
@@ -39,7 +40,8 @@ const CONFIG = {
 
   FLICK_THRESHOLD: 13,
   FLICK_OFFSET: 20,
-  LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD: 0.99,
+  SWIPE_OUTWARDS_PROGRESS_THRESHOLD: 0.95,
+  SWIPE_INWARDS_THRESHOLD: 0.3,
   INITIAL_DELAY: 0,
   HINT_VISIBILITY: 0.5,
 
@@ -121,6 +123,32 @@ class GameState {
     CONFIG.FLASHING_LIGHTS = getSetting('flashing_lights', 1);
     CONFIG.GIMMICKS = getSetting('gimmicks', 1);
     CONFIG.VFX_CACHE_MULTIPLIER = getSetting('vfx_cache', 3);
+
+    let noteDesign = getSetting('noteDesign', 'geometrical');
+    let holdNoteDesign = getSetting('holdNoteDesign', 'geometrical');
+    let noteDesigns = {
+      note: "Note",
+      holdNote: "Note Holdable",
+      goldenNote: "Note Golden",
+    }
+    let holdNoteDesigns = {
+      sliderTop: "Top",
+      sliderFrame: "Frame",
+      sliderBottom: "Bottom",
+
+      sliderTopGolden: "Top Golden",
+      sliderFrameGolden: "Frame Golden",
+      sliderBottomGolden: "Bottom Golden",
+
+      sliderTopHoldable: "Top Holdable",
+      sliderBottomHoldable: "Bottom Holdable",
+    }
+    for (let design in noteDesigns) {
+      document.styleSheets[0].insertRule(`:root { --${design}: url('../Assets/Headers/${noteDesign}/${noteDesigns[design]}.svg') }`);
+    }
+    for (let design in holdNoteDesigns) {
+      document.styleSheets[0].insertRule(`:root { --${design}: url('../Assets/Headers/${holdNoteDesign}/${holdNoteDesigns[design]}.svg') }`);
+    }
 
     let lastNote = this.sheet[this.sheet.length - 1];
     let determinedTime = lastNote.time;
@@ -286,7 +314,52 @@ class GameState {
       })
     }
 
-    for (let i = 0; i < 2 * CONFIG.VFX_CACHE_MULTIPLIER; i++) {
+    for (let i = 0; i < 1 * CONFIG.VFX_CACHE_MULTIPLIER; i++) {
+      let parent = document.createElement('div');
+      parent.classList.add('sfx_container');
+      parent.style.display = 'none';
+
+      let header = document.createElement('div');
+      header.classList.add('sfx_header', 'swipe_header');
+      parent.appendChild(header);
+
+      this.elements.container.appendChild(parent);
+      this.effectItems.push({
+        parent,
+        element: header,
+        inUse: false,
+        type: 'swipe_burst'
+      })
+    }
+
+    for (let i = 0; i < 4 * CONFIG.VFX_CACHE_MULTIPLIER; i++) {
+      let parent = document.createElement('div');
+      parent.classList.add('sfx_container');
+      parent.style.display = 'none';
+
+      let particle_outwards = document.createElement('div');
+      particle_outwards.classList.add('sfx_outwards_particle', 'sfx_outwards_chevron');
+      parent.appendChild(particle_outwards);
+
+      let particles_outwards = document.createElement('div');
+      particles_outwards.classList.add('sfx_outwards_particles');
+      parent.appendChild(particles_outwards);
+
+      let chevron_particles_outwards = document.createElement('div');
+      chevron_particles_outwards.classList.add('sfx_outwards_chevrons');
+      parent.appendChild(chevron_particles_outwards);
+
+      this.elements.container.appendChild(parent);
+      this.effectItems.push({
+        parent,
+        element: particle_outwards,
+        particleElement: particles_outwards,
+        inUse: false,
+        type: 'particles_swipe'
+      });
+    }
+
+    for (let i = 0; i < 3 * CONFIG.VFX_CACHE_MULTIPLIER; i++) {
       let parent = document.createElement('div');
       parent.classList.add('sfx_container');
       parent.style.display = 'none';
@@ -304,24 +377,6 @@ class GameState {
         constant: true
       })
     }
-
-    // for (let i = 0; i < 6; i++) {
-    //   let parent = document.createElement('div');
-    //   parent.classList.add('sfx_container');
-    //   parent.style.display = 'none';
-
-    //   let header = document.createElement('div');
-    //   header.classList.add('sfx_flick_particle');
-    //   parent.appendChild(header);
-
-    //   this.elements.container.appendChild(parent);
-    //   this.effectItems.push({
-    //     parent,
-    //     element: header,
-    //     inUse: false,
-    //     type: 'flick_particles'
-    //   });
-    // }
 
 
     const rect = this.elements.container.getBoundingClientRect();
@@ -729,11 +784,12 @@ class InputSystem {
       distance: options.distance || 1,
       type: options.type || 'button',
       startedAt: this.gameState.currentTime,
-      associatedNote: options.associatedNote || null
+      associatedNote: options.associatedNote || null,
+      analog: options.analog || false,
     };
 
     this.points.set(point.type, point);
-    this.hit(point.angle)
+    if (!point.analog) this.hit(point.angle)
   }
 
   hit(angle) {
@@ -746,6 +802,21 @@ class InputSystem {
       }
       this.hitNote(closestNote);
     }
+  }
+
+  swipeNote(note) {
+    const noteStartAverage = (note.firstPointDetectedAt + note.time) / 2;
+    const noteEndAverage = (game.gameState.currentTime + note.swipeEnd) / 2;
+
+    note.done = true;
+    this.gameState.scoringSystem.judge(noteStartAverage, true, note, note.firstPointDetectedAt);
+    this.gameState.scoringSystem.judge(noteEndAverage, true);
+
+
+    this.createNoteAura(note).then(() => {
+      note.traceParent.remove();
+      note.element.parentElement.parentElement.parentElement.remove();
+    })
   }
 
   updatePoint(id, options = {
@@ -853,50 +924,7 @@ class InputSystem {
     let stickStates = this.getJoystickStates(gamepad);
     const leftTrigger = gamepad.buttons[6]?.pressed || gamepad.buttons[4]?.pressed;
     const rightTrigger = gamepad.buttons[7]?.pressed || gamepad.buttons[5]?.pressed;
-    if (!CONFIG.BUTTONS) {
-      let isLHeld = this.points.get('L');
-      var LeftPoint;
-      if (leftTrigger) {
-        LeftPoint = {
-          angle: stickStates.snappedRotations[0],
-          rawAngle: stickStates.rawRotations[0],
-          distance: stickStates.distances[0],
-          type: 'L',
-          source: 'L'
-        }
-      }
-
-      let isRHeld = this.points.get('R');
-      var RightPoint;
-      if (rightTrigger) {
-        RightPoint = {
-          angle: stickStates.snappedRotations[1],
-          rawAngle: stickStates.rawRotations[1],
-          distance: stickStates.distances[1],
-          type: 'R',
-          source: 'R'
-        }
-      }
-
-      if (leftTrigger && !isLHeld) {
-        this.createPoint(LeftPoint);
-      } else if (leftTrigger) {
-        this.updatePoint('L', LeftPoint)
-      } else {
-        this.releasePoint('L')
-      }
-
-      if (rightTrigger && !isRHeld) {
-        this.createPoint(RightPoint);
-      } else if (rightTrigger) {
-        this.updatePoint('R', RightPoint)
-      } else {
-        this.releasePoint('R')
-      }
-
-      this.updateCursorRotation(0, stickStates.snappedRotations[0]);
-      this.updateCursorRotation(1, stickStates.snappedRotations[1]);
-    } else {
+    if (CONFIG.BUTTONS) {
       let stuffToHold = {
         Y_Held: 3,
         B_Held: 1,
@@ -930,7 +958,39 @@ class InputSystem {
         }
       }
 
+      let leftStickPoint = this.points.get('cursor1');
+      let rightStickPoint = this.points.get('cursor2');
+      if (leftStickPoint) {
+        leftStickPoint.angle = stickStates.snappedRotations[0];
+        leftStickPoint.rawAngle = stickStates.rawRotations[0];
+        leftStickPoint.distance = stickStates.distances[0];
+      } else if (stickStates.distances[0] > CONFIG.SWIPE_INWARDS_THRESHOLD) {
+        this.createPoint({
+          angle: stickStates.snappedRotations[0],
+          rawAngle: stickStates.rawRotations[0],
+          distance: stickStates.distances[0],
+          type: 'cursor1',
+          source: 'cursor1',
+          analog: true
+        });
+      }
+
+      if (rightStickPoint) {
+        rightStickPoint.angle = stickStates.snappedRotations[1];
+        rightStickPoint.rawAngle = stickStates.rawRotations[1];
+        rightStickPoint.distance = stickStates.distances[1];
+      } else if (stickStates.distances[1] > CONFIG.SWIPE_INWARDS_THRESHOLD) {
+        this.createPoint({
+          angle: stickStates.snappedRotations[1],
+          rawAngle: stickStates.rawRotations[1],
+          distance: stickStates.distances[1],
+          type: 'cursor2',
+          source: 'cursor2',
+          analog: true
+        });
+      }
     }
+
     this.updateGamepadButtons(gamepad);
   }
 
@@ -938,72 +998,21 @@ class InputSystem {
     // Left stick is cursor1
     const x1 = gamepad.axes[0];
     const y1 = gamepad.axes[1];
-    if (Math.abs(x1) > CONFIG.GAMEPAD_DEADZONE || Math.abs(y1) > CONFIG.GAMEPAD_DEADZONE) {
-      var angle1 = Math.atan2(y1, x1) * (180 / Math.PI);
+    const angle1 = Math.atan2(y1, x1) * (180 / Math.PI);
 
-      var distance1 = Math.min(Math.sqrt(x1 * x1 + y1 * y1), 1);
-
-      var extendedSnap1 = this.extendedSnapAngle(angle1, 0);
-      if (extendedSnap1 !== null) {
-        this.gameState.rawRotations[0] = angle1;
-      }
-    }
+    var distance1 = Math.sqrt(x1 * x1 + y1 * y1)
 
     // Right stick is cursor2
     const x2 = gamepad.axes[2];
     const y2 = gamepad.axes[3];
-    if (Math.abs(x2) > CONFIG.GAMEPAD_DEADZONE || Math.abs(y2) > CONFIG.GAMEPAD_DEADZONE) {
-      var angle2 = Math.atan2(y2, x2) * (180 / Math.PI);
+    const angle2 = Math.atan2(y2, x2) * (180 / Math.PI);
 
-      var distance2 = Math.min(Math.sqrt(x2 * x2 + y2 * y2), 1);
+    var distance2 = Math.sqrt(x2 * x2 + y2 * y2)
 
-      var extendedSnap2 = this.extendedSnapAngle(angle2, 1);
-      if (extendedSnap2 !== null) {
-        this.gameState.rawRotations[1] = angle2;
-      }
-    }
 
-    return { snappedRotations: [extendedSnap1, extendedSnap2], rawRotations: [angle1, angle2], distances: [distance1, distance2] };
+    return { snappedRotations: [this.snapAngle(angle1), this.snapAngle(angle2)], rawRotations: [angle1, angle2], distances: [distance1, distance2] };
   }
 
-  /**
-   * Extended snapping for controller segments.
-   * Only snaps if the angle is within the extended segment range.
-   * Returns snapped angle or null if not in extended range.
-   */
-  extendedSnapAngle(angle, cursorIndex) {
-    // Segment size is SNAP_INTERVAL (e.g., 45deg)
-    const segmentSize = CONFIG.SNAP_INTERVAL;
-    const extension = CONFIG.SNAP_EXTENSION; // degrees to extend on both sides
-
-    // Calculate which segment the cursor is currently in
-    const baseAngle = this.snapAngle(angle);
-    const normalizedAngle = this.normalizeAngle(angle);
-
-    // Find the segment center
-    let segmentCenter = Math.round(normalizedAngle / segmentSize) * segmentSize;
-
-    // Normalize to ensure 360 becomes 0
-    segmentCenter = segmentCenter % 360;
-
-    // Extended segment range
-    const start = this.normalizeAngle(segmentCenter - (segmentSize / 2) - extension);
-    const end = this.normalizeAngle(segmentCenter + (segmentSize / 2) + extension);
-
-    // Check if angle is within extended segment
-    // Handle wrap-around
-    let inSegment;
-    if (start < end) {
-      inSegment = normalizedAngle >= start && normalizedAngle <= end;
-    } else {
-      inSegment = normalizedAngle >= start || normalizedAngle <= end;
-    }
-
-    if (inSegment) {
-      return segmentCenter;
-    }
-    return null;
-  }
   updateGamepadButtons(gamepad) {
     const leftTrigger = gamepad.buttons[6]?.pressed || gamepad.buttons[4]?.pressed;
     const rightTrigger = gamepad.buttons[7]?.pressed || gamepad.buttons[5]?.pressed;
@@ -1116,6 +1125,7 @@ class InputSystem {
   findClosestNote(notes) {
     return notes
       .filter(note => {
+        if (note.swipe) return false;
         if (note.slider) {
           if (note.isBeingHeld || note.done || note.wasEverHeld) return false;
           if (note.sliderEnd < this.gameState.currentTime) return false;
@@ -1175,12 +1185,12 @@ class InputSystem {
     });
   }
 
-  consumeEffect(type, angle) {
+  consumeEffect(type, angle, effectOffset = 0) {
     let consumable = this.gameState.effectItems.find(i => i.type === type && !i.inUse);
     if (!consumable) consumable = this.gameState.effectItems.find(i => i.type === type);
     consumable.inUse = true;
     consumable.parent.style.display = 'block';
-    consumable.parent.style.rotate = `${(angle * CONFIG.SNAP_INTERVAL) + 90}deg`;
+    consumable.parent.style.rotate = `${(angle * CONFIG.SNAP_INTERVAL) + 90 + effectOffset}deg`;
     consumable.element.style.animationName = 'none';
     if (consumable.particleElement) {
       consumable.particleElement.style.animationName = 'none';
@@ -1201,7 +1211,7 @@ class InputSystem {
     setTimeout(() => {
       consumable.parent.style.display = 'none';
       consumable.inUse = false;
-    }, 1000);
+    }, 900);
   }
 
   releaseEffect(effect) {
@@ -1220,13 +1230,16 @@ class InputSystem {
 
   createNoteAura(note) {
     return new Promise(res => {
-      if (!note.slider && !note.flick && !note.largeFlick) {
+      if (!note.slider && !note.swipe) {
         this.consumeEffect('particles', note.angle);
         this.consumeEffect('header_burst', note.angle);
       } else if (note.slider) {
         note.playingEffect = this.consumeEffect('header_constant', note.angle);
         note.playingEffects = this.consumeEffect('particles_constant', note.angle);
         note.element.classList.add('sfx_slider_hold');
+      } else if (note.swipe) {
+        this.consumeEffect('particles_swipe', note.angle, 180);
+        this.consumeEffect('swipe_burst', note.angle, 180);
       }
       res(true);
     })
@@ -1490,39 +1503,38 @@ class RenderingSystem {
       }
       noteElement.appendChild(header);
 
-      const hint = document.createElement('div');
-      hint.classList.add('hint');
+      if (!note.swipe) {
+        const hint = document.createElement('div');
+        hint.classList.add('hint');
 
-      header.appendChild(hint);
-      note.hint = hint;
+        header.appendChild(hint);
+        note.hint = hint;
+      }
 
       if (note.holdable) {
         noteElement.classList.add('holdable');
-      }
-      if (note.flick && !note.largeFlick) {
-        if (note.holdable) {
-          noteElement.classList.add(`flick${note.flickDirection}`, 'holdable_flick');
-        } else {
-          noteElement.classList.add(`flick${note.flickDirection}`);
-        }
       }
       if (note.golden) {
         noteElement.classList.add('golden');
       }
 
-      if (note.largeFlick) {
+      if (note.swipe) {
+
         let traceParent = document.createElement('div');
         traceParent.classList.add('trace-parent');
-        traceParent.style.rotate = ((note.angle * CONFIG.ANGLE_MODIFIER) + 300 + 120) + 'deg';
+        traceParent.style.rotate = ((note.angle * CONFIG.ANGLE_MODIFIER) + 300 + 150) + 'deg';
+
         let tracePath = document.createElement('div');
-        let traceType = Math.abs(note.direction);
-        tracePath.classList.add('traceable', `trace-${Number(note.direction) > 0 ? "positive" : "negative"}`, `trace-${traceType}`);
-        tracePath.style.setProperty('--duration', `${note.flickEnd - note.time}ms`)
-        traceParent.appendChild(tracePath)
+        tracePath.classList.add('traceable', `trace-normal`);
+        traceParent.appendChild(tracePath);
         note.traceParent = traceParent;
         note.tracePath = tracePath;
+
+        noteElement.style.setProperty('--duration', `${note.swipeEnd - note.time}ms`)
+
         this.gameState.elements.container.appendChild(traceParent);
-        noteElement.classList.add('flick_large_starter')
+        noteElement.classList.add('flick_large_starter');
+        note.desiredAngle = this.inputSystem.getSegment((note.angle * CONFIG.ANGLE_MODIFIER) + 180);
       }
 
       noteContainer.appendChild(noteElement);
@@ -1557,6 +1569,10 @@ class RenderingSystem {
     if (note.slider) {
       return this.updateSliderPosition(note, currentTime, noteTiming);
     }
+
+    if (note.swipe && !note.done) {
+      this.updateSwipeHint(note, currentTime);
+    }
     // rest in peace flicks, you won't be missed
     // else if (note.flick && !note.largeFlick) {
     //   this.updateFlickState(note, currentTime);
@@ -1581,6 +1597,47 @@ class RenderingSystem {
     // }
     this.updateRegularNotePosition(note, currentTime, noteTiming);
   }
+
+  updateSwipeHint(note, time) {
+    if (note.time - time > (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION)) return;
+    if (note.time > time) {
+      let noteAppearanceDuration = Math.min((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION), note.swipeEnd - note.time);
+      let noteAppearanceProgress = getProgress(time, note.time - noteAppearanceDuration, note.time);
+      note.tracePath.style.opacity = noteAppearanceProgress;
+    }
+    if (note.time <= time) {
+      note.tracePath.style.opacity = 1;
+    }
+
+    let progress = Math.min(getProgress(time, note.time, note.swipeEnd), 1);
+    let offset = Math.floor(progress * 100);
+
+    note.tracePath.style.translate = `0% ${-offset}%`;
+    this.updateSwipeState(note);
+  }
+
+  updateSwipeState(note) {
+    let foundNotePoints = note.points ? note.points : [];
+    let finalNotePoints = [];
+    for (let i = 0; i < foundNotePoints.length; i++) {
+      let point = this.inputSystem.points.get(foundNotePoints[i]);
+      if (!point) continue;
+      if (this.inputSystem.getSegment(point.angle) == note.desiredAngle && point.distance > CONFIG.SWIPE_OUTWARDS_PROGRESS_THRESHOLD) {
+        return this.inputSystem.swipeNote(note);
+      }
+      finalNotePoints.push(foundNotePoints[i]);
+    }
+
+    for (let [pointID, point] of this.inputSystem.points) {
+      if (this.inputSystem.getSegment(point.angle) == note.angle && point.distance > CONFIG.SWIPE_OUTWARDS_PROGRESS_THRESHOLD && point.analog) {
+        if (finalNotePoints.indexOf(pointID) == -1) finalNotePoints.push(pointID);
+        if (!note.firstPointDetectedAt) note.firstPointDetectedAt = this.gameState.currentTime;
+      }
+    }
+
+    note.points = finalNotePoints;
+  }
+
 
   updateFlickState(note) {
     if (!(note.holdable || note.started)) return;
@@ -1673,7 +1730,9 @@ class RenderingSystem {
 
     const maxHeight = ((sliderEnd - sliderStart) / previewDelay) * sliderMaxHeight;
     const progress = getProgress(currentTime + previewDelay, sliderStart, sliderEnd);
-    note.hint.style.scale = getProgress(currentTime, sliderStart - previewDelay, sliderStart);
+    if (note.hint) {
+      note.hint.style.scale = getProgress(currentTime, sliderStart - previewDelay, sliderStart);
+    }
     let currentHeight = progress * maxHeight;
     if ((currentTime + previewDelay) <= sliderEnd) {
       note.midframe.style.scale = `1 ${(currentHeight) / CONFIG.NOTE_RADIUS}`;
@@ -1739,7 +1798,9 @@ class RenderingSystem {
       noteTravelMax
     );
 
-    note.hint.style.scale = getProgress(currentTime + previewDelay, noteTime, noteTime + previewDelay);
+    if (note.hint) {
+      note.hint.style.scale = getProgress(currentTime + previewDelay, noteTime, noteTime + previewDelay);
+    }
 
     const newTranslate = `0px ${timeIntoPreview * -1}px`;
     if (note.element.style.translate !== newTranslate) {
@@ -1751,7 +1812,7 @@ class RenderingSystem {
     for (let i = 0; i < this.gameState.sheet.length; i++) {
       const note = this.gameState.sheet[i];
 
-      if (note.element && !note.done && this.hasFailed(note, currentTime)) {
+      if (note.element && !note.done && note.time < currentTime && this.hasFailed(note, currentTime)) {
         if (note.element) {
           note.element.parentElement.parentElement.parentElement.remove();
         }
@@ -1773,9 +1834,9 @@ class RenderingSystem {
     if (note.done) return false;
 
     if (note.slider || note.traceParent) {
-      let failed = currentTime > ((note.sliderEnd || note.flickEnd) + CONFIG.SLIDER_RELEASE_THRESHOLD);
+      let failed = currentTime > ((note.sliderEnd || note.swipeEnd) + CONFIG.SLIDER_RELEASE_THRESHOLD);
       if (failed) {
-        this.inputSystem.releaseSlider(note);
+        if (note.slider) this.inputSystem.releaseSlider(note);
         note.done = true;
       }
       return failed;
@@ -1808,9 +1869,10 @@ class ScoringSystem {
     this.gameState.score += Number(amount) * Math.max(Math.min(8, this.gameState.combo), 1);
   }
 
-  judge(noteTime, affectCombo = true, note) {
+  judge(noteTime, affectCombo = true, note, timeOverwrite = null) {
+    if (!timeOverwrite) timeOverwrite = this.gameState.currentTime;
     if (note?.slider) return
-    const currentTime = this.gameState.currentTime;
+    const currentTime = timeOverwrite;
     const difference = Math.abs(noteTime - currentTime);
 
     let accuracy = 'miss';
@@ -1824,7 +1886,7 @@ class ScoringSystem {
     let score = CONFIG.ACCURACY_SCORES[accuracy] || 0;
     this.increaseScore(score);
     if (affectCombo) {
-      if (difference > 150 || isNaN(difference)) {
+      if (difference > 200 || isNaN(difference)) {
         this.gameState.combo = 0;
       } else {
         this.gameState.combo++;
@@ -1883,7 +1945,8 @@ class RhythmGame {
     let audioPaths = {
       'hit': './Assets/hit_normal.mp3',
       'flick': './Assets/flick.mp3',
-      'golden': './Assets/golden_hit.mp3'
+      'golden': './Assets/golden_hit.mp3',
+      'holdable': './Assets/hit_holdable.mp3'
     };
 
     this.gameState.loadedAudios = {};
@@ -1917,6 +1980,9 @@ class RhythmGame {
     }
     if (note?.golden) {
       determinedBuffer = this.gameState.loadedAudios['golden']
+    }
+    if (note?.holdable) {
+      determinedBuffer = this.gameState.loadedAudios['holdable']
     }
     source.buffer = determinedBuffer;
     source.connect(this.gameState.audioContext.destination);
