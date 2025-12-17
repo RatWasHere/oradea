@@ -34,7 +34,7 @@ const CONFIG = {
   CREATION_ANTIDELAY: 5000,
 
   // TIMING & INPUT
-  GAMEPAD_DEADZONE: 0.1,
+  GAMEPAD_DEADZONE: 0.2,
 
   AUDIO_OFFSET: 0,
 
@@ -966,7 +966,13 @@ class InputSystem {
         leftStickPoint.angle = stickStates.snappedRotations[0];
         leftStickPoint.rawAngle = stickStates.rawRotations[0];
         leftStickPoint.distance = stickStates.distances[0];
-        if (leftStickPoint.associatedNote && leftStickPoint.distance < CONFIG.GAMEPAD_DEADZONE) leftStickPoint.associatedNote = null;
+        if (leftStickPoint.associatedNote) {
+          let pointSegment = this.getSegment(leftStickPoint.angle);
+          if (pointSegment == 6) pointSegment = 0;
+          if (pointSegment != leftStickPoint.associatedNote.desiredAngle || leftStickPoint.distance < CONFIG.GAMEPAD_DEADZONE) {
+            leftStickPoint.associatedNote = null;
+          }
+        }
       } else if (stickStates.distances[0] > CONFIG.SWIPE_INWARDS_THRESHOLD) {
         this.createPoint({
           angle: stickStates.snappedRotations[0],
@@ -982,7 +988,13 @@ class InputSystem {
         rightStickPoint.angle = stickStates.snappedRotations[1];
         rightStickPoint.rawAngle = stickStates.rawRotations[1];
         rightStickPoint.distance = stickStates.distances[1];
-        if (rightStickPoint.associatedNote && rightStickPoint.distance < CONFIG.GAMEPAD_DEADZONE) rightStickPoint.associatedNote = null;
+        if (rightStickPoint.associatedNote) {
+          let pointSegment = this.getSegment(rightStickPoint.angle);
+          if (pointSegment == 6) pointSegment = 0;
+          if (pointSegment != rightStickPoint.associatedNote.desiredAngle || rightStickPoint.distance < CONFIG.GAMEPAD_DEADZONE) {
+            rightStickPoint.associatedNote = null;
+          }
+        }
       } else if (stickStates.distances[1] > CONFIG.SWIPE_INWARDS_THRESHOLD) {
         this.createPoint({
           angle: stickStates.snappedRotations[1],
