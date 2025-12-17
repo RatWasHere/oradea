@@ -1,5 +1,5 @@
 {
-  "location": "Parry",
-  "difficulty": "2",
-  "map": "map.json"
+  "location": "NEURODIVERGENCE",
+  "difficulty": 4,
+  "map": "insane.json"
 }

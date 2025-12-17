@@ -41,9 +41,10 @@ const CONFIG = {
   FLICK_THRESHOLD: 13,
   FLICK_OFFSET: 20,
   SWIPE_OUTWARDS_PROGRESS_THRESHOLD: 0.95,
-  SWIPE_INWARDS_THRESHOLD: 0.3,
+  SWIPE_INWARDS_THRESHOLD: 0.7,
   INITIAL_DELAY: 0,
   HINT_VISIBILITY: 0.5,
+  SWIPE_PRECHECK: 100,
 
   // SCORING
   ACCEPTANCE_THRESHOLD: 300,
@@ -804,10 +805,11 @@ class InputSystem {
     }
   }
 
-  swipeNote(note) {
+  swipeNote(note, point) {
     const noteStartAverage = (note.firstPointDetectedAt + note.time) / 2;
     const noteEndAverage = (game.gameState.currentTime + note.swipeEnd) / 2;
 
+    point.associatedNote = note;
     note.done = true;
     this.gameState.scoringSystem.judge(noteStartAverage, true, note, note.firstPointDetectedAt);
     this.gameState.scoringSystem.judge(noteEndAverage, true);
@@ -964,6 +966,7 @@ class InputSystem {
         leftStickPoint.angle = stickStates.snappedRotations[0];
         leftStickPoint.rawAngle = stickStates.rawRotations[0];
         leftStickPoint.distance = stickStates.distances[0];
+        if (leftStickPoint.associatedNote && leftStickPoint.distance < CONFIG.GAMEPAD_DEADZONE) leftStickPoint.associatedNote = null;
       } else if (stickStates.distances[0] > CONFIG.SWIPE_INWARDS_THRESHOLD) {
         this.createPoint({
           angle: stickStates.snappedRotations[0],
@@ -979,6 +982,7 @@ class InputSystem {
         rightStickPoint.angle = stickStates.snappedRotations[1];
         rightStickPoint.rawAngle = stickStates.rawRotations[1];
         rightStickPoint.distance = stickStates.distances[1];
+        if (rightStickPoint.associatedNote && rightStickPoint.distance < CONFIG.GAMEPAD_DEADZONE) rightStickPoint.associatedNote = null;
       } else if (stickStates.distances[1] > CONFIG.SWIPE_INWARDS_THRESHOLD) {
         this.createPoint({
           angle: stickStates.snappedRotations[1],
@@ -1534,7 +1538,10 @@ class RenderingSystem {
 
         this.gameState.elements.container.appendChild(traceParent);
         noteElement.classList.add('flick_large_starter');
-        note.desiredAngle = this.inputSystem.getSegment((note.angle * CONFIG.ANGLE_MODIFIER) + 180);
+        note.desiredAngle = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + 180));
+        if (note.desiredAngle == 6) {
+          note.desiredAngle = 0;
+        }
       }
 
       noteContainer.appendChild(noteElement);
@@ -1601,7 +1608,7 @@ class RenderingSystem {
   updateSwipeHint(note, time) {
     if (note.time - time > (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION)) return;
     if (note.time > time) {
-      let noteAppearanceDuration = Math.min((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION), note.swipeEnd - note.time);
+      let noteAppearanceDuration = Math.max(note.swipeEnd - note.time, CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION);
       let noteAppearanceProgress = getProgress(time, note.time - noteAppearanceDuration, note.time);
       note.tracePath.style.opacity = noteAppearanceProgress;
     }
@@ -1617,19 +1624,26 @@ class RenderingSystem {
   }
 
   updateSwipeState(note) {
+    if (note.time - game.gameState.currentTime > CONFIG.SWIPE_PRECHECK) return;
+
     let foundNotePoints = note.points ? note.points : [];
     let finalNotePoints = [];
     for (let i = 0; i < foundNotePoints.length; i++) {
       let point = this.inputSystem.points.get(foundNotePoints[i]);
       if (!point) continue;
-      if (this.inputSystem.getSegment(point.angle) == note.desiredAngle && point.distance > CONFIG.SWIPE_OUTWARDS_PROGRESS_THRESHOLD) {
-        return this.inputSystem.swipeNote(note);
+      let pointAngle = this.inputSystem.getSegment(point.angle);
+      if (pointAngle == 6) pointAngle = 0;
+
+      if (pointAngle == note.desiredAngle && point.distance > CONFIG.SWIPE_OUTWARDS_PROGRESS_THRESHOLD) {
+        return this.inputSystem.swipeNote(note, point);
       }
       finalNotePoints.push(foundNotePoints[i]);
     }
 
     for (let [pointID, point] of this.inputSystem.points) {
-      if (this.inputSystem.getSegment(point.angle) == note.angle && point.distance > CONFIG.SWIPE_OUTWARDS_PROGRESS_THRESHOLD && point.analog) {
+      let pointAngle = this.inputSystem.getSegment(point.angle);
+      if (pointAngle == 6) pointAngle = 0;
+      if (!point.associatedNote && point.analog && (pointAngle == note.angle || pointAngle == note.desiredAngle)) {
         if (finalNotePoints.indexOf(pointID) == -1) finalNotePoints.push(pointID);
         if (!note.firstPointDetectedAt) note.firstPointDetectedAt = this.gameState.currentTime;
       }
@@ -1749,7 +1763,7 @@ class RenderingSystem {
   updateSliderHoldStatus(note) {
     let isBeingHeld = false;
     for (let [pointID, point] of this.inputSystem.points) {
-      if (this.inputSystem.getSegment(point.angle) == note.angle) isBeingHeld = true;
+      if (this.inputSystem.getSegment(point.angle) == note.angle && !point.analog) isBeingHeld = true;
     }
     if (isBeingHeld) {
       if ((note.holdableStart && !note.isBeingHeld && this.gameState.currentTime >= note.time) || (!note.isBeingHeld && note.wasEverHeld)) {

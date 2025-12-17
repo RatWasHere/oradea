@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="UTF-8">
   <style>
@@ -8,7 +9,8 @@
       --ring-inner: 30%;
       --ring-outer: 70%;
       --arc-start: 10deg;
-      --arc-angle: 60deg; /* NEW: arc size */
+      --arc-angle: 60deg;
+      /* NEW: arc size */
       --arc-end: calc(var(--arc-start) + var(--arc-angle));
       --ring-color: cyan;
     }
@@ -17,7 +19,7 @@
       perspective: 800px;
       /* Controls the strength of the 3D effect */
       overflow: hidden;
-      width: 100vw;   
+      width: 100vw;
       height: 100vh;
       background: black;
       position: relative;
@@ -44,6 +46,7 @@
       0% {
         rotate: 0deg;
       }
+
       100% {
         rotate: -360deg;
       }
@@ -66,6 +69,7 @@
     }
   </style>
 </head>
+
 <body>
 
   <a href="../Picker/LevelPicker.html">back</a>
@@ -76,22 +80,22 @@
   let parser = require('osu-mania-parser');
   let beatmap = parser.parseFileSync('./Misc/beatmap.osu');
   let sheet = [];
-  function swap(json){
-  var ret = {};
-  for(var key in json){
-    ret[json[key]] = key;
+  function swap(json) {
+    var ret = {};
+    for (var key in json) {
+      ret[json[key]] = key;
+    }
+    return ret;
   }
-  return ret;
-}
 
-let angleMap = {
-  "0": 5,
-  "1": 0,
-  "2": 1,
-  "3": 2,
-  "4": 3,
-  "5": 4
-}
+  let angleMap = {
+    "0": 5,
+    "1": 0,
+    "2": 1,
+    "3": 2,
+    "4": 3,
+    "5": 4
+  }
 
   let keyPositions = swap(beatmap.keyPositions);
   beatmap.hitObjects.forEach((hitObject, index) => {
@@ -114,27 +118,36 @@ let angleMap = {
         ...additionalOptions
       });
     } else if (hitObject.type == "hold") {
-      let additionalOptions = {};
-      if (hitObject.hitSound.includes("finish") && hitObject.hitSound.includes("whistle")) {
-        additionalOptions.holdableEnd = true;
-        additionalOptions.flickableAway = true;
-        if (hitObject.hitSound.includes("clap")) {
+      if (hitObject.hitSound.includes("finish") && hitObject.hitSound.includes("whistle") && hitObject.hitSound.includes("clap")) {
+        sheet.push({
+          time: hitObject.time,
+          swipe: true,
+          swipeEnd: hitObject.endTime,
+          angle: angleMap[keyPositions[hitObject.x]]
+        });
+      } else {
+        let additionalOptions = {};
+        if (hitObject.hitSound.includes("finish") && hitObject.hitSound.includes("whistle")) {
+          additionalOptions.holdableEnd = true;
+          additionalOptions.flickableAway = true;
+          if (hitObject.hitSound.includes("clap")) {
+            additionalOptions.holdableStart = true;
+          }
+        } else if (hitObject.hitSound.includes("clap")) {
           additionalOptions.holdableStart = true;
+        } else if (hitObject.hitSound.includes("whistle")) {
+          additionalOptions.golden = true;
+        } else if (hitObject.hitSound.includes("finish")) {
+          additionalOptions.holdableStart = true;
+          additionalOptions.holdableEnd = true;
         }
-      } else if (hitObject.hitSound.includes("clap")) {
-        additionalOptions.holdableStart = true;
-      } else if (hitObject.hitSound.includes("whistle")) {
-        additionalOptions.golden = true;
-      } else if (hitObject.hitSound.includes("finish")) {
-        additionalOptions.holdableStart = true;
-        additionalOptions.holdableEnd = true;
+        sheet.push({
+          time: hitObject.time,
+          angle: angleMap[keyPositions[hitObject.x]],
+          slider: true,
+          sliderEnd: hitObject.endTime,
+        });
       }
-      sheet.push({
-        time: hitObject.time,
-        angle: angleMap[keyPositions[hitObject.x]],
-        slider: true,
-        sliderEnd: hitObject.endTime,
-      });
     }
   });
 
@@ -151,4 +164,5 @@ let angleMap = {
   require('fs').writeFileSync('./Misc/map.json', JSON.stringify(sheet, null, 2));
   console.log(sheet)
 </script>
+
 </html>
