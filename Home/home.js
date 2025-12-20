@@ -6,7 +6,7 @@ let audio = new Audio(`../Assets/Misc/Ethereal.mp3`);
 audio.play();
 
 
-function fadeThisOut() {
+function fadeThisOut(to) {
   killModifications = true;
   document.getElementById('buttons-container').style.opacity = '0'
   document.body.style.transition = 'all 0.6s cubic-bezier(1,-0.01,.16,1.06)';
@@ -32,7 +32,7 @@ function fadeThisOut() {
 
 
   setTimeout(() => {
-    window.location.href = '../Picker/LevelPicker.html';
+    window.location.href = to;
   }, 900);
 }
 

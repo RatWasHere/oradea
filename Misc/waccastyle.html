@@ -118,13 +118,22 @@
         ...additionalOptions
       });
     } else if (hitObject.type == "hold") {
-      if (hitObject.hitSound.includes("finish") && hitObject.hitSound.includes("whistle") && hitObject.hitSound.includes("clap")) {
-        sheet.push({
+      if (hitObject.hitSound.includes("finish")) {
+        let supposedObject = {
           time: hitObject.time,
           swipe: true,
           swipeEnd: hitObject.endTime,
           angle: angleMap[keyPositions[hitObject.x]]
-        });
+        };
+        if (hitObject.hitSound.includes("whistle") && hitObject.hitSound.includes("clap")) {
+        } else if (hitObject.hitSound.includes("whistle")) {
+          supposedObject.halfSwipe = true;
+          supposedObject.direction = -1;
+        } else if (hitObject.hitSound.includes("clap")) {
+          supposedObject.halfSwipe = true;
+          supposedObject.direction = 1;
+        }
+        sheet.push(supposedObject)
       } else {
         let additionalOptions = {};
         if (hitObject.hitSound.includes("finish") && hitObject.hitSound.includes("whistle")) {

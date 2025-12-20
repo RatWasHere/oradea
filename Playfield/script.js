@@ -42,9 +42,12 @@ const CONFIG = {
   FLICK_OFFSET: 20,
   SWIPE_OUTWARDS_PROGRESS_THRESHOLD: 0.95,
   SWIPE_INWARDS_THRESHOLD: 0.7,
+  PERMISSIVE_SWIPE_TRESHOLD: 0.2,
   INITIAL_DELAY: 0,
   HINT_VISIBILITY: 0.5,
   SWIPE_PRECHECK: 100,
+  PERMISSIVE_SWIPE_PRECHECK: 230,
+  PERMISSIVE_SWIPE_TIMEFRAME: 370,
 
   // SCORING
   ACCEPTANCE_THRESHOLD: 300,
@@ -124,6 +127,7 @@ class GameState {
     CONFIG.FLASHING_LIGHTS = getSetting('flashing_lights', 1);
     CONFIG.GIMMICKS = getSetting('gimmicks', 1);
     CONFIG.VFX_CACHE_MULTIPLIER = getSetting('vfx_cache', 3);
+    CONFIG.INPUT_MODE = getSetting('input_mode', 3);
 
     let noteDesign = getSetting('noteDesign', 'geometrical');
     let holdNoteDesign = getSetting('holdNoteDesign', 'geometrical');
@@ -806,15 +810,15 @@ class InputSystem {
   }
 
   swipeNote(note, point) {
-    const noteStartAverage = (note.firstPointDetectedAt + note.time) / 2;
+    if ((note.swipeEnd - CONFIG.PERMISSIVE_SWIPE_TIMEFRAME) > game.gameState.currentTime) {
+      note.tracePath.classList.add('permissive-swipe');
+      note.shouldBeDone = true;
+      return point.associatedNote = note;
+    }
     const noteEndAverage = (game.gameState.currentTime + note.swipeEnd) / 2;
-
-    point.associatedNote = note;
-    note.done = true;
-    this.gameState.scoringSystem.judge(noteStartAverage, true, note, note.firstPointDetectedAt);
     this.gameState.scoringSystem.judge(noteEndAverage, true);
 
-
+    note.done = true;
     this.createNoteAura(note).then(() => {
       note.traceParent.remove();
       note.element.parentElement.parentElement.parentElement.remove();
@@ -988,6 +992,9 @@ class InputSystem {
         rightStickPoint.angle = stickStates.snappedRotations[1];
         rightStickPoint.rawAngle = stickStates.rawRotations[1];
         rightStickPoint.distance = stickStates.distances[1];
+        if (rightStickPoint.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD) {
+          // this.gameState.elements.cursor2.style.rotate = `${rightStickPoint.angle + 30}deg`;
+        }
         if (rightStickPoint.associatedNote) {
           let pointSegment = this.getSegment(rightStickPoint.angle);
           if (pointSegment == 6) pointSegment = 0;
@@ -1482,25 +1489,21 @@ class RenderingSystem {
 
       const header2 = document.createElement('div');
       header2.classList.add('header', 'end');
-      if (note.holdableStart) {
-        header2.classList.add('holdable_end');
-      }
-      if (note.holdableEnd) {
-        if (note.flickableAway) {
-          header.classList.add('flickable_away');
-        } else {
-          header.classList.add('holdable_start');
-        }
-      }
 
-      const hint = document.createElement('div');
-      hint.classList.add('hint');
-      header2.appendChild(hint);
-      hint.style.scale = 0;
+      if (note.holdableStart) header2.classList.add('holdable_end');
+      if (note.holdableEnd) header.classList.add('holdable_start');
+
+      if (CONFIG.HINT_VISIBILITY != 0) {
+        const hint = document.createElement('div');
+        hint.classList.add('hint');
+        header2.appendChild(hint);
+        hint.style.scale = 0;
+        hint.style.opacity = CONFIG.HINT_VISIBILITY;
+        note.hint = hint;
+      }
 
       note.endElement = header2;
       note.startElement = header;
-      note.hint = hint;
 
       noteElement.appendChild(header2);
 
@@ -1535,13 +1538,24 @@ class RenderingSystem {
       }
 
       if (note.swipe) {
-
         let traceParent = document.createElement('div');
         traceParent.classList.add('trace-parent');
-        traceParent.style.rotate = ((note.angle * CONFIG.ANGLE_MODIFIER) + 300 + 150) + 'deg';
+        let wildCard = 0;
+        if (note.halfSwipe) {
+          let multiplier = note.direction == -1 ? -1 : 1;
+          wildCard = 30 * multiplier
+        }
+        traceParent.style.rotate = ((note.angle * CONFIG.ANGLE_MODIFIER) + 300 + 150 + wildCard) + 'deg';
+
+        let traceType = 'trace-normal';
+        let additionalClass = null;
+        if (note.halfSwipe) traceType = 'trace-half';
+        if (note.quarterSwipe) traceType = 'trace-quarter';
+        if (note.direction == -1) additionalClass = 'trace-inverted';
 
         let tracePath = document.createElement('div');
-        tracePath.classList.add('traceable', `trace-normal`);
+        tracePath.classList.add('traceable', traceType);
+        if (additionalClass) tracePath.classList.add(additionalClass);
         traceParent.appendChild(tracePath);
         note.traceParent = traceParent;
         note.tracePath = tracePath;
@@ -1550,9 +1564,35 @@ class RenderingSystem {
 
         this.gameState.elements.container.appendChild(traceParent);
         noteElement.classList.add('flick_large_starter');
-        note.desiredAngle = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + 180));
-        if (note.desiredAngle == 6) {
-          note.desiredAngle = 0;
+        if (!note.halfSwipe && !note.quarterSwipe) {
+          note.desiredAngle = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + 180));
+          if (note.desiredAngle == 6) {
+            note.desiredAngle = 0;
+          }
+        } else {
+          if (note.halfSwipe) {
+            let modifier = -1;
+            if (note.direction == -1) modifier = 1;
+            let reachAngle1 = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + (CONFIG.ANGLE_MODIFIER * 1 * modifier)));
+            let reachAngle2 = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + (CONFIG.ANGLE_MODIFIER * 2 * modifier)));
+            let desiredAngle = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + (CONFIG.ANGLE_MODIFIER * 2 * modifier)));
+            let preAngle = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) - (CONFIG.ANGLE_MODIFIER * 1 * modifier)));
+            if (reachAngle1 == 6) reachAngle1 = 0;
+            if (reachAngle2 == 6) reachAngle2 = 0;
+            if (desiredAngle == 6) desiredAngle = 0;
+            note.toReach = {
+              [reachAngle2]: false,
+              [reachAngle1]: false
+            };
+            note.desiredAngle = desiredAngle;
+            note.preAngle = preAngle;
+          } else if (note.quarterSwipe) {
+            let modifier = -1;
+            if (note.direction == -1) modifier = 1;
+            let desiredAngle = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + (CONFIG.ANGLE_MODIFIER * 3 * modifier)));
+            if (desiredAngle == 6) desiredAngle = 0;
+            note.desiredAngle = desiredAngle;
+          }
         }
       }
 
@@ -1618,6 +1658,10 @@ class RenderingSystem {
   }
 
   updateSwipeHint(note, time) {
+    if (note.shouldBeDone && note.swipeEnd <= time) {
+      console.log('shldbed', note.swipeEnd, time)
+      return this.inputSystem.swipeNote(note, null)
+    };
     if (note.time - time > (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION)) return;
     if (note.time > time) {
       let noteAppearanceDuration = Math.max(note.swipeEnd - note.time, CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION);
@@ -1631,9 +1675,57 @@ class RenderingSystem {
     let progress = Math.min(getProgress(time, note.time, note.swipeEnd), 1);
     let offset = Math.floor(progress * 100);
 
-    note.tracePath.style.translate = `0% ${-offset}%`;
-    this.updateSwipeState(note);
+    if (note.halfSwipe || note.quarterSwipe) {
+      note.tracePath.style.transform = `rotate(${-offset * 1.8}deg)`;
+    } else {
+      note.tracePath.style.translate = `0% ${-offset}%`;
+    }
+    if (!note.halfSwipe) {
+      this.updateSwipeState(note);
+    } else {
+      this.updateComplexSwipeState(note);
+    }
   }
+
+  updateComplexSwipeState(note) {
+    if (note.time - game.gameState.currentTime > CONFIG.PERMISSIVE_SWIPE_PRECHECK) return;
+
+    let foundNotePoints = note.points ? note.points : [];
+    let finalNotePoints = [];
+    for (let i = 0; i < foundNotePoints.length; i++) {
+      let point = this.inputSystem.points.get(foundNotePoints[i]);
+      if (!point || !point.analog) continue;
+      let pointAngle = this.inputSystem.getSegment(point.angle);
+      if (pointAngle == 6) pointAngle = 0;
+
+      if (point.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD && note.toReach[pointAngle] == false) {
+        note.toReach[pointAngle] = true;
+      }
+
+      if (note.toReach[pointAngle] && point.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD) {
+        let allTrue = true;
+        for (let reachable in note.toReach) {
+          if (!note.toReach[reachable]) allTrue = false;
+        }
+        if (allTrue && pointAngle == note.desiredAngle) return this.inputSystem.swipeNote(note, point);
+      }
+
+      finalNotePoints.push(foundNotePoints[i]);
+    }
+
+    for (let [pointID, point] of this.inputSystem.points) {
+      let pointAngle = this.inputSystem.getSegment(point.angle);
+      if (pointAngle == 6) pointAngle = 0;
+      if (!point.associatedNote && point.analog && point.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD) {
+        if (finalNotePoints.indexOf(pointID) == -1) finalNotePoints.push(pointID);
+        if (note.toReach[pointAngle] == false) note.toReach[pointAngle] = true;
+        if (!note.firstPointDetectedAt) note.firstPointDetectedAt = this.gameState.currentTime;
+      }
+    }
+
+    note.points = finalNotePoints;
+  }
+
 
   updateSwipeState(note) {
     if (note.time - game.gameState.currentTime > CONFIG.SWIPE_PRECHECK) return;

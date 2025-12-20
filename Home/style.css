@@ -19,7 +19,7 @@
   translate: 0 calc(-50% - 30px);
   background-size: cover;
   opacity: 0;
-  animation: fadein ease 1s 2s forwards;
+  animation: fadein ease 1s forwards;
 }
 @keyframes fadein {
   0% {
