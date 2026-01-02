@@ -219,6 +219,13 @@ body {
   position: relative;
   translate: 10px 10px;
   border-radius: 10px;
+  scale: 0.7;
+  transform-origin: top left;
+  transition: all 0.5s ease;
+}
+
+.highlighted > div > .difficulties-preview {
+  scale: 1;
 }
 
 .difficulties-preview>.difficulty-dot {
@@ -239,14 +246,29 @@ body {
 
 #song-title {
   opacity: 0.9;
-  margin-left: auto;
-  min-width: 200px;
-  display: block;
-  max-width: 500px;
+  margin-right: auto;
   font-size: 40px;
+  display: block;
+  width: 300px;
   max-height: 153px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
-
+#song-title:hover {
+  backdrop-filter: blur(12px);
+  position: relative;
+  z-index: 1000;
+  height: 51px;
+  width: 290px;
+  max-height: unset;
+  overflow: unset;
+  text-overflow: unset;
+  text-shadow:   1px 1px 2px rgb(62, 81, 255),
+  0 0 1em rgb(57, 184, 243),
+  0 0 0.2em rgb(168, 255, 55);;
+  white-space: unset;
+}
 #song-difficulties {
   margin-left: auto;
   min-width: 200px;

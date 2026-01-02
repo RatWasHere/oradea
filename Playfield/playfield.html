@@ -2,6 +2,7 @@
 <link rel="stylesheet" href="../Core/main.css">
 <link rel="stylesheet" href="./sfx.css">
 <meta charset="UTF-8">
+
 <body>
   <div id="controls" class="flexbox">
     <div id="buttons">
@@ -15,24 +16,7 @@
         <div class="image back" style="width: 50px; aspect-ratio: 1/1;"></div>
       </btn>
     </div>
-    <div id="gradeParent" class="flexbox">
-
-      <div id="scoreCard">
-        <div id="grade"></div>
-      </div>
-      <div id="lowerScoreContainer">
-
-        <btextm id="scoreText">SCORE</btextm>
-        <btextm id="scoreNumber" class="flexbox">
-          <div id="unusedScoreNumbers">00000</div>
-          <div id="usedScoreNumbers">1505</div>
-        </btextm>
-        <br>
-        <div id="scoreStats"></div>
-        <br>
-        <div id="songProcedureControls"></div>
-      </div>
-    </div>
+    <div id="gradeParent" class="flexbox"></div>
     <btextm id="songData">
       <div id="songArt" class="image"></div>
       <div id="songName"></div>
@@ -42,56 +26,21 @@
       </span>
     </btextm>
   </div>
+  
   <div id="overlay">
-    <div class="lightshow_item" id="lightshow_1"></div>
+    <!-- <div class="lightshow_item" id="lightshow_1"></div>
     <div class="lightshow_item" id="lightshow_2"></div>
     <div class="lightshow_item" id="lightshow_3"></div>
     <div class="lightshow_item" id="lightshow_4"></div>
     <div class="lightshow_item" id="lightshow_5"></div>
     <div class="lightshow_item" id="lightshow_6"></div>
     <div class="lightshow_item" id="lightshow_7"></div>
-    <div class="lightshow_item" id="lightshow_8"></div>
-    <div id="topLevelContainer">
+    <div class="lightshow_item" id="lightshow_8"></div> -->
+
+    <div id="topLevelContainer" class="flexbox">
       <div id="noteContainer">
         <div id="noteContainerFrame"></div>
-        <div id="cursor1" class="cursor">
-          <div id="cursor">
-          </div>
-        </div>
-        <div id="cursor2" class="cursor">
-          <div id="cursor">
-          </div>
-        </div>
-        <div class="previewer_parent">
-          <div id="previewer0" class="previewer" style="--i: 0;">
-            <div class="hitAlready"></div>
-          </div>
-        </div>
-        <div class="previewer_parent">
-          <div id="previewer1" class="previewer" style="--i: 1;">
-            <div class="hitAlready"></div>
-          </div>
-        </div>
-        <div class="previewer_parent">
-          <div id="previewer2" class="previewer" style="--i: 2;">
-            <div class="hitAlready"></div>
-          </div>
-        </div>
-        <div class="previewer_parent">
-          <div id="previewer3" class="previewer" style="--i: 3;">
-            <div class="hitAlready"></div>
-          </div>
-        </div>
-        <div class="previewer_parent">
-          <div id="previewer4" class="previewer" style="--i: 4;">
-            <div class="hitAlready"></div>
-          </div>
-        </div>
-        <div class="previewer_parent">
-          <div id="previewer5" class="previewer" style="--i: 5;">
-            <div class="hitAlready"></div>
-          </div>
-        </div>
+
         <div class="frame" id="centerContainer"></div>
         <div class="center flexbox" style="--i: 0;">
           <div style="margin: auto;">
@@ -102,15 +51,10 @@
       </div>
     </div>
     <div id="perfectionIndicator"></div>
-    <!-- <a class="comeIn" href="../Home/homescreen.html">homes</a>
-    <a class="comeIn" href="../Home/homescreen.html">wacca</a>
-    <a class="comeIn" onclick="game.gameState.pauseAudio()">pause</a> -->
   </div>
 </body>
+<script src="4ndroid.js"></script>
 <script src="../Utilities/global.js"></script>
 <script src="script.js"></script>
-<script src="../wacca.js"></script>
-<script src="../Utilities/dualsense.js"></script>
-<!-- <script src="../waccam.js"></script> -->
 
 </html>

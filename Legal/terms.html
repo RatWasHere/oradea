@@ -1,0 +1,204 @@
+<html>
+<link rel="stylesheet" href="../Core/main.css">
+<link rel="stylesheet" href="../Core/defaultComponents.css">
+<link rel="stylesheet" href="../Core/slimselect.css">
+<link rel="stylesheet" href="../Settings/style.css">
+
+<body>
+  <div id="titlebar" class="flexbox">
+    <btext style="padding-top: 5px;">Terms of Service <span>ORADEA</span></btext>
+    <btn class="glyph_back" id="close-button"
+      onclick="require('electron').ipcRenderer.send('closeTerms', {privacy: true})">
+      <div class="image close" style="width: 30px; height: 30px;"></div>
+    </btn>
+  </div>
+
+  <div style="padding: 10px; width: 100%; height: calc(100% - 60px); overflow: auto;">
+    <b>ORADEA Terms of Service</b><br>
+    Effective date: December 22nd, 2025
+    <br><br>
+
+    ORADEA is developed by RAT ("we", "I", "the developer").
+    These Terms of Service ("Terms") govern your use of ORADEA ("the Game").
+    By installing or playing the Game, you agree to these Terms.
+    <br><br>
+
+    <h3>1. Eligibility</h3>
+    You must be at least 13 years old to play ORADEA.
+    Access to the Game is also subject to Steam’s age restrictions and parental controls.
+    <br><br>
+
+    <h3>2. User Accounts and Steam Services</h3>
+    ORADEA uses Steam services for features such as leaderboards and Steam Workshop.
+    No separate ORADEA account is required.
+    <br><br>
+    You are responsible for maintaining the security of your Steam account.
+    Steam services are governed by Valve Corporation’s own terms and policies.
+    We are not responsible for actions taken by Steam, including account restrictions, outages, or service changes.
+    <br><br>
+
+    <h3>3. License</h3>
+    Upon purchase via Steam, you are granted a personal, non-exclusive, non-transferable license to install
+    and play the Game for personal, non-commercial use only.
+    <br><br>
+    You may not sell, redistribute, sublicense, or otherwise commercialize the Game or any part of it.
+    <br><br>
+    All music, sound effects, artwork, and other audio-visual content included in the Game remain the property of their
+    respective copyright holders.
+    You may not extract, modify, copy, distribute, or use such content outside the Game without permission from the
+    copyright holders.
+    <br><br>
+
+    <h3>4. User-Generated Content</h3>
+    ORADEA allows players to upload content via Steam Workshop and publish scores to Steam leaderboards.
+    <br><br>
+
+    <b>Steam Workshop rules:</b><br>
+    <ul>
+      <li>You must own or have permission to use any content you upload.</li>
+      <li>You may not upload copyrighted content without authorization.</li>
+      <li>Downloaded Workshop content may not be modified or redistributed outside Steam.</li>
+      <li>We reserve the right to remove or restrict visibility of Workshop items at our discretion.</li>
+      <li>Appeals may be submitted via comments on the affected Workshop item.</li>
+    </ul>
+
+    <b>Leaderboard rules:</b><br>
+    <ul>
+      <li>You may not submit scores via external programs or unauthorized methods.</li>
+      <li>You may not use cheats, exploits, automation, or unfair advantages.</li>
+    </ul>
+    <br>
+
+    <h3>5. Availability and Updates</h3>
+    We do not guarantee that the Game or any online features will be available at all times.
+    Features may be modified, suspended, or discontinued at any time without notice.
+    <br><br>
+    Updates may change gameplay, content, balance, or functionality.
+    <br><br>
+
+    <h3>6. Payments and Refunds</h3>
+    All purchases, payments, and refunds are handled exclusively by Steam and are subject to the Steam Subscriber
+    Agreement and Steam Refund Policy.
+    We do not process payments directly.
+    <br><br>
+    <h3>7. Disclaimers and Health & Safety</h3>
+    <p>
+      To the maximum extent permitted by applicable law, the Game is provided "as is" and "as available" without warranties of any kind.
+    </p>
+    <p>
+      To the maximum extent permitted by law, we disclaim all warranties, express or implied, including fitness for a
+      particular purpose and non-infringement.
+    </p>
+
+    <h4>Health & Safety Warnings</h4>
+    <p>
+      <strong>READ THESE WARNINGS CAREFULLY BEFORE PLAYING. Failure to follow these precautions may increase the risk of injury or discomfort.</strong>
+    </p>
+
+    <p>
+      <strong>Photosensitive Seizure Warning:</strong> This Game contains flashing lights, rapidly changing visual
+      patterns, and high-contrast strobing effects. A very small percentage of people may experience seizures or
+      blackouts triggered by light patterns, even with no history of epilepsy. If you or anyone in your family has an
+      epileptic condition or has experienced seizures of any kind, consult a physician before playing. STOP PLAYING
+      IMMEDIATELY and consult a doctor if you experience any of the following symptoms: dizziness, altered vision, eye
+      or muscle twitches, loss of awareness, disorientation, involuntary movements, or convulsions.
+    </p>
+
+    <p>
+      <strong>Physical Activity & Repetitive Stress Warning:</strong> This rhythm game requires rapid, repetitive, and
+      forceful physical inputs that may cause or aggravate physical injuries including but not limited to repetitive
+      strain injury (RSI), carpal tunnel syndrome, tendonitis, muscle strain, and joint damage. Stop playing immediately
+      if you experience pain, tingling, numbness, swelling, fatigue, discomfort, or stiffness in your hands, wrists,
+      arms, shoulders, neck, or any other body part.
+    </p>
+
+    <p>
+      <strong>Input Device Damage Warning:</strong> The intense and rapid gameplay may cause accelerated wear, damage,
+      or complete failure of keyboards, mice, controllers, touchscreens, or other input devices. This may include but is
+      not limited to: broken keys or buttons, damaged switches, worn surfaces, disconnected components, or electronic
+      failure. You acknowledge that intensive gameplay may contribute to accelerated wear of input devices. To the extent
+      permitted by applicable law, we are not responsible for normal wear and tear or damage resulting from use during gameplay.
+    </p>
+
+    <p><strong>General Precautions:</strong></p>
+    <ul>
+      <li>Take regular breaks of at least 10-15 minutes every hour</li>
+      <li>Maintain proper posture and ergonomic setup while playing</li>
+      <li>Keep hands, wrists, and arms relaxed; avoid gripping devices too tightly</li>
+      <li>Play in a well-lit room at a safe viewing distance from the screen</li>
+      <li>Avoid playing when fatigued, intoxicated, or under the influence of medication that may impair reactions</li>
+      <li>Stay hydrated and avoid playing for extended periods without rest</li>
+      <li>Parents should monitor their children's gameplay time and ensure they follow these safety guidelines</li>
+    </ul>
+
+    <p><strong>Equipment Recommendations:</strong></p>
+    <ul>
+      <li>Use high-quality, durable input devices designed for intensive gaming</li>
+      <li>Consider using protective covers or pads for keyboards/controllers</li>
+      <li>Ensure all equipment is properly maintained and in good working condition</li>
+      <li>Have backup input devices available in case of equipment failure</li>
+    </ul>
+
+    <p>
+      If you have any pre-existing medical conditions affecting your hands, arms, vision, or neurological system,
+      consult with a healthcare professional before playing.
+    </p>
+
+    <h3>8. Limitation of Liability</h3>
+    <p>To the maximum extent permitted by law:</p>
+    <ul>
+      <li>To the maximum extent permitted by applicable law, we shall not be liable for any indirect, incidental, consequential, special, punitive, or exemplary damages,
+        including but not limited to loss of profits, data, or use, damage to property, personal injury, or medical
+        expenses arising from your use of the Game.</li>
+
+      <li>To the maximum extent permitted by applicable law, we are not liable for damage to input devices, computer equipment, mobile devices, or other property
+        resulting from gameplay, including but not limited to wear and tear, breakage, electronic failure, or any other
+        form of damage.</li>
+
+      <li>To the maximum extent permitted by applicable law, we are not responsible for any physical injuries, medical conditions, or health complications that may arise
+        from playing the Game, including but not limited to repetitive strain injuries, seizures, eye strain, headaches,
+        or musculoskeletal disorders.</li>
+
+      <li>To the maximum extent permitted by applicable law, our total liability arising from or related to the Game,
+        whether in contract, tort, or otherwise, shall not
+        exceed the amount you actually paid to us for the Game in the twelve (12) months preceding the claim.</li>
+
+      <li>To the maximum extent permitted by applicable law, if you acquired the Game for free, our total liability shall not exceed $10 USD.</li>
+    </ul>
+
+    <p>
+      Nothing in these Terms limits or excludes liability for death or personal injury caused by negligence, fraud or
+      fraudulent misrepresentation, or any other liability that cannot be excluded or limited under applicable law.
+    </p>
+
+    <p>
+      You acknowledge that you have read and understood these health and safety warnings and limitations of liability,
+      and you acknowledge the inherent risks associated with playing the Game.
+    </p>
+
+    <h3>9. Termination</h3>
+    We may restrict or terminate access to the Game or its online features if you violate these Terms or applicable
+    laws.
+    <br><br>
+
+    <h3>10. Changes to These Terms</h3>
+    We may update these Terms from time to time.
+    Continued use of the Game after changes take effect constitutes acceptance of the updated Terms.
+    <br><br>
+
+    <h3>11. Severability</h3>
+    If any provision of these Terms is found unenforceable, the remaining provisions shall remain in full force and
+    effect.
+    <br><br>
+
+    <h3>12. No Waiver</h3>
+    Failure to enforce any provision of these Terms does not constitute a waiver of that provision.
+    <br><br>
+
+    <h3>13. Governing Law</h3>
+    These Terms are governed by the laws of Romania, excluding conflict-of-law rules.
+    Mandatory consumer protection laws in your jurisdiction remain unaffected.
+  </div>
+</body>
+
+</html>

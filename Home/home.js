@@ -3,8 +3,7 @@ let reactiveNoteCore = document.getElementById('reactive_note_core');
 let killModifications = false;
 // create an audio and then make the reactive core react to the volume
 let audio = new Audio(`../Assets/Misc/Ethereal.mp3`);
-audio.play();
-
+audio.play().then(() => audio.volume = 0.05);
 
 function fadeThisOut(to) {
   killModifications = true;
@@ -14,19 +13,18 @@ function fadeThisOut(to) {
   setTimeout(() => {
     document.body.style.backgroundRepeat = 'no-repeat';
     document.body.style.backgroundPositionY = '100vh';
-    audio.volume = 0.5;
+    audio.volume = 0.03;
   }, 300);
   setTimeout(() => {
-    audio.volume = 0.3;
+    audio.volume = 0.02;
   }, 400);
   setTimeout(() => {
-    audio.volume = 0.2;
+    audio.volume = 0.005;
   }, 500);
   setTimeout(() => {
-    audio.volume = 0.1;
+    audio.volume = 0;
   }, 600);
   setTimeout(() => {
-    audio.volume = 0;
     document.getElementById('bg-overlay').style.opacity = '0'
   }, 650);
 
@@ -173,4 +171,7 @@ function openSettings() {
   require('electron').ipcRenderer.send('openSettings');
 }
 
-if (!isDismissed("welcome")) playTutorial();
+if (!isDismissed("welcome")) {
+  dismissContent("welcome");
+  fadeThisOut('./firstContact.html');
+}

@@ -138,9 +138,16 @@ function pollGamepads() {
     const dpadLeft = !!pad.buttons[14]?.pressed;
     const dpadRight = !!pad.buttons[15]?.pressed;
 
-    // Analog stick (handle releases too)
-    const x = pad.axes[0];
-    const y = pad.axes[1];
+    // Analog stick (handle releases too) - with deadzone fallback to right stick
+    const DEADZONE = 0.2;
+    let x = pad.axes[0];
+    let y = pad.axes[1];
+
+    // If left stick is in deadzone, use right stick
+    if (Math.abs(x) < DEADZONE && Math.abs(y) < DEADZONE) {
+      x = pad.axes[2];
+      y = pad.axes[3];
+    }
 
     const analogUp = y < -0.5;
     const analogDown = y > 0.5;

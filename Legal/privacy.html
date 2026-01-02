@@ -1,0 +1,125 @@
+<html>
+<link rel="stylesheet" href="../Core/main.css">
+<link rel="stylesheet" href="../Core/defaultComponents.css">
+<link rel="stylesheet" href="../Core/slimselect.css">
+<link rel="stylesheet" href="../Settings/style.css">
+
+<body>
+  <div id="titlebar" class="flexbox">
+    <btext style="padding-top: 5px;">Privacy <span>ORADEA</span></btext>
+    <btn class="glyph_back" id="close-button"
+      onclick="require('electron').ipcRenderer.send('closePrivacy', {privacy: true})">
+      <div class="image close" style="width: 30px; height: 30px;"></div>
+    </btn>
+  </div>
+
+  <div style="padding: 10px; width: 100%; height: calc(100% - 60px); overflow: auto;">
+    <b>ORADEA Privacy Policy</b><br>
+    Effective date: December 22nd, 2025
+    <br><br>
+
+    <h2>1. Overview</h2>
+    ORADEA is a rhythm game distributed globally via Steam.  
+    We do not independently collect personal data such as names, email addresses, IP addresses, or payment information.
+    Most data processing related to accounts, payments, online services, and Workshop functionality is handled directly
+    by Valve Corporation through Steam.
+    <br><br>
+
+    <h2>2. Information We Collect</h2>
+    <b>Locally stored game data:</b><br>
+    The game stores data locally on your device, including:
+    <ul>
+      <li>Scores and performance results</li>
+      <li>Accuracy metrics</li>
+      <li>Timing of input events relevant to gameplay and scoring</li>
+      <li>Game settings and configuration preferences</li>
+    </ul>
+    This data does not directly identify you and remains on your device unless shared via Steam features.<br>
+    We do not collect analytics or telemetry data.
+    <br><br>
+
+    <b>Leaderboard submissions:</b><br>
+    If you choose to submit a score to the leaderboards, relevant performance data may be transmitted to Valve using the
+    Steam Leaderboards API in order to display your ranking.
+    <br><br>
+
+    <b>Steam Workshop content:</b><br>
+    When you upload or download content via Steam Workshop, Steam may collect and process information such as your Steam
+    account ID, uploaded content, and usage statistics.  
+    We do not have access to your Steam account credentials or personal account details.
+    Data related to Workshop functionality is processed in accordance with
+    <a target="_blank" href="https://store.steampowered.com/privacy_agreement/">Steam's Privacy Policy</a>.
+    <br><br>
+
+    <h2>3. How We Use Information</h2>
+    Locally stored data is used solely for:
+    <ul>
+      <li>Gameplay functionality</li>
+      <li>Score calculation and validation</li>
+      <li>Basic anti-cheat and fairness measures</li>
+    </ul>
+    We do not sell, rent, or trade personal data.  
+    We do not access Workshop content or Steam account information directly.
+    <br><br>
+
+    <h2>4. Legal Basis for Processing (GDPR)</h2>
+    For users in the European Economic Area, processing is based on:
+    <ul>
+      <li><b>Performance of a contract</b> (Article 6(1)(b)) - operating the game and saving progress</li>
+      <li><b>Legitimate interests</b> (Article 6(1)(f)) - score validation and anti-cheat measures</li>
+      <li><b>Consent</b> (Article 6(1)(a)) - optional submission of scores to leaderboards</li>
+    </ul>
+    <br>
+
+    <h2>5. Data Retention</h2>
+    Locally stored game data is retained until you delete it, reset it in-game (if applicable), or uninstall the game.
+    Leaderboard and Workshop data is retained according to Steam's data retention policies.
+    <br><br>
+
+    <h2>6. International Data Transfers</h2>
+    Steam services operate globally. If you choose to use online features such as leaderboards or Workshop, your data may
+    be processed outside your country of residence in accordance with Steam's Privacy Policy and applicable data
+    protection safeguards.
+    <br><br>
+
+    <h2>7. Your Rights</h2>
+    Depending on your jurisdiction, you may have the right to:
+    <ul>
+      <li>Access your data</li>
+      <li>Request correction or deletion</li>
+      <li>Object to or restrict processing</li>
+      <li>Withdraw consent for optional features</li>
+    </ul>
+    Since most data is stored locally, you can exercise these rights by deleting local game data or uninstalling the
+    game.  
+    Requests related to Steam-processed data should be directed to Valve.
+    <br><br>
+
+    <h2>8. Security</h2>
+    We take reasonable measures to protect locally processed data. However, we cannot guarantee absolute security,
+    particularly for data managed by third-party services such as Steam.
+    <br><br>
+
+    <h2>9. Children's Privacy</h2>
+    ORADEA is not intended for children under the age of 13.  
+    We do not knowingly collect personal information from children.  
+    Access to the game is subject to Steam's parental controls and policies.
+    <br><br>
+
+    <h2>10. Changes to This Policy</h2>
+    This Privacy Policy may be updated from time to time.  
+    Changes will be reflected with a revised effective date.
+    <br><br>
+
+    <h2>11. Data Controller</h2>
+    The developer of ORADEA acts as the data controller only for locally processed game data.  
+    Valve Corporation acts as an independent data controller for all Steam-related services.
+    <br><br>
+
+    <h2>12. Contact</h2>
+    For questions regarding this Privacy Policy or data handling, contact:<br>
+    <b>ratwashere@proton.me</b><br>
+    We aim to respond as fast as we can to emails.
+  </div>
+</body>
+</html>

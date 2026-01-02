@@ -13,18 +13,20 @@
   </div>
 
   <btext style="display: block; margin-top: 20px; opacity: 0.5;">Listen for the fourth beat and hit space or click when you hear it.<br> <span id="results"></span></btext>
-  <btext style="display: block; margin-top: 10px; opacity: 0.3; font-size: 12px;">We're syncing up your visuals and easing. Don't rely on what you see</btext>
+  <btext style="display: block; margin-top: 10px; opacity: 0.3; font-size: 12px;">We're syncing up your visuals and easing. Don't rely on what you see, try to press in time with the beat.</btext>
 
-  <div id="procedure">
-    <btn style="width: fit-content; margin: auto; margin-top: 10px;" onclick="window.location.href = './settings.html'">Back</btn>
+  <div class="flexbox" id="procedure">
+    <btn class="controller_selectable" style="width: fit-content; margin: auto; margin-top: 10px; margin-right: 0px;" id="procedureButton" onclick="ipcRenderer.send('closeSettings')">Exit</btn>
+    <btn class="controller_selectable" style="width: fit-content; margin: auto; margin-top: 10px; margin-left: 10px;" id="tapButton">Tap here</btn>
   </div>
   </div>
 
+  
 </body>
+<script src="../Utilities/global.js"></script>
+<script src="../Utilities/controller-control.js"></script>
 
 <script>
-const fs = require('fs');
-const { ipcRenderer } = require('electron');
 
 class CalibrationSystem {
   constructor() {
@@ -115,12 +117,12 @@ class CalibrationSystem {
       this.handleTap();
     };
     
-    document.addEventListener('click', tapHandler);
+    document.getElementById('tapButton').onclick = tapHandler;
     document.addEventListener('keydown', tapHandler);
     
-    document.querySelector('#procedure btn').addEventListener('click', () => {
+    document.getElementById('procedureButton').addEventListener('click', () => {
       if (this.calibrationComplete) {
-        this.saveAndProceed();
+        this.saveWithoutProceeding();
       }
     });
   }
@@ -197,9 +199,21 @@ class CalibrationSystem {
     
     document.getElementById('results').innerHTML = resultsHTML;
     
-    const btn = document.querySelector('#procedure btn');
+    const btn = document.getElementById('procedureButton');
     btn.style.opacity = '1';
-    btn.textContent = 'Apply & Continue';
+    btn.textContent = 'Adjust In Settings';
+    btn.onclick = () => {
+      location.href = './settings.html'
+    }
+
+    const btn2 = document.getElementById('tapButton');
+    btn2.style.opacity = '1';
+    btn2.textContent = 'Save & Exit';
+    btn2.onclick = () => {
+      settings.audio_offset = this.finalOffset;
+      saveSettings();
+      ipcRenderer.send('closeSettings')
+    }
     
     const helpText = this.finalOffset > 0 
       ? 'You tap slightly after the beat - gameplay will compensate'
@@ -222,28 +236,9 @@ class CalibrationSystem {
     }
   }
 
-  saveAndProceed() {
-    if (!this.calibrationComplete) return;
-    
-    this.isCalibrating = false;
-    
-    try {
-      const configPath = './config.json';
-      let config = {};
-      
-      if (fs.existsSync(configPath)) {
-        config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-      }
-      
-      config.audioOffset = this.finalOffset;
-      fs.writeFileSync(configPath, JSON.stringify(config, null, 2));
-      
-      ipcRenderer.send('calibration-complete', this.finalOffset);
-      
-    } catch (error) {
-      console.error('Failed to save calibration:', error);
-      alert('Failed to save calibration settings');
-    }
+  saveWithoutProceeding() {
+    settings.offset = this.finalOffset;
+    saveSettings()
   }
 }
 

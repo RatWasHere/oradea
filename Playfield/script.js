@@ -1,4 +1,4 @@
-const steamworks = require('steamworks.js');
+// const steamworks = require('steamworks.js');
 // let app = steamworks.init(3994990);
 // app.input.init();
 // ============================================================================
@@ -14,8 +14,8 @@ const CONFIG = {
   // ===== VISUAL MODIFIERS =====
 
   PREVIEW_COUNT: 6,
-  SNAP_INTERVAL: 60, // 360/6 = 6 (Segments)
-  SNAP_EXTENSION: 21, // Since controller input is jiggery, give it 4 more degrees before proceeding onto the next segment
+  SNAP_INTERVAL: 60, // 360/6 = 6 (segments)
+  SNAP_EXTENSION: 21, // we probably arent going to need this 
 
   NOTE_RADIUS: 110,
 
@@ -31,7 +31,7 @@ const CONFIG = {
   RAW_RADIUS: 740, // WAS 630
   ADJUSTED_MAX_TRAVEL: 0,
   START_OFFSET: 0,
-  CREATION_ANTIDELAY: 5000,
+  CREATION_ANTIDELAY: 1600,
 
   // TIMING & INPUT
   GAMEPAD_DEADZONE: 0.2,
@@ -40,15 +40,15 @@ const CONFIG = {
 
   FLICK_THRESHOLD: 13,
   FLICK_OFFSET: 20,
-  SWIPE_OUTWARDS_PROGRESS_THRESHOLD: 0.95,
+  SWIPE_OUTWARDS_PROGRESS_THRESHOLD: 0.60,
   SWIPE_INWARDS_THRESHOLD: 0.7,
   PERMISSIVE_SWIPE_TRESHOLD: 0.2,
-  INITIAL_DELAY: 0,
+  INITIAL_DELAY: 1000,
   HINT_VISIBILITY: 0.5,
   SWIPE_PRECHECK: 100,
   PERMISSIVE_SWIPE_PRECHECK: 230,
   PERMISSIVE_SWIPE_TIMEFRAME: 370,
-
+  HALF_SWIPE_MIN_MOVEMENT: 40, // these are degrees stop looking like this as if you dont know what they are. DEGREES. FUCK FARENHEIT BTW.
   // SCORING
   ACCEPTANCE_THRESHOLD: 300,
   FLICK_ACCEPTANCE_THRESHOLD: 400,
@@ -56,8 +56,8 @@ const CONFIG = {
   ACCURACY_RANGES: {
     'perfect': [0, 52.8],
     'great': [52.8, 90.8],
-    'ok': [110, 150],
-    'bad': [150, 160],
+    'ok': [90.8, 169],
+    'bad': [169, 242.0],
   },
   ACCURACY_SCORES: {
     'perfect': 200,
@@ -79,10 +79,13 @@ const CONFIG = {
 
   AUTOPLAY: false,
   BUTTONS: true,
+  TOUCHSCREEN: false,
 
   FLASHING_LIGHTS: 1,
   GIMMICKS: 1,
-  VFX_CACHE_MULTIPLIER: 1
+  VFX_CACHE_MULTIPLIER: 1,
+  VFX_DURATION: 1,
+  SLIDER_OFFSET: 0
 };
 
 function getProgress(value, min, max) {
@@ -105,100 +108,146 @@ sheet.insertRule(`:root { --inner-container-note-distance: ${CONFIG.START_OFFSET
 // ============================================================================
 class GameState {
   constructor() {
-    this.crossDetails = JSON.parse(fs.readFileSync('./Core/crossdetails', 'utf8'));
-    this.sheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/${this.crossDetails.map}`, 'utf8'));
-    this.information = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/information.json`, 'utf8'));
-    try {
-      this.timeSheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/time_${this.crossDetails.map}`, 'utf8'));
-    } catch (error) { }
-    try {
-      this.lightMap = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/light_${this.crossDetails.map}`, 'utf8'));
-    } catch (error) { }
-    document.getElementById('songArt').style.backgroundImage = `url('../Beatmaps/${this.crossDetails.location}/${this.information.cover}')`;
-    document.getElementById('songName').innerHTML = this.information.name;
-    document.getElementById('songArtist').innerHTML = this.information.artist;
-    document.getElementById('difficulty').innerHTML = `${CONFIG.DIFFICULTY_MAP[this.crossDetails.difficulty]} - ${this.information.ratings[this.crossDetails.difficulty]}`;
-    document.getElementById('difficultyTag').classList.add(CONFIG.DIFFICULTY_MAP[this.crossDetails.difficulty].toLowerCase());
-    this.combo = 0;
-    this.score = 0;
+    (async () => {
+      this.ready = new Promise((res) => { this._readyResolve = res });
 
-    CONFIG.AUDIO_OFFSET = getSetting('audio_offset', 0);
-    CONFIG.HINT_VISIBILITY = getSetting('note_hint', 0.5);
-    CONFIG.FLASHING_LIGHTS = getSetting('flashing_lights', 1);
-    CONFIG.GIMMICKS = getSetting('gimmicks', 1);
-    CONFIG.VFX_CACHE_MULTIPLIER = getSetting('vfx_cache', 3);
-    CONFIG.INPUT_MODE = getSetting('input_mode', 3);
+      if (!isAndroid) {
+        this.crossDetails = JSON.parse(fs.readFileSync('./Core/crossdetails', 'utf8'));
+        this.sheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/${this.crossDetails.map}`, 'utf8'));
+        this.information = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/information.json`, 'utf8'));
+        try {
+          this.timeSheet = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/time_${this.crossDetails.map}`, 'utf8'));
+        } catch (error) { }
+        try {
+          this.lightMap = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/light_${this.crossDetails.map}`, 'utf8'));
+        } catch (error) { };
+      } else {
+        const SERVER_URL = 'http://192.168.100.235:5500/'; // Replace with your actual server IP:port
+        try {
+          // Fetch crossdetails
+          const crossResponse = await fetch(`${SERVER_URL}/Core/crossdetails`);
+          this.crossDetails = await crossResponse.json();
 
-    let noteDesign = getSetting('noteDesign', 'geometrical');
-    let holdNoteDesign = getSetting('holdNoteDesign', 'geometrical');
-    let noteDesigns = {
-      note: "Note",
-      holdNote: "Note Holdable",
-      goldenNote: "Note Golden",
-    }
-    let holdNoteDesigns = {
-      sliderTop: "Top",
-      sliderFrame: "Frame",
-      sliderBottom: "Bottom",
+          // Fetch beatmap sheet
+          const sheetResponse = await fetch(`${SERVER_URL}/Beatmaps/${this.crossDetails.location}/${this.crossDetails.map}`);
+          this.sheet = await sheetResponse.json();
 
-      sliderTopGolden: "Top Golden",
-      sliderFrameGolden: "Frame Golden",
-      sliderBottomGolden: "Bottom Golden",
+          // Fetch song information
+          const infoResponse = await fetch(`${SERVER_URL}/Beatmaps/${this.crossDetails.location}/information.json`);
+          this.information = await infoResponse.json();
 
-      sliderTopHoldable: "Top Holdable",
-      sliderBottomHoldable: "Bottom Holdable",
-    }
-    for (let design in noteDesigns) {
-      document.styleSheets[0].insertRule(`:root { --${design}: url('../Assets/Headers/${noteDesign}/${noteDesigns[design]}.svg') }`);
-    }
-    for (let design in holdNoteDesigns) {
-      document.styleSheets[0].insertRule(`:root { --${design}: url('../Assets/Headers/${holdNoteDesign}/${holdNoteDesigns[design]}.svg') }`);
-    }
+          // Try to fetch timing sheet (optional)
+          try {
+            const timeResponse = await fetch(`${SERVER_URL}/Beatmaps/${this.crossDetails.location}/time_${this.crossDetails.map}`);
+            this.timeSheet = await timeResponse.json();
+          } catch (error) { }
 
-    let lastNote = this.sheet[this.sheet.length - 1];
-    let determinedTime = lastNote.time;
-    if (lastNote.slider) {
-      determinedTime = lastNote.sliderEnd;
-    }
-    if (lastNote.largeFlick) {
-      determinedTime = lastNote.flickEnd;
-    }
-    this.endsAt = determinedTime + CONFIG.ACCEPTANCE_THRESHOLD;
+          // Try to fetch light map (optional)
+          try {
+            const lightResponse = await fetch(`${SERVER_URL}/Beatmaps/${this.crossDetails.location}/light_${this.crossDetails.map}`);
+            this.lightMap = await lightResponse.json();
+          } catch (error) { }
+        } catch (error) {
+          console.error('Failed to fetch game data from server:', error);
+        }
+      }
 
-    this.keysPressed = {};
+      document.getElementById('songArt').style.backgroundImage = `url('../Beatmaps/${this.crossDetails.location}/${this.information.cover}')`;
+      document.getElementById('songName').innerHTML = this.information.name;
+      document.getElementById('songArtist').innerHTML = this.information.artist;
+      document.getElementById('difficulty').innerHTML = `${CONFIG.DIFFICULTY_MAP[this.crossDetails.difficulty]} - ${this.information.ratings[this.crossDetails.difficulty]}`;
+      document.getElementById('difficultyTag').classList.add(CONFIG.DIFFICULTY_MAP[this.crossDetails.difficulty].toLowerCase());
+      this.combo = 0;
+      this.score = 0;
 
-    this.rotations = [0, 0];
-    this.rawRotations = [0, 0];
-    this.centerDistance = [0, 0];
-    this.sectors = [1, 1];
-    this.snapToInterval = true;
+      CONFIG.AUDIO_OFFSET = getSetting('audio_offset', 0);
+      CONFIG.HINT_VISIBILITY = getSetting('note_hint', 0.5);
+      CONFIG.FLASHING_LIGHTS = getSetting('flashing_lights', 1);
+      CONFIG.GIMMICKS = getSetting('gimmicks', 1);
+      CONFIG.VFX_CACHE_MULTIPLIER = getSetting('vfx_cache', 3);
+      CONFIG.INPUT_MODE = getSetting('input_mode', 'buttons');
+      CONFIG.VFX_DURATION = getSetting('vfx_duration', 600);
+      if (CONFIG.INPUT_MODE == "buttons") {
+        CONFIG.BUTTONS = true;
+      } else if (CONFIG.INPUT_MODE == "touch" || isAndroid) {
+        CONFIG.TOUCHSCREEN = true;
+      }
+      document.styleSheets[1].insertRule(`:root { --vfx-duration: ${CONFIG.VFX_DURATION}ms;
+        --secondary-vfx-duration: ${CONFIG.VFX_DURATION - 100}ms;
+        --tertiary-vfx-duration: ${Math.floor(CONFIG.VFX_DURATION / 3)}ms;
+        --quaternary-vfx-duration: ${Math.floor(CONFIG.VFX_DURATION / 4)}ms; }`);
 
-    this.displayedNotes = [];
+      CONFIG.SLIDER_OFFSET = ((CONFIG.NOTE_PREVIEW_DELAY / CONFIG.CONTAINER_RADIUS) * CONFIG.NOTE_RADIUS * 0.5);
+      let noteDesign = getSetting('noteDesign', 'geometrical');
+      let holdNoteDesign = getSetting('holdNoteDesign', 'geometrical');
+      let noteDesigns = {
+        note: "Note",
+        holdNote: "Note Holdable",
+        goldenNote: "Note Golden",
+      }
+      let holdNoteDesigns = {
+        sliderTop: "Top",
+        sliderFrame: "Frame",
+        sliderBottom: "Bottom",
 
-    this.scoringPad = {
-      perfect: [],
-      great: [],
-      ok: [],
-      bad: [],
-      miss: []
-    }
+        sliderTopGolden: "Top Golden",
+        sliderFrameGolden: "Frame Golden",
+        sliderBottomGolden: "Bottom Golden",
+
+        sliderTopHoldable: "Top Holdable",
+        sliderBottomHoldable: "Bottom Holdable",
+      }
+      for (let design in noteDesigns) {
+        document.styleSheets[0].insertRule(`:root { --${design}: url('../Assets/Headers/${noteDesign}/${noteDesigns[design]}.svg') }`);
+      }
+      for (let design in holdNoteDesigns) {
+        document.styleSheets[0].insertRule(`:root { --${design}: url('../Assets/Headers/${holdNoteDesign}/${holdNoteDesigns[design]}.svg') }`);
+      }
+
+      let lastNote = this.sheet[this.sheet.length - 1];
+      let determinedTime = lastNote.time;
+      if (lastNote.slider) {
+        determinedTime = lastNote.sliderEnd;
+      }
+      if (lastNote.largeFlick) {
+        determinedTime = lastNote.flickEnd;
+      }
+      this.endsAt = determinedTime + CONFIG.ACCEPTANCE_THRESHOLD;
+
+      this.keysPressed = {};
+
+      this.rotations = [0, 0];
+      this.rawRotations = [0, 0];
+      this.centerDistance = [0, 0];
+      this.sectors = [1, 1];
+      this.snapToInterval = true;
+
+      this.displayedNotes = [];
+
+      this.scoringPad = {
+        perfect: [],
+        great: [],
+        ok: [],
+        bad: [],
+        miss: []
+      }
 
 
-    this.gamepad = null;
+      this.gamepad = null;
 
-    this.lastFrameTime = 0;
+      this.lastFrameTime = 0;
 
-    // Web Audio
-    this.audioContext = new window.AudioContext();
-    this.audioBuffer = null;
-    this.audioSource = null;
-    this.audioStartTime = 0; // audioContext.currentTime when playback started (seconds)
-    this.audioPauseOffset = 0; // ms offset to apply if needed
+      // Web Audio
+      this.audioContext = new window.AudioContext();
+      this.audioBuffer = null;
+      this.audioSource = null;
+      this.audioStartTime = 0; // audioContext.currentTime when playback started (s)
+      this.audioPauseOffset = 0; // ms
 
-    this.initializeDOM();
-    // initializeAudio is now async and called from RhythmGame.init()
+      this.initializeDOM();
+      this._readyResolve();
+    })()
   }
-
   pauseAudio() {
     if (this.audioSource) {
       this.audioSource.stop();
@@ -209,8 +258,6 @@ class GameState {
     this.elements = {
       container: document.getElementById('noteContainer'),
       topLevelContainer: document.getElementById('topLevelContainer'),
-      cursor1: document.getElementById('cursor1'),
-      cursor2: document.getElementById('cursor2'),
       comboDisplay: document.getElementById('comboDisplay'),
       previewers: document.querySelectorAll('.previewer_parent'),
       noteContainerFrame: document.getElementById('noteContainerFrame'),
@@ -246,7 +293,7 @@ class GameState {
 
     CONFIG.NOTE_PREVIEW_DELAY = (5 / getSetting('note_speed', 6)) * 1000;
 
-    this.elements.overlay.style.scale = getSetting('hexagon_size', 1);
+    // this.elements.topLevelContainer.style.scale = getSetting('hexagon_size', 1);
 
     this.effectItems = []
     for (let i = 0; i < 4 * CONFIG.VFX_CACHE_MULTIPLIER; i++) {
@@ -388,6 +435,13 @@ class GameState {
     const centerX = rect.x + (rect.width / 2);
     const centerY = rect.y + (rect.height / 2);
     this.cachedRects = { rect, centerX, centerY };
+    setTimeout(() => {
+      const rect = this.elements.container.getBoundingClientRect();
+      const centerX = rect.x + (rect.width / 2);
+      const centerY = rect.y + (rect.height / 2);
+      this.cachedRects = { rect, centerX, centerY };
+
+    }, 3000);
     window.addEventListener('resize', () => {
       const rect = this.elements.container.getBoundingClientRect();
       const centerX = rect.x + (rect.width / 2);
@@ -397,10 +451,29 @@ class GameState {
   }
 
   async initializeAudio() {
-    const filePath = `./Beatmaps/${this.crossDetails.location}/audio.mp3`;
-    const fileBuf = fs.readFileSync(filePath);
-    const arrayBuffer = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.length);
-    this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+    let filePath;
+
+    if (!isAndroid) {
+      // Desktop: Read from file system
+      filePath = `./Beatmaps/${this.crossDetails.location}/audio.mp3`;
+      const fileBuf = fs.readFileSync(filePath);
+      const arrayBuffer = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.length);
+      this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+    } else {
+      // Android: Fetch from server
+      const SERVER_URL = 'http://192.168.100.235:5500';
+      filePath = `${SERVER_URL}/Beatmaps/${this.crossDetails.location}/audio.mp3`;
+
+      try {
+        const response = await fetch(filePath);
+        const arrayBuffer = await response.arrayBuffer();
+        this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
+      } catch (error) {
+        console.error('Failed to fetch audio:', error);
+        return;
+      }
+    }
+
     if (this.audioSource) {
       try { this.audioSource.stop(); } catch (e) { }
       this.audioSource.disconnect();
@@ -408,6 +481,10 @@ class GameState {
 
     this.gainNode = this.audioContext.createGain();
     this.gainNode.connect(this.audioContext.destination);
+
+    this.sfxGainNode = this.audioContext.createGain();
+    this.sfxGainNode.connect(this.audioContext.destination);
+    this.sfxGainNode.gain.value = Number(getSetting('sfx_volume', 90)) / 100;
 
     this.audioSource = this.audioContext.createBufferSource();
     this.audioSource.buffer = this.audioBuffer;
@@ -419,8 +496,8 @@ class GameState {
   }
 
   get currentTime() {
-    if (!this.audioBuffer || !this.audioStartTime) return (Performance.now() - (loadTime + CONFIG.AUDIO_OFFSET));
-    return ((this.audioContext.currentTime - this.audioStartTime) * 1000) - CONFIG.AUDIO_OFFSET
+    // if (!this.audioBuffer || !this.audioStartTime) return (Performance.now() - (loadTime));
+    return ((this.audioContext.currentTime - this.audioStartTime) * 1000)
   }
 
   seekToTime(timeInMs) {
@@ -794,13 +871,14 @@ class InputSystem {
     };
 
     this.points.set(point.type, point);
-    if (!point.analog) this.hit(point.angle)
+    // if (point.distance > 0.5) 
+    this.hit(point.angle)
   }
 
   hit(angle) {
     const matchingNotes = this.findMatchingNotes(angle);
     const closestNote = this.findClosestNote(matchingNotes);
-    if (closestNote) {
+    if (closestNote && !closestNote.swipe) {
       if (closestNote.slider) {
         if (!(closestNote.holdableStart ? game.gameState.currentTime <= closestNote.time : true)) return;
         return this.holdSlider(closestNote);
@@ -842,11 +920,73 @@ class InputSystem {
 
 
   setupEventListeners() {
-    document.addEventListener('keydown', this.handleKeyDown.bind(this));
-    document.addEventListener('keyup', this.handleKeyUp.bind(this));
-    document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    // document.addEventListener('keydown', this.handleKeyDown.bind(this));
+    // document.addEventListener('keyup', this.handleKeyUp.bind(this));
+    // document.addEventListener('mousemove', this.handleMouseMove.bind(this));
     window.addEventListener('gamepadconnected', this.handleGamepadConnected.bind(this));
+    if (!CONFIG.TOUCHSCREEN) {
+      document.addEventListener('mousemove', this.handleMouseMove.bind(this));
+    } else {
+      console.log('attached touch points')
+      document.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+      document.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+      document.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
+      document.addEventListener('touchcancel', this.handleTouchEnd.bind(this), { passive: false });
+    }
   }
+
+  computeTouchPoint(clientX, clientY) {
+    const rect = this.gameState.cachedRects?.rect;
+    const centerX = this.gameState.cachedRects?.centerX;
+    const centerY = this.gameState.cachedRects?.centerY;
+
+    const angle = Math.atan2(clientY - centerY, clientX - centerX);
+    const angleDegrees = angle * (180 / Math.PI);
+    const distanceFromCenter = Math.hypot(clientX - centerX, clientY - centerY);
+    const normalized = Math.min(distanceFromCenter / (CONFIG.ADJUSTED_MAX_TRAVEL || 1), 1);
+    return { angleDeg: angleDegrees, rawAngle: this.normalizeAngle(angleDegrees - 270), normalized };
+  }
+
+  handleTouchStart(e) {
+    if (!CONFIG.TOUCHSCREEN) return;
+    e.preventDefault();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const t = e.changedTouches[i];
+      const id = `touch_${t.identifier}`;
+      const pt = this.computeTouchPoint(t.clientX, t.clientY);
+      this.createPoint({
+        angle: this.snapAngle(pt.angleDeg),
+        rawAngle: pt.rawAngle,
+        distance: pt.normalized,
+        type: id,
+        source: 'touch',
+        analog: true
+      });
+    }
+  }
+
+  handleTouchMove(e) {
+    if (!CONFIG.TOUCHSCREEN) return;
+    e.preventDefault();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const t = e.changedTouches[i];
+      const id = `touch_${t.identifier}`;
+      const pt = this.computeTouchPoint(t.clientX, t.clientY);
+      console.log(pt.rawAngle)
+      this.updatePoint(id, { angle: this.snapAngle(pt.angleDeg), rawAngle: pt.rawAngle, distance: pt.normalized });
+    }
+  }
+
+  handleTouchEnd(e) {
+    if (!CONFIG.TOUCHSCREEN) return;
+    e.preventDefault();
+    for (let i = 0; i < e.changedTouches.length; i++) {
+      const t = e.changedTouches[i];
+      const id = `touch_${t.identifier}`;
+      this.releasePoint(id);
+    }
+  }
+
 
   handleKeyDown(event) {
     if (event.repeat) return;
@@ -898,19 +1038,8 @@ class InputSystem {
         this.holdSlider(note);
       } else if (note.slider && note.isBeingHeld && currentTime > note.sliderEnd) {
         this.releaseSlider(note);
-      } else if (note.flick && !note.done) {
-        if (note.input == undefined) {
-          this.startFlick(note);
-          note.rotations = (note.angle * (CONFIG.ANGLE_MODIFIER)) + CONFIG.ANGLE_OFFSET;
-        }
-
-        if (!note.largeFlick) {
-          note.done = true;
-          this.releaseFlick(note);
-        } else if (note.largeFlick && note.flickEnd <= currentTime) {
-          note.done = true;
-          this.releaseFlick(note);
-        }
+      } else if (note.swipe) {
+        this.swipeNote(note)
       } else if (!note.slider && !note.flick && !note.largeFlick && !note.done) {
         this.hitNote(note, 1);
       }
@@ -1052,17 +1181,8 @@ class InputSystem {
   updateTriggerState(key, pressed, cursorIndex) {
     if (pressed && !this.gameState.keysPressed[key]) {
       this.gameState.keysPressed[key] = true;
-      this.scaleCursor(cursorIndex, '2');
     } else if (!pressed && this.gameState.keysPressed[key]) {
       this.gameState.keysPressed[key] = false;
-      this.scaleCursor(cursorIndex, '1');
-    }
-  }
-
-  scaleCursor(index, scale) {
-    const cursor = index === 0 ? this.gameState.elements.cursor1 : this.gameState.elements.cursor2;
-    if (cursor?.firstElementChild) {
-      cursor.firstElementChild.style.scale = scale;
     }
   }
 
@@ -1090,8 +1210,6 @@ class InputSystem {
     const snapped1 = this.gameState.snapToInterval ? this.snapAngle(angle1) : angle1;
     const snapped2 = this.gameState.snapToInterval ? this.snapAngle(angle2) : angle2;
 
-    this.updateCursorRotation(0, snapped1);
-    this.updateCursorRotation(1, snapped2);
   }
 
   angleDiff(a, b) {
@@ -1113,13 +1231,6 @@ class InputSystem {
     } else {
       // Wrapped interval (e.g. 350 -> 10)
       return angle >= start || angle <= end;
-    }
-  }
-
-  updateCursorRotation(index, angle) {
-    const cursor = index === 0 ? this.gameState.elements.cursor1 : this.gameState.elements.cursor2;
-    if (cursor) {
-      cursor.style.rotate = `${angle + CONFIG.ANGLE_OFFSET}deg`;
     }
   }
 
@@ -1146,18 +1257,27 @@ class InputSystem {
   }
 
   findClosestNote(notes) {
-    return notes
-      .filter(note => {
-        if (note.swipe) return false;
-        if (note.slider) {
-          if (note.isBeingHeld || note.done || note.wasEverHeld) return false;
-          if (note.sliderEnd < this.gameState.currentTime) return false;
-          return Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD
-        } else {
-          if (note.done) return false;
-          return Math.abs(note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD
-        }
-      }).sort((a, b) => a.time - b.time)[0];
+    let closest = null;
+
+    for (let i = 0; i < notes.length; i++) {
+      const note = notes[i];
+      if (note.swipe) continue;
+
+      if (note.slider) {
+        if (note.isBeingHeld || note.done || note.wasEverHeld) continue;
+        if (note.sliderEnd < this.gameState.currentTime) continue;
+        if (Math.abs(note.time - this.gameState.currentTime) > CONFIG.ACCEPTANCE_THRESHOLD) continue;
+      } else {
+        if (note.done) continue;
+        if (Math.abs(note.time - this.gameState.currentTime) > CONFIG.ACCEPTANCE_THRESHOLD) continue;
+      }
+
+      if (!closest || note.time < closest.time) {
+        closest = note;
+      }
+    }
+
+    return closest;
   }
 
   holdSlider(note) {
@@ -1188,11 +1308,6 @@ class InputSystem {
 
   hitNote(note, pointID) {
     this.gameState.scoringSystem.judge(note.time, true, note);
-
-    if (note.flick || note.largeFlick) {
-      this.startFlick(note);
-      return;
-    }
 
     note.done = true;
 
@@ -1234,16 +1349,16 @@ class InputSystem {
     setTimeout(() => {
       consumable.parent.style.display = 'none';
       consumable.inUse = false;
-    }, 900);
+    }, 700);
   }
 
   releaseEffect(effect) {
     if (effect.type == 'particles_constant') {
       effect.parent.style.opacity = '0';
       setTimeout(() => {
+        effect.inUse = false;
         effect.parent.style.display = 'none';
         effect.parent.style.opacity = null;
-        effect.inUse = false;
       }, 250);
       return
     }
@@ -1261,8 +1376,17 @@ class InputSystem {
         note.playingEffects = this.consumeEffect('particles_constant', note.angle);
         note.element.classList.add('sfx_slider_hold');
       } else if (note.swipe) {
-        this.consumeEffect('particles_swipe', note.angle, 180);
-        this.consumeEffect('swipe_burst', note.angle, 180);
+        let offset = 180;
+        if (note.shortSwipe) {
+          let multiplier = note.direction == -1 ? -1 : 1;
+          offset = 240 * multiplier;
+        }
+        if (note.quarterSwipe) {
+          let multiplier = note.direction == -1 ? 1 : -1;
+          offset = 60 * multiplier;
+        }
+        this.consumeEffect('particles_swipe', note.angle, offset);
+        this.consumeEffect('swipe_burst', note.angle, offset);
       }
       res(true);
     })
@@ -1278,53 +1402,11 @@ class InputSystem {
     }
   }
 
-  startFlick(note) {
-    note.started = true;
-    note.startedAt = this.gameState.currentTime;
-    let relevantPoints = [];
-    for (let [pointID, point] of this.points) {
-      if (this.getSegment(point.angle) == note.angle) relevantPoints.push({
-        id: pointID,
-        rawAngle: point.rawAngle
-      });
-    }
-    note.points = relevantPoints;
-    if (note.largeFlick) {
-      note.traceParent.style.opacity = 1;
-    }
-  }
-
-  releaseFlick(note) {
-    if (note.done) {
-      this.createNoteAura(note)
-      // note.element.classList.remove('flick1', 'flick2');
-      note.element.parentElement.parentElement.classList.add('flicked_p');
-      note.element.classList.add('flicked');
-      note.element.parentElement.parentElement.style.rotate = `${(note.angle * CONFIG.ANGLE_MODIFIER) + (note.flickDirection == "2" ? -50 : 50) + 270}deg`;
-      game.gameState.scoringSystem.judge(note.time, true, note);
-      if (note.largeFlick) {
-        game.gameState.scoringSystem.judge(note.flickEnd);
-        note.traceParent.remove();
-      }
-
-      setTimeout(() => {
-        note.element.parentElement.parentElement.parentElement.remove();
-      }, 500);
-      return;
-    }
-  }
 
   isInArc(note, rotation) {
     return note.angle == this.getSegment(rotation);
   }
 
-  canBeHeld(note) {
-    const currentTime = this.gameState.currentTime;
-    if (note.slider) {
-      return note.time - CONFIG.ACCEPTANCE_THRESHOLD < currentTime && currentTime <= note.sliderEnd;
-    }
-    return note.time - CONFIG.ACCEPTANCE_THRESHOLD < currentTime;
-  }
 
   createHoldEffect(note, failed = false) {
     if (failed) {
@@ -1371,7 +1453,7 @@ class RenderingSystem {
 
   update(currentTime) {
     this.updateNoteVisibility(currentTime);
-    this.updatePreviewSectors();
+    // this.updatePreviewSectors();
     this.createNewNoteElements(currentTime);
     this.updateNotePositions(currentTime);
     this.cleanupFailedNotes(currentTime);
@@ -1411,14 +1493,20 @@ class RenderingSystem {
       }
     }
   }
+
   updateNoteVisibility(currentTime) {
-    this.gameState.displayedNotes = this.gameState.displayedNotes.filter(
-      note => !(note.done && currentTime - CONFIG.NOTE_PREVIEW_DELAY >= note.time)
-    );
+    let writeIndex = 0;
+    for (let i = 0; i < this.gameState.displayedNotes.length; i++) {
+      const note = this.gameState.displayedNotes[i];
+      if (!(note.done && currentTime - CONFIG.NOTE_PREVIEW_DELAY >= note.time)) {
+        this.gameState.displayedNotes[writeIndex++] = note;
+      }
+    }
+    this.gameState.displayedNotes.length = writeIndex;
   }
 
   createNewNoteElements(currentTime) {
-    const relevantNotes = this.gameState.sheet.filter(note => ((currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION + CONFIG.CREATION_ANTIDELAY)) && !note.element));
+    const relevantNotes = this.gameState.sheet.filter(note => (!note.element && (currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION + CONFIG.CREATION_ANTIDELAY))));
 
     for (let i = 0; i < relevantNotes.length; i++) {
       const note = relevantNotes[i];
@@ -1457,6 +1545,10 @@ class RenderingSystem {
     // Set note reference
     note.element = noteElement;
     noteElement.style.setProperty('--r', rotation + 'deg');
+    let scaleStart = (note.time) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
+    let scaleEnd = (note.time) - CONFIG.NOTE_PREVIEW_DELAY;
+    note.scaleStart = scaleStart;
+    note.scaleEnd = scaleEnd;
 
     this.gameState.displayedNotes.push(note);
   }
@@ -1471,7 +1563,6 @@ class RenderingSystem {
       noteElement.classList.add('slider');
       const actualHeight = ((note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2);
 
-      // noteElement.style.height = `${actualHeight + CONFIG.NOTE_RADIUS}px`;
       noteElement.style.translate = `0px`;
 
       noteElement.style.setProperty('--sliderHeight', `${actualHeight}px`);
@@ -1545,12 +1636,21 @@ class RenderingSystem {
           let multiplier = note.direction == -1 ? -1 : 1;
           wildCard = 30 * multiplier
         }
+        if (note.quarterSwipe) {
+          let multiplier = note.direction == -1 ? -1 : 1;
+          wildCard = 30 * multiplier
+        }
+        if (note.shortSwipe) {
+          let multiplier = note.direction == -1 ? -1 : 1;
+          wildCard = 30 * multiplier;
+        }
         traceParent.style.rotate = ((note.angle * CONFIG.ANGLE_MODIFIER) + 300 + 150 + wildCard) + 'deg';
 
         let traceType = 'trace-normal';
         let additionalClass = null;
         if (note.halfSwipe) traceType = 'trace-half';
         if (note.quarterSwipe) traceType = 'trace-quarter';
+        if (note.shortSwipe) traceType = 'trace-short';
         if (note.direction == -1) additionalClass = 'trace-inverted';
 
         let tracePath = document.createElement('div');
@@ -1564,7 +1664,7 @@ class RenderingSystem {
 
         this.gameState.elements.container.appendChild(traceParent);
         noteElement.classList.add('flick_large_starter');
-        if (!note.halfSwipe && !note.quarterSwipe) {
+        if (!note.halfSwipe && !note.quarterSwipe & !note.shortSwipe) {
           note.desiredAngle = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + 180));
           if (note.desiredAngle == 6) {
             note.desiredAngle = 0;
@@ -1586,12 +1686,23 @@ class RenderingSystem {
             };
             note.desiredAngle = desiredAngle;
             note.preAngle = preAngle;
+            note.angleRange = [note.angle * CONFIG.ANGLE_MODIFIER, desiredAngle * CONFIG.ANGLE_MODIFIER];
           } else if (note.quarterSwipe) {
             let modifier = -1;
             if (note.direction == -1) modifier = 1;
-            let desiredAngle = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + (CONFIG.ANGLE_MODIFIER * 3 * modifier)));
+            let desiredAngle = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + (CONFIG.ANGLE_MODIFIER * 1 * modifier)));
             if (desiredAngle == 6) desiredAngle = 0;
             note.desiredAngle = desiredAngle;
+            note.toReach = {
+              [note.desiredAngle]: false
+            }
+          } else if (note.shortSwipe) {
+            let modifier = -1;
+            if (note.direction == -1) modifier = 1;
+            note.desiredAngle = this.inputSystem.getSegment(this.normalizeAngle((note.angle * CONFIG.ANGLE_MODIFIER) + (CONFIG.ANGLE_MODIFIER * 2 * modifier)));
+            if (note.desiredAngle == 6) {
+              note.desiredAngle = 0;
+            }
           }
         }
       }
@@ -1632,34 +1743,27 @@ class RenderingSystem {
     if (note.swipe && !note.done) {
       this.updateSwipeHint(note, currentTime);
     }
-    // rest in peace flicks, you won't be missed
-    // else if (note.flick && !note.largeFlick) {
-    //   this.updateFlickState(note, currentTime);
-    // } else if (note.largeFlick) {
-    //   this.updateLargeFlickState(note, currentTime);
-    //   let duration = note.flickEnd - note.time;
 
-    //   const elapsed = currentTime - note.time;
+    if (note.holdable) {
+      this.updateHoldableNote(note, currentTime)
+    }
 
-    //   const progress = Math.min(Math.max(elapsed / duration, 0), 1);
-    //   duration = Math.max(duration, CONFIG.NOTE_PREVIEW_DELAY);
-    //   const preprogress = Math.min(Math.max((elapsed + duration) / duration, 0), 1);
-    //   note.traceParent.style.opacity = preprogress;
-    //   note.traceParent.style.setProperty('--progression', 1 - progress);
-    //   note.lastProgress = progress;
-    // } else if (note.holdable && note.time < currentTime) {
-    //   let isInArc0 = this.inputSystem.isInArc(note, this.gameState.rotations[0]);
-    //   let isInArc1 = this.inputSystem.isInArc(note, this.gameState.rotations[1]);
-    //   if ((isInArc0 && this.gameState.keysPressed['w']) || (isInArc1 && this.gameState.keysPressed['s'])) {
-    //     this.inputSystem.hitNote(note, isInArc0 ? 0 : 1);
-    //   }
-    // }
     this.updateRegularNotePosition(note, currentTime, noteTiming);
+  }
+
+  updateHoldableNote(note, time) {
+    if (note.time > time) return;
+    for (let [pointID, point] of this.inputSystem.points) {
+      let pointAngle = this.inputSystem.getSegment(point.angle);
+      if (pointAngle == 6) pointAngle = 0;
+      if (pointAngle == note.angle) {
+        return this.inputSystem.hitNote(note, pointID)
+      }
+    }
   }
 
   updateSwipeHint(note, time) {
     if (note.shouldBeDone && note.swipeEnd <= time) {
-      console.log('shldbed', note.swipeEnd, time)
       return this.inputSystem.swipeNote(note, null)
     };
     if (note.time - time > (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION)) return;
@@ -1676,16 +1780,64 @@ class RenderingSystem {
     let offset = Math.floor(progress * 100);
 
     if (note.halfSwipe || note.quarterSwipe) {
-      note.tracePath.style.transform = `rotate(${-offset * 1.8}deg)`;
+      if (note.quarterSwipe) {
+        note.tracePath.style.transform = `rotate(${-offset}deg)`;
+      } else {
+        note.tracePath.style.transform = `rotate(${-offset * 1.8}deg)`;
+      }
     } else {
       note.tracePath.style.translate = `0% ${-offset}%`;
     }
-    if (!note.halfSwipe) {
+    if (!note.halfSwipe && !note.quarterSwipe) {
       this.updateSwipeState(note);
     } else {
+      // this.updateRotationalSwipeState(note)
       this.updateComplexSwipeState(note);
     }
   }
+
+  angleDelta(from, to) {
+    return this.normalizeAngle(((to - from + 540) % 360) - 180);
+  }
+
+  // updateRotationalSwipeState(note) {
+  //   if (note.time - game.gameState.currentTime > CONFIG.PERMISSIVE_SWIPE_PRECHECK) return;
+
+  //   let angle1 = note.angleRange[0];
+  //   let angle2 = note.angleRange[1];
+
+  //   let foundNotePoints = note.points ? note.points : ['cursor1', 'cursor2'];
+  //   let finalNotePoints = [];
+  //   for (let i = 0; i < foundNotePoints.length; i++) {
+  //     let point = this.inputSystem.points.get(foundNotePoints[i]);
+  //     if (!point || !point.analog) continue;
+  //     let pointAngle = this.inputSystem.getSegment(point.angle);
+  //     if (pointAngle == 6) pointAngle = 0;
+
+  //     let isInRange = note.distance != -1 ? (pointAngle <= angle1 && pointAngle >= angle2) : (pointAngle >= angle1 || pointAngle <= angle2);
+  //     if (isInRange && point.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD) {
+  //       if (foundNotePoints[i].initialAngle) {
+  //         const start = foundNotePoints[i].initialAngle;
+  //         const current = point.rawAngle;
+  //         const delta = angleDelta(start, current);
+
+  //         if (note.distance !== -1 && delta > CONFIG.HALF_SWIPE_MIN_MOVEMENT) {
+  //           this.inputSystem.swipeNote(note, point);
+  //         } else if (
+  //           note.distance === -1 &&
+  //           delta < -CONFIG.HALF_SWIPE_MIN_MOVEMENT
+  //         ) {
+  //           this.inputSystem.swipeNote(note, point);
+  //         }
+
+  //       }
+  //     }
+
+  //     finalNotePoints.push(foundNotePoints[i]);
+  //   }
+
+
+  // }
 
   updateComplexSwipeState(note) {
     if (note.time - game.gameState.currentTime > CONFIG.PERMISSIVE_SWIPE_PRECHECK) return;
@@ -1820,24 +1972,20 @@ class RenderingSystem {
       currentTime = sliderStart + offset;
     }
 
-
-
-    let scale = 1; // default once scaling is done
-    let scaleStart = (sliderStart) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
-    let scaleEnd = (sliderStart) - CONFIG.NOTE_PREVIEW_DELAY;
+    let scale = 1;
+    let scaleStart = note.scaleStart;
+    let scaleEnd = note.scaleEnd;
     if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
-      // progress from 0 → 1 during the scale duration
-      let progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
-      scale = game.timingSystem.applyEasing(progress, '[0.49,0.14,0.74,0.96]');
+      scale = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
     } else if (currentTime < scaleStart) {
       scale = 0;
     } else if (!note.endedScale && currentTime > scaleEnd) {
       scale = 1;
     }
 
-    if ((Number(note.sliderEnd) + (CONFIG.ACCEPTANCE_THRESHOLD / 2)) <= currentTime) {
-      let start = Number(note.sliderEnd) + Number(CONFIG.ACCEPTANCE_THRESHOLD / 2);
-      let end = Number(note.sliderEnd) + Number(CONFIG.ACCEPTANCE_THRESHOLD);
+    if ((Number(sliderEnd) + (CONFIG.ACCEPTANCE_THRESHOLD / 2)) <= currentTime) {
+      let start = Number(sliderEnd) + Number(CONFIG.ACCEPTANCE_THRESHOLD / 2);
+      let end = Number(sliderEnd) + Number(CONFIG.ACCEPTANCE_THRESHOLD);
       note.element.style.opacity = 1 - getProgress(currentTime, start, end);
     } else if (note.element.style.opacity != 1) {
       note.element.style.opacity = 1;
@@ -1867,7 +2015,11 @@ class RenderingSystem {
   updateSliderHoldStatus(note) {
     let isBeingHeld = false;
     for (let [pointID, point] of this.inputSystem.points) {
-      if (this.inputSystem.getSegment(point.angle) == note.angle && !point.analog) isBeingHeld = true;
+      if (CONFIG.TOUCHSCREEN) {
+        if (this.inputSystem.getSegment(point.angle) == note.angle) isBeingHeld = true;
+      } else {
+        if (this.inputSystem.getSegment(point.angle) == note.angle && !point.analog) isBeingHeld = true;
+      }
     }
     if (isBeingHeld) {
       if ((note.holdableStart && !note.isBeingHeld && this.gameState.currentTime >= note.time) || (!note.isBeingHeld && note.wasEverHeld)) {
@@ -1881,28 +2033,24 @@ class RenderingSystem {
   updateRegularNotePosition(note, actualCurrentTime, timing) {
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY;
     const noteTime = note.time;
-    let timeIntoPreview;
     let currentTime = actualCurrentTime;
     if (timing?.offset != undefined) {
       currentTime = noteTime + timing.offset;
     }
 
-    const noteTravelMax = CONFIG.ADJUSTED_MAX_TRAVEL;  // Use CONTAINER_REAL_RADIUS
-    let scale = 1; // default once scaling is done
-    let scaleStart = (noteTime) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
-    let scaleEnd = (noteTime) - CONFIG.NOTE_PREVIEW_DELAY;
-    if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
-      let progress = (currentTime - scaleStart) / CONFIG.SCALE_DURATION;
-      scale = game.timingSystem.applyEasing(progress, '[0.49,0.14,0.74,0.96]');
-    } else if (currentTime < scaleStart) {
+    let scale = 1;
+    if (currentTime > note.scaleStart && currentTime < note.scaleEnd) {
+      scale = (currentTime - note.scaleStart) / CONFIG.SCALE_DURATION;
+    } else if (currentTime < note.scaleStart) {
       scale = 0;
-    } else if (!note.endedScale && currentTime > scaleEnd) {
+    } else if (currentTime > note.scaleEnd) {
       scale = 1;
     }
 
-    if ((Number(note.time) + (CONFIG.ACCEPTANCE_THRESHOLD / 2)) <= currentTime) {
-      let start = Number(note.time) + Number(CONFIG.ACCEPTANCE_THRESHOLD / 2);
-      let end = Number(note.time) + Number(CONFIG.ACCEPTANCE_THRESHOLD);
+    let opacityThreshold = noteTime + (CONFIG.ACCEPTANCE_THRESHOLD / 2);
+    if (opacityThreshold <= currentTime) {
+      let start = opacityThreshold;
+      let end = noteTime + CONFIG.ACCEPTANCE_THRESHOLD;
       note.element.style.opacity = 1 - getProgress(currentTime, start, end);
     } else if (note.element.style.opacity != 1) {
       note.element.style.opacity = 1;
@@ -1910,20 +2058,14 @@ class RenderingSystem {
 
     note.element.style.transform = `scale(${scale})`;
 
-
-    timeIntoPreview = Math.min(
-      ((noteTime - currentTime) / previewDelay) * noteTravelMax,
-      noteTravelMax
-    );
-
     if (note.hint) {
-      note.hint.style.scale = getProgress(currentTime + previewDelay, noteTime, noteTime + previewDelay);
+      note.hint.style.scale = Math.min(1.1, getProgress(currentTime + previewDelay, noteTime, noteTime + previewDelay));
     }
 
-    const newTranslate = `0px ${timeIntoPreview * -1}px`;
-    if (note.element.style.translate !== newTranslate) {
-      note.element.style.translate = newTranslate;
-    }
+    note.element.style.translate = `0px ${Math.min(
+      ((noteTime - currentTime) / previewDelay) * CONFIG.ADJUSTED_MAX_TRAVEL,
+      CONFIG.ADJUSTED_MAX_TRAVEL
+    ) * -1}px`;
   }
 
   cleanupFailedNotes(currentTime) {
@@ -1942,6 +2084,8 @@ class RenderingSystem {
 
         this.gameState.combo = 0;
         this.gameState.scoringSystem.updateComboDisplay();
+
+        this.gameState.scoringPad.miss.push(CONFIG.ACCEPTANCE_THRESHOLD)
 
         this.createFailedHoldEffect(note);
       }
@@ -1983,14 +2127,10 @@ class ScoringSystem {
     this.gameState = gameState;
   }
 
-  increaseScore(amount) {
-    this.gameState.score += Number(amount) * Math.max(Math.min(8, this.gameState.combo), 1);
-  }
-
   judge(noteTime, affectCombo = true, note, timeOverwrite = null) {
     if (!timeOverwrite) timeOverwrite = this.gameState.currentTime;
-    if (note?.slider) return
-    const currentTime = timeOverwrite;
+    const currentTime = timeOverwrite - (CONFIG.AUDIO_OFFSET || 0);
+
     const difference = Math.abs(noteTime - currentTime);
 
     let accuracy = 'miss';
@@ -2001,8 +2141,6 @@ class ScoringSystem {
       }
     }
 
-    let score = CONFIG.ACCURACY_SCORES[accuracy] || 0;
-    this.increaseScore(score);
     if (affectCombo) {
       if (difference > 200 || isNaN(difference)) {
         this.gameState.combo = 0;
@@ -2011,11 +2149,12 @@ class ScoringSystem {
       }
       this.updateComboDisplay();
     }
+    this.gameState.scoringPad[accuracy].push(noteTime - currentTime);
 
     this.gameState.elements.perfectionIndicator.style.backgroundImage = `url('./Assets/Scoring/${accuracy}.svg')`;
     this.gameState.elements.perfectionIndicator.style.animationName = 'none'
     requestAnimationFrame(() => { this.gameState.elements.perfectionIndicator.style.animationName = null });
-    this.gameState.scoringPad[accuracy].push(noteTime - currentTime);
+    if (note?.slider) return;
     try {
       this.gameState.playHitSound(note)
     } catch (error) { console.log(error) }
@@ -2060,19 +2199,43 @@ class RhythmGame {
   }
 
   async init() {
+    if (this.gameState?.ready) await this.gameState.ready;
+
     let audioPaths = {
       'hit': './Assets/hit_normal.mp3',
-      'flick': './Assets/flick.mp3',
-      'golden': './Assets/golden_hit.mp3',
+      'golden': './Assets/hit_golden.mp3',
       'holdable': './Assets/hit_holdable.mp3'
     };
 
     this.gameState.loadedAudios = {};
-    for (let type in audioPaths) {
-      const data = fs.readFileSync(audioPaths[type]);
-      const arrayBuffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
-      let hitSoundBuffer = await game.gameState.audioContext.decodeAudioData(arrayBuffer);
-      this.gameState.loadedAudios[type] = hitSoundBuffer;
+    if (!isAndroid) {
+      // Desktop: Read from file system
+      for (let type in audioPaths) {
+        const data = fs.readFileSync(audioPaths[type]);
+        const arrayBuffer = data.buffer.slice(data.byteOffset, data.byteOffset + data.byteLength);
+        let hitSoundBuffer = await game.gameState.audioContext.decodeAudioData(arrayBuffer);
+        this.gameState.loadedAudios[type] = hitSoundBuffer;
+      }
+    } else {
+      // Android: Fetch from server
+      const SERVER_URL = 'http://192.168.100.235:5500';
+      for (let type in audioPaths) {
+        try {
+          // build correct URL (audioPaths like "./Assets/hit_normal.mp3")
+          const url = `${SERVER_URL}/${audioPaths[type].replace(/^\.?\//, '')}`;
+          const response = await fetch(url);
+          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+          const arrayBuffer = await response.arrayBuffer();
+          try {
+            const hitSoundBuffer = await game.gameState.audioContext.decodeAudioData(arrayBuffer);
+            this.gameState.loadedAudios[type] = hitSoundBuffer;
+          } catch (decodeErr) {
+            console.error(`decodeAudioData failed for ${type}:`, decodeErr);
+          }
+        } catch (error) {
+          console.error(`Failed to fetch ${type} sound:`, error);
+        }
+      }
     }
 
     // Start game loop now that audio is ready
@@ -2103,7 +2266,7 @@ class RhythmGame {
       determinedBuffer = this.gameState.loadedAudios['holdable']
     }
     source.buffer = determinedBuffer;
-    source.connect(this.gameState.audioContext.destination);
+    source.connect(this.gameState.sfxGainNode);
     source.start();
   }
 
@@ -2130,6 +2293,7 @@ class RhythmGame {
       requestAnimationFrame(gameLoop);
     };
 
+    // return this.endGame();
     requestAnimationFrame(gameLoop);
   }
 
@@ -2186,17 +2350,66 @@ class RhythmGame {
       document.getElementById('buttons').remove();
       this.gameState.elements.controls.classList.add('end_controls');
       document.getElementById('gradeParent').classList.add('end_gradeParent');
+      document.getElementById('gradeParent').innerHTML = `
+        <div id="scoreCard">
+        <div id="grade"></div>
+        <btextm id="scoreText">SCORE</btextm>
+        <btextm id="scoreNumber" class="flexbox"></btextm>
+        <btextm id="scoreComparison"></btext>
+      </div>
+      <div id="lowerScoreContainer">
+
+        <br>
+        <div id="scoreStats"></div>
+        <br>
+        <div id="songProcedureControls"></div>
+      </div>`
     }, CONFIG.LONG_ANIMATION);
     setTimeout(() => {
+
       this.gameState.elements.controls.style.opacity = 1;
       this.gameState.elements.controls.style.scale = 1;
-      this.gameState.elements.scoreText.classList.add('end_scoreText');
-      this.gameState.elements.scoreNumber.classList.add('end_scoreNumber');
+      document.getElementById('scoreText').classList.add('end_scoreText');
+      document.getElementById('scoreNumber').classList.add('end_scoreNumber');
       let scoreStats = document.getElementById('scoreStats');
-      let totalNotesHit = this.gameState.scoringPad.perfect.length + this.gameState.scoringPad.great.length + this.gameState.scoringPad.ok.length + this.gameState.scoringPad.bad.length;
-      let totalNotes = this.gameState.sheet.length;
+
+      let score = 0;
+      score += this.gameState.scoringPad.perfect.length * 1000;
+      score += this.gameState.scoringPad.great.length * 500;
+      score += this.gameState.scoringPad.ok.length * 100;
+      score += this.gameState.scoringPad.bad.length * 50;
+      score += this.gameState.scoringPad.miss.length * 0;
+      this.gameState.score = score;
+
+      let toCount = [];
+      for (let i = 0; this.gameState.scoringPad.perfect[i]; i++) toCount.push(100);
+      for (let i = 0; this.gameState.scoringPad.great[i]; i++) toCount.push(90);
+      for (let i = 0; this.gameState.scoringPad.ok[i]; i++) toCount.push(50);
+      for (let i = 0; this.gameState.scoringPad.bad[i]; i++) toCount.push(10);
+      for (let i = 0; this.gameState.scoringPad.miss[i]; i++) toCount.push(0);
+
+      let sum = 0; for (let i = 0; i < toCount.length; i++) { sum += toCount[i]; }
+      let accuracy = Math.round(sum / toCount.length);
+
+      let grade;
+      if (accuracy == 100) {
+        grade = 'FC'
+      } else if (accuracy > 97) {
+        grade = 'SS+'
+      } else if (accuracy > 92) {
+        grade = 'SS'
+      } else if (accuracy > 80) {
+        grade = 'A'
+      } else if (accuracy > 70) {
+        grade = 'B'
+      } else if (accuracy > 40) {
+        grade = 'C'
+      } else {
+        grade = 'F'
+      }
+
       scoreStats.innerHTML = `
-      <btext id="hitCounts"><span>${(totalNotesHit / totalNotes) * 100}%</span> <span>${totalNotesHit}/${totalNotes}</span></btext> • 
+      <btext id="hitCounts"><span>${accuracy}%</span></btext> • 
       <btext id="maxCombo"><span>Max Combo</span> <span>Unknown</span></btext>
       <br>
         <div class="scoreIndicator flexbox perfect"><div class="label">PERFECT</div><div class="count">${this.gameState.scoringPad.perfect.length}</div></div>
@@ -2205,12 +2418,53 @@ class RhythmGame {
         <div class="scoreIndicator flexbox bad"><div class="label">BAD</div><div class="count">${this.gameState.scoringPad.bad.length}</div></div>
         <div class="scoreIndicator flexbox miss"><div class="label">MISS</div><div class="count">${this.gameState.scoringPad.miss.length}</div></div>
       `
-      document.getElementById('grade').innerHTML = `
-      <btextm style="color: var(--perfect); border-color: var(--perfect);">A</btextm>
+
+      let scoreLength = `${score}`.length;
+      let characters = 18;
+      let emptyCharacters = characters - scoreLength;
+      document.getElementById('scoreNumber').innerHTML = `
+          <div id="unusedScoreNumbers">${'0'.repeat(emptyCharacters)}</div>
+          <div id="usedScoreNumbers">${score}</div>
       `
 
+      let highScore = `${Math.floor(Math.random() * 100) + 10}💀`;
+      if (fs.existsSync(`./Config/Records/${this.gameState.crossDetails.location}/${this.gameState.crossDetails.map}`)) {
+        let highScoreFile = fs.readFileSync(`./Config/Records/${this.gameState.crossDetails.location}/${this.gameState.crossDetails.map}`, 'utf8');
+        highScore = highScoreFile.toString();
+      }
+      let magicNumber = highScore.slice(0, 2);
+      highScore = highScore.slice(2, highScore.length);
+      let encryption = {
+        "💀": 0,
+        "$‸": 1,
+        "(^///^) ~ 💗": 2,
+        "DS": 3,
+        "SHA": 4,
+        [magicNumber]: 5,
+        "C0": 6,
+        "HEX": 7,
+        "INT": 8,
+        "192": 9,
+      }
+
+      for (let identifier in encryption) {
+        if (highScore.includes(identifier)) {
+          highScore = highScore.replaceAll(identifier, encryption[identifier]);
+        }
+      }
+
+      let scoreComparison = document.getElementById('scoreComparison');
+      let scoreDiff = Math.abs(score - highScore);
+      if (highScore > score && highScore != 0) {
+        scoreComparison.innerHTML = ``
+      }
+
+      document.getElementById('grade').style.backgroundImage = `url('../Assets/Scoring/${grade}.svg')`;
+
+      document.getElementById('scoreCard').innerHTML += `
+            <btn class="controller_selectable">Replay</btn>
+      `
       document.getElementById('songProcedureControls').innerHTML = `
-      <btn class="controller_selectable">Replay</btn>
       <btn class="controller_selectable" onclick="location.href = '../Picker/LevelPicker.html'">Home</btn>
       `
     }, CONFIG.LONG_ANIMATION * 2);

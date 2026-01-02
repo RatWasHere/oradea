@@ -4,6 +4,8 @@ body {
   background-repeat: none !important;
   background-image: url('../Assets/bg.png');
   overflow: hidden !important;
+  width: 100vw;
+  height: 100vh;
 }
 
 @keyframes bgmodify {
@@ -436,7 +438,7 @@ body {
 }
 
 .header.end {
-  background: url('../Assets/Headers/Bottom.svg');
+  background: var(--sliderBottom);
   transform-origin: top;
   transform: translateY(-1px);
 }
@@ -444,7 +446,7 @@ body {
 .hint {
   content: '';
   width: 740px;
-  height: 740px;
+  height: 370px;
   bottom: 50;
   left: -315px;
   position: absolute;
@@ -454,21 +456,23 @@ body {
   background: url('../Assets/Playfield/sync_frame.svg') no-repeat center/cover;
   image-rendering: optimizeSpeed;
   display: block;
-  will-change: transform;
-  contain: layout paint size;
+  will-change: scale;
+  contain: layout size;
 }
 
-.end>.hint {}
+.end>.hint {
+  background-image: url('../Assets/Playfield/sync_frame_hold.svg') !important;
+}
 
 .header.start {
-  background: url('../Assets/Headers/Top.svg');
+  background: var(--sliderTop);
   margin-top: auto;
   transform-origin: bottom;
   transform: translateY(1px);
 }
 
 .header.midframe {
-  background: url(../Assets/Headers/Frame.svg);
+  background: var(--sliderFrame);
   height: var(--note-radius) !important;
   background-size: var(--note-radius) var(--note-radius) !important;
   background-repeat: repeat-y !important;
@@ -627,7 +631,7 @@ btn {
   background: #FFFFFF20;
   transition: all ease .07s;
   position: initial;
-  width: auto;
+  width: fit-content;
   padding: 5px;
   padding-left: 7px;
   padding-right: 7px;
@@ -637,6 +641,9 @@ btn {
   backdrop-filter: blur(12px);
 }
 
+#buttons > btn > .image {
+  margin: 0px !important;
+}
 btn:has(.image) {
   padding-left: 5px;
   padding-right: 5px;
@@ -756,7 +763,6 @@ btn:active {
   border-radius: 100%;
   pointer-events: none;
   mask-image: conic-gradient(from 90deg at 50% 50%, var(--bg) 0deg, var(--bg) 60deg, transparent 60deg);
-  z-index: 1;
   background-size: var(--raw-size);
   background-position: 600px 600px;
   rotate: -90deg;
@@ -1005,7 +1011,7 @@ btn:active {
 .lane:has(.aura.golden) {
   margin-left: 0px;
   width: 100%;
-  clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%);
+  /* clip-path: polygon(20% 0%, 80% 0%, 100% 100%, 0% 100%); */
   opacity: 0.4;
   filter: blur(12px);
   mask: conic-gradient(white 0deg, white 60deg, transparent 60deg);
@@ -1248,6 +1254,8 @@ a {
   width: var(--raw-size);
   height: var(--raw-size);
   transition: all var(--long) ease;
+  margin: auto;
+  contain: layout size style;
 }
 
 #noteContainerFrame {
@@ -1256,7 +1264,7 @@ a {
 
   background: url('../Assets/Playfield/frame.svg');
   background-size: cover !important;
-  position: fixed;
+  position: absolute;
   transition: all var(--long) ease;
 
   /* animation: hit 0.5s ease; */
@@ -1294,12 +1302,23 @@ a {
   margin-right: auto;
   height: 100%;
   background-size: cover;
-  will-change: translate;
+  will-change: translate transform;
   opacity: 0;
 }
 
 .trace-normal {
   background-image: url('../Assets/Headers/Trace.svg');
+  background-repeat: no-repeat;
+}
+
+.trace-short {
+  width: 370px;
+  height: 740px;
+  margin-right: 0px;
+  transform-origin: left;
+  background-image: url('../Assets/Headers/Trace\ Short.svg');
+  background-size: cover;
+  background-position: center;
   background-repeat: no-repeat;
 }
 
@@ -1309,6 +1328,17 @@ a {
   margin-right: 0px;
   transform-origin: left;
   background-image: url('../Assets/Headers/Trace\ Curved\ 180deg.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.trace-quarter {
+  width: 370px;
+  height: 740px;
+  margin-right: 0px;
+  transform-origin: left;
+  background-image: url('../Assets/Headers/Trace\ Curved\ 90deg.svg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
@@ -1331,6 +1361,19 @@ a {
   mask-image: linear-gradient(to right,
       transparent 56%,
       black 57%,
+      black 100%);
+}
+.trace-parent:has(.trace-quarter) {
+  mask-image: linear-gradient(150deg,
+      transparent 55%,
+      black 58%,
+      black 100%);
+}
+
+.trace-parent:has(.trace-short) {
+  mask-image: linear-gradient(210deg,
+      transparent 22%,
+      black 23%,
       black 100%);
 }
 
@@ -1357,27 +1400,18 @@ a {
   background-image: url('../Assets/Headers/Trace\ Curved\ 180deg.svg');
 }
 
+.permissive-swipe.trace-short::before {
+  background-image: url('../Assets/Headers/Trace\ Short.svg');
+}
+
+.permissive-swipe.trace-quarter::before {
+  background-image: url('../Assets/Headers/Trace\ Curved\ 90deg.svg');
+}
+
 .trace-negative {
   /* scale: 0.78 -0.78; */
 }
 
-.trace-2 {
-  /* --progression: 0; */
-  background: url('../Assets/Headers/Short\ Flick\ Straight.svg') no-repeat;
-  /* clip-path: inset(calc(var(--progression) * 100%) 0 0 0); */
-  height: calc(var(--progression) * 100%);
-  will-change: height;
-  /* mask: linear-gradient(to to p, black calc(var(--progression) * 1%), transparent 0%) no-repeat cover; */
-}
-
-.trace-3 {
-  /* --progression: 0; */
-  background: url('../Assets/Headers/Long\ Flick\ Straight.svg') no-repeat;
-  /* clip-path: inset(calc(var(--progression) * 100%) 0 0 0); */
-  height: calc(var(--progression) * 100%);
-  will-change: height;
-  /* mask: linear-gradient(to to p, black calc(var(--progression) * 1%), transparent 0%) no-repeat cover; */
-}
 
 @keyframes fade_in {
   0% {
@@ -1390,9 +1424,9 @@ a {
 }
 
 #overlay {
-  width: 100vw;
-  height: 100vh;
-  display: block;
+  width: 100%;
+  height: 100%;
+  /* display: block; */
   backdrop-filter: blur(100px);
   background: #000000b4;
   position: absolute;
@@ -1412,16 +1446,6 @@ a {
     background: #000000b4;
   }
 }
-
-/* 
-a {
-  z-index: 10000;
-  position: relative;
-}
-
-.quickLink {
-  display: inline-block;
-} */
 
 #perfectionIndicator {
   margin: auto;
@@ -1491,6 +1515,7 @@ a {
   z-index: 1000;
   height: 0px;
   transition: all var(--longer) ease;
+  contain: paint layout content;
 }
 
 
@@ -1514,7 +1539,7 @@ a {
   margin-right: 10px;
 }
 
-#scoreText {
+#scoreText, #scoreComparison {
   margin-left: 4px;
   margin-right: 0px;
   margin-bottom: 0px;
@@ -1525,17 +1550,18 @@ a {
   text-shadow: #FFFFFF30 0px 0px 6px;
   opacity: 0.5;
   font-family: 'Mono';
+  position: absolute;
+  bottom: 105px;
+}
+
+#scoreComparison {
+  bottom: unset;
 }
 
 btn:has(.pause) {
   box-shadow: #FFFFFF10 0px 0px 5px 4px;
 }
 
-#scoreCard {
-  margin-top: 0px;
-  margin-bottom: auto;
-  width: 100%;
-}
 
 #scoreNumber {
   background: #FFFFFF10;
@@ -1548,6 +1574,8 @@ btn:has(.pause) {
   font-size: 25px;
   font-family: 'Mono';
   width: calc(100% - 16px);
+  position: absolute;
+  bottom: 73px;
 }
 
 #scoreNumber>#unusedScoreNumbers {
@@ -1575,8 +1603,11 @@ btn:has(.pause) {
 }
 
 #topLevelContainer {
-  margin-left: calc(50vw - var(--raw-size) / 2);
-  margin-top: calc(50vh - var(--raw-size) / 2);
+  /* margin-left: calc(50vw - var(--raw-size) / 2);
+  margin-top: calc(50vh - var(--raw-size) / 2); */
+  margin: auto;
+  width: 100%;
+  height: 100%;
   transition: all var(--long) ease;
 }
 
@@ -1756,12 +1787,18 @@ difficulty {
 }
 
 #grade {
-  width: 100%;
+  width: 400px;
+  margin-left: 150px !important;
+  height: 400px !important;
+  margin: auto;
   border-radius: 5px;
-  margin-top: 0px;
   display: block;
+  margin-top: -37px;
   height: fit-content;
+  background-size: cover;
+  background-position: center;
 }
+
 
 #grade>btextm {
   font-family: 'Modern';
@@ -1803,27 +1840,35 @@ difficulty {
   height: fit-content;
 }
 
-#songProcedureControls>btn {
+#songProcedureControls>btn, #scoreCard>btn {
   text-align: center;
   font-family: 'Moderno';
   padding: 10px;
+  font-size: 25px;
   width: calc(100% - 20px);
 }
 
-#songProcedureControls>btn:nth-child(1) {
-  font-size: 20px;
-  margin-bottom: 10px;
-  opacity: 0.67;
-}
 
-#songProcedureControls>btn:nth-child(2) {
-  font-size: 25px;
+#scoreCard > btn {
+  margin-right: auto;
+  opacity: 0.67;
+  position: absolute;
+  bottom: 0;
 }
 
 #lowerScoreContainer {
   margin-top: auto;
-  width: 100%;
+  width: 400px;
 }
+#scoreCard {
+  margin-top: 0px;
+  margin-bottom: auto;
+  position: relative;
+  width: 290px;
+  margin-right: auto;
+  height: 100%;
+}
+
 
 @keyframes procedureButtonCue {
   0% {
@@ -1840,10 +1885,10 @@ difficulty {
 }
 
 #gradeParent {
-  width: 500px;
-  height: 730px;
+  width: 700px;
+  height: 700px;
   margin: auto;
-  margin-top: calc((100vh - 800px) / 2);
+  margin-top: calc((100vh - 735px) / 2);
   margin-left: 0px;
   padding: 10px;
   border-radius: 10px;
@@ -1970,3 +2015,12 @@ select {
   margin: auto;
   margin-top: 20px;
 }
+
+#buttons {
+  margin-right: auto;
+}
+
+.noteContainer, .lane, .item {
+  contain: layout style;
+}
+

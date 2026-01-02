@@ -77,11 +77,13 @@ btn.exiting {
   height: fit-content;
   font-size: 30px;
   margin-top: 15px;
+  width: 460px;
 }
 
 #buttons-container {
   margin-top: calc(50vh + 50px);
 }
+
 
 @keyframes noteDemonstration {
   0% {

@@ -17,3 +17,8 @@
 .mainland_china {
   transition: all 0.4s ease;
 }
+
+#additional {
+  margin-top: 3px;
+  margin-bottom: 10px;
+}

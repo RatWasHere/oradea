@@ -1,12 +1,18 @@
 const electron = require('electron');
 const fs = require('fs');
 const { BrowserWindow, app, screen } = require('electron');
+app.commandLine.appendSwitch('disable-http-cache');
+app.commandLine.appendSwitch('disable-background-timer-throttling');
+app.commandLine.appendSwitch('disable-renderer-backgrounding');
+app.commandLine.appendSwitch('disable-component-extensions-with-background-pages');
+app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
+
 var client;
 var workshop;
 try {
-  const steamworks = require('steamworks.js');
-  var client = steamworks.init(3994990);
-  var workshop = client.workshop;
+  // const steamworks = require('steamworks.js');
+  // var client = steamworks.init(3994990);
+  // var workshop = client.workshop;
   // client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, 'Search Workshop', '', 256, false);
 } catch (error) { }
 
@@ -40,9 +46,9 @@ app.on('ready', () => {
     },
   });
   window.setMenuBarVisibility(false);
+  window.setFullScreen(settings.screen_state)
 
   function updateScreenState(state) {
-    return
     if (state == 'full' || state == undefined) {
       window.setFullScreen(true);
     } else if (state == 'maximized') {
@@ -153,7 +159,7 @@ app.on('ready', () => {
   }
 
   var settings;
-  electron.ipcMain.on('openSettings', () => {
+  electron.ipcMain.on('openSettings', (event, options) => {
     let width = 900;
     let height = 600;
     settings = new BrowserWindow({
@@ -178,10 +184,17 @@ app.on('ready', () => {
 
     createHexaPreview();
 
-    settings.loadFile('./Settings/settings.html');
+    if (options?.calibrate) {
+      settings.loadFile('./Settings/calibration.html');
+    } else {
+      settings.loadFile('./Settings/settings.html');
+    }
     setTimeout(() => {
       settings.focus();
     }, 100);
+    settings.on('ready-to-show', () => {
+      settings.webContents.send('')
+    });
     electron.ipcMain.once('closeSettings', () => {
       try {
         window.focus()
@@ -211,6 +224,51 @@ app.on('ready', () => {
     // window.webContents.openDevTools();
   });
 });
+
+electron.ipcMain.on('privacy', () => {
+  let privacyWindow = new BrowserWindow({
+    height: 600,
+    width: 600,
+    resizable: false,
+    movable: false,
+    center: true,
+    frame: false,
+    modal: true,
+    parent: window,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      spellcheck: false
+    }
+  });
+  privacyWindow.loadFile('./Legal/privacy.html');
+  electron.ipcMain.once('closePrivacy', () => {
+    privacyWindow.close();
+  })
+});
+electron.ipcMain.on('tos', () => {
+  let termsWindow = new BrowserWindow({
+    height: 600,
+    width: 600,
+    resizable: false,
+    movable: false,
+    center: true,
+    frame: false,
+    modal: true,
+    parent: window,
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      spellcheck: false
+    }
+  });
+  termsWindow.loadFile('./Legal/terms.html');
+  electron.ipcMain.once('closeTerms', () => {
+    termsWindow.close();
+  })
+});
+
+
 const { dialog } = require('electron')
 
 electron.ipcMain.on('uploadFolder', () => {
@@ -377,3 +435,4 @@ electron.ipcMain.on('uploadFolder', () => {
 // }, 1000);
 
 // steamworks.electronEnableSteamOverlay();
+

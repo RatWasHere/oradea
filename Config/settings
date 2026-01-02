@@ -1,12 +1,12 @@
 {
-  "note_speed": 15.6,
-  "hexagon_size": "1",
-  "input_mode": "buttons",
+  "note_speed": 16,
+  "hexagon_size": "1.1",
+  "input_mode": "keyboard",
   "snap_extension": "0",
   "default_screen_state": "full",
   "frame_cap": "auto",
-  "screen_state": "windowed",
-  "audio_offset": "0",
+  "screen_state": "full",
+  "audio_offset": "10",
   "music_volume": "100",
   "sfx_volume": "100",
   "flashing_lights": "1",
@@ -16,5 +16,6 @@
   "geometrical": "",
   "note_hint": "1",
   "noteDesign": "geometrical",
-  "holdNoteDesign": "geometrical"
+  "holdNoteDesign": "geometrical",
+  "offset": 71
 }
