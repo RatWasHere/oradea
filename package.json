@@ -48,7 +48,7 @@
     },
     "nsis": {
       "oneClick": true,
-      "uninstallDisplayName": "Uninstall Bot Maker For Discord"
+      "uninstallDisplayName": "Uninstall Oradea"
     },
     "directories": {
       "output": "Release/${platform}"
