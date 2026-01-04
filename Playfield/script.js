@@ -72,7 +72,7 @@ const CONFIG = {
 
   DIFFICULTY_MAP: {
     1: "Easy",
-    2: "Normal",
+    2: "Medium",
     3: "Hard",
     4: "Expert",
   },
@@ -158,6 +158,7 @@ class GameState {
       document.getElementById('difficulty').innerHTML = `${CONFIG.DIFFICULTY_MAP[this.crossDetails.difficulty]} - ${this.information.ratings[this.crossDetails.difficulty]}`;
       document.getElementById('difficultyTag').classList.add(CONFIG.DIFFICULTY_MAP[this.crossDetails.difficulty].toLowerCase());
       this.combo = 0;
+      this.maxCombo = 0;
       this.score = 0;
 
       CONFIG.AUDIO_OFFSET = getSetting('audio_offset', 0);
@@ -208,9 +209,6 @@ class GameState {
       let determinedTime = lastNote.time;
       if (lastNote.slider) {
         determinedTime = lastNote.sliderEnd;
-      }
-      if (lastNote.largeFlick) {
-        determinedTime = lastNote.flickEnd;
       }
       this.endsAt = determinedTime + CONFIG.ACCEPTANCE_THRESHOLD;
 
@@ -895,11 +893,10 @@ class InputSystem {
     }
     const noteEndAverage = (game.gameState.currentTime + note.swipeEnd) / 2;
     this.gameState.scoringSystem.judge(noteEndAverage, true);
-    game.inputSystem.vibrate('STRONG')
     note.done = true;
     this.createNoteAura(note).then(() => {
       note.traceParent.remove();
-      note.element.parentElement.parentElement.parentElement.remove();
+      note.element.parentElement.parentElement.remove();
     })
   }
 
@@ -1040,8 +1037,6 @@ class InputSystem {
         this.releaseSlider(note);
       } else if (note.swipe) {
         this.swipeNote(note)
-      } else if (!note.slider && !note.flick && !note.largeFlick && !note.done) {
-        this.hitNote(note, 1);
       }
     });
   }
@@ -1282,9 +1277,11 @@ class InputSystem {
 
   holdSlider(note) {
     note.isBeingHeld = true;
-    note.wasEverHeld = true;
     this.createNoteAura(note);
-    this.gameState.scoringSystem.judge(note.time);
+    if (!note.wasEverHeld) {
+      note.wasEverHeld = true;
+      this.gameState.scoringSystem.judge(note.time);
+    }
   }
 
   releaseSlider(note) {
@@ -1297,7 +1294,7 @@ class InputSystem {
       this.gameState.scoringSystem.judge(note.sliderEnd, true, note);
       this.vibrate(2);
       this.createHoldEffect(note);
-      note.element.parentElement.parentElement.parentElement.remove();
+      note.element.parentElement.parentElement.remove();
     } else {
       note.element.style.opacity = '0.5';
       note.element.style.scale = '1';
@@ -1319,7 +1316,7 @@ class InputSystem {
     }
 
     this.createNoteAura(note).then(() => {
-      note.element.parentElement.parentElement.parentElement.remove();
+      note.element.parentElement.parentElement.remove();
     });
   }
 
@@ -1410,20 +1407,11 @@ class InputSystem {
 
   createHoldEffect(note, failed = false) {
     if (failed) {
-    } else if (note.flickDirection) {
-      note.element.style.setProperty('--t', `${Math.max(100, this.gameState.currentTime - note.flickMoment)}ms`);
-      note.element.classList.add('flicked');
-      if (this.gameState.gamepad) {
-        this.vibrate(2);
-      }
-      setTimeout(() => {
-        note.element.parentElement.parentElement.parentElement.remove();
-      }, 500);
     }
-
   }
 
   vibrate(kind) {
+    return
     let settings = {
       w: 1,
       s: 1,
@@ -1542,8 +1530,8 @@ class RenderingSystem {
     const lane = document.createElement('div');
     lane.classList.add('lane');
 
-    const laneParent = document.createElement('div');
-    laneParent.classList.add('laneParent');
+    // const laneParent = document.createElement('div');
+    // laneParent.classList.add('laneParent');
 
     const noteContainer = document.createElement('div');
     noteContainer.classList.add('noteContainer')
@@ -1558,8 +1546,8 @@ class RenderingSystem {
       noteContainer
     });
 
-    laneParent.appendChild(lane);
-    this.gameState.elements.container.appendChild(laneParent);
+    // laneParent.appendChild(lane);
+    this.gameState.elements.container.appendChild(lane);
 
     // Set note reference
     note.element = noteElement;
@@ -1622,14 +1610,7 @@ class RenderingSystem {
       noteElement.style.translate = `0px`;
 
       const header = document.createElement('div');
-      if (!note.flick) {
-        header.classList.add('header');
-      } else {
-        header.classList.add('flick_arrows');
-        if (note.fromSlider) {
-          header.classList.add('from_slider');
-        }
-      }
+      header.classList.add('header');
       noteElement.appendChild(header);
 
       if (!note.swipe) {
@@ -2051,7 +2032,7 @@ class RenderingSystem {
 
       if (note.element && !note.done && note.time < currentTime && this.hasFailed(note, currentTime)) {
         if (note.element) {
-          note.element.parentElement.parentElement.parentElement.remove();
+          note.element.parentElement.parentElement.remove();
         }
         if (note.traceParent) {
           note.traceParent.remove();
@@ -2081,9 +2062,8 @@ class RenderingSystem {
       return failed;
     }
 
-    const failTime = note.flickEnd || note.failTime || note.time;
+    const failTime = note.failTime || note.time;
     let acceptance = CONFIG.ACCEPTANCE_THRESHOLD;
-    if (note.flick) acceptance = CONFIG.FLICK_ACCEPTANCE_THRESHOLD;
     return (currentTime - failTime) > acceptance;
   }
 
@@ -2123,6 +2103,9 @@ class ScoringSystem {
         this.gameState.combo = 0;
       } else {
         this.gameState.combo++;
+        if (this.gameState.combo > this.gameState.maxCombo) {
+          this.gameState.maxCombo = this.gameState.combo;
+        }
       }
       this.updateComboDisplay();
     }
@@ -2233,9 +2216,6 @@ class RhythmGame {
   playHitSound(note) {
     const source = this.gameState.audioContext.createBufferSource();
     let determinedBuffer = this.gameState.loadedAudios['hit'];
-    if (note?.flick) {
-      determinedBuffer = this.gameState.loadedAudios['flick'];
-    }
     if (note?.golden) {
       determinedBuffer = this.gameState.loadedAudios['golden']
     }
@@ -2316,6 +2296,11 @@ class RhythmGame {
   }
 
   endGame() {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href = './scorescreen.css';
+    document.head.appendChild(link);
+
     this.gameState.elements.controls.style.opacity = 0;
     this.gameState.elements.controls.style.scale = 0.9;
     this.gameState.ended = true;
@@ -2391,7 +2376,7 @@ class RhythmGame {
 
       scoreStats.innerHTML = `
       <btext id="hitCounts"><span>${accuracy}%</span></btext> • 
-      <btext id="maxCombo"><span>Max Combo</span> <span>Unknown</span></btext>
+      <btext id="maxCombo"><span>Max Combo</span> <span>${maxCombo}</span></btext>
       <br>
         <div class="scoreIndicator flexbox perfect"><div class="label">PERFECT</div><div class="count">${this.gameState.scoringPad.perfect.length}</div></div>
         <div class="scoreIndicator flexbox great"><div class="label">GREAT</div><div class="count">${this.gameState.scoringPad.great.length}</div></div>

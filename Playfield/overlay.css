@@ -1,0 +1,264 @@
+/* PLAY OVERLAY  >>> */
+
+.center {
+  --size: var(--note-radius);
+  width: var(--size);
+  aspect-ratio: 1;
+  border-radius: var(--size);
+  z-index: 500;
+  background: #000000;
+  position: absolute;
+  translate: 315px 315px
+    /* calc(var(--raw-size) / 2 - var(--size) / 2) calc(var(--raw-size) / 2 - var(--size) / 2) */
+  ;
+}
+
+#comboDisplay {
+  font-size: 35px;
+  color: #ffffff;
+  margin: auto;
+  display: block;
+  align-self: center;
+  justify-self: center;
+  text-align: center;
+  animation: combo var(--long) ease;
+  font-family: 'Mono';
+  font-weight: 500;
+  margin-top: -6px;
+}
+
+#comboText {
+  font-family: 'Modern';
+  font-weight: 100;
+}
+
+
+.frame {
+  --frame-size: calc(var(--inner-container-size) + var(--frame-tolerance));
+  width: var(--frame-size);
+  height: var(--frame-size);
+  background: url(../Assets/Playfield/frame.svg);
+  background-size: cover;
+  margin-left: calc((var(--raw-size) - var(--frame-size)) / 2);
+  margin-top: calc((var(--raw-size) - var(--frame-size)) / 2);
+  position: absolute;
+  transform-origin: bottom;
+}
+
+#centerContainer {
+  background: url('../Assets/Playfield/frame_in.svg');
+  background-size: cover !important;
+}
+
+
+#noteContainer {
+  /* scale: 1.2; */
+  opacity: 1 !important;
+  width: var(--raw-size);
+  height: var(--raw-size);
+  transition: all var(--long) ease;
+  margin: auto;
+  contain: layout size style;
+}
+
+#noteContainerFrame {
+  width: var(--raw-size);
+  height: var(--raw-size);
+
+  background: url('../Assets/Playfield/frame.svg');
+  background-size: cover !important;
+  position: absolute;
+  transition: all var(--long) ease;
+
+  /* animation: hit 0.5s ease; */
+}
+
+
+#perfectionIndicator {
+  margin: auto;
+  width: 300px;
+  height: 80px;
+  background-size: cover;
+  background-repeat: none;
+  animation: show_scoring 0.25s ease;
+  animation-fill-mode: forwards;
+}
+
+@keyframes show_scoring {
+  0% {
+    opacity: 0.5;
+    scale: 0.8;
+  }
+
+  25% {
+    opacity: 1;
+    scale: 1;
+  }
+
+  85% {
+    opacity: 1;
+    scale: 1;
+  }
+
+  100% {
+    opacity: 0;
+    scale: 0.8;
+  }
+}
+
+#controls {
+  padding: 20px;
+  position: absolute;
+  width: calc(100% - 48px);
+  z-index: 1000;
+  height: 0px;
+  transition: all var(--longer) ease;
+  contain: paint layout content;
+}
+
+.pause {
+  background-image: url('../Assets/Playfield/pause.svg');
+}
+
+.play {
+  background-image: url('../Assets/Playfield/play.svg');
+}
+
+.reset {
+  background-image: url('../Assets/Playfield/reset.svg');
+}
+
+.back {
+  background-image: url('../Assets/Playfield/back.svg');
+}
+
+#pauseButton {
+  margin-right: 10px;
+}
+
+#scoreText,
+#scoreComparison {
+  margin-left: 4px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  width: 100%;
+  height: fit-content;
+  font-size: 20px;
+  display: block;
+  text-shadow: #FFFFFF30 0px 0px 6px;
+  opacity: 0.5;
+  font-family: 'Mono';
+  position: absolute;
+  bottom: 105px;
+}
+
+#scoreComparison {
+  bottom: unset;
+}
+
+btn:has(.pause) {
+  box-shadow: #FFFFFF10 0px 0px 5px 4px;
+}
+
+
+#scoreNumber {
+  background: #FFFFFF10;
+  height: fit-content;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 5px;
+  margin-top: 2px;
+  margin-left: 0px;
+  font-size: 25px;
+  font-family: 'Mono';
+  width: calc(100% - 16px);
+  position: absolute;
+  bottom: 73px;
+}
+
+#scoreNumber>#unusedScoreNumbers {
+  opacity: 0.5;
+}
+
+#songName {
+  margin-left: auto;
+  font-family: 'Modern';
+  font-size: 26px;
+  font-weight: 500;
+  line-height: 29px;
+  text-align: right;
+}
+
+#songArtist {
+  opacity: 0.5;
+  font-family: 'Modern';
+  margin-left: 0px;
+  margin-right: 0px;
+  font-size: 18px;
+  margin-top: -7px;
+  font-weight: 100;
+  text-align: right;
+}
+
+#topLevelContainer {
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  transition: all var(--long) ease;
+}
+
+#songData {
+  width: 330px;
+  margin-left: calc(100vw - 400px);
+  transform-origin: right top;
+  position: absolute;
+  transition: all var(--long) ease;
+}
+
+#songArt {
+  opacity: 0;
+  border-radius: 5px;
+  width: 330px;
+  height: 0px;
+  margin-right: auto;
+  margin-left: 0px;
+  background-size: cover;
+  background-position: 0px 0px;
+  scale: 0.8;
+  filter: blur(12px);
+  transform-origin: top left;
+}
+
+#songArt.viewing {
+  opacity: 1 !important;
+  scale: 1 !important;
+  filter: blur(0px) !important;
+  height: 330px;
+  margin-bottom: 10px;
+}
+
+.hiddenButton {
+  scale: 0 !important;
+  opacity: 0 !important;
+  margin-top: 0px;
+}
+
+#backButton,
+#restartButton {
+  margin-top: 10px;
+  scale: 1;
+  opacity: 1;
+  transition: background var(--short), scale var(--longer), opacity var(--short) !important;
+}
+
+@keyframes combo {
+  0% {
+    scale: 0.7;
+    opacity: 0.8;
+  }
+
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+}

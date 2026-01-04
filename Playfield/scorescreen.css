@@ -1,0 +1,233 @@
+
+.end_controls {
+  margin-top: 0px;
+  height: 100vh;
+}
+
+.end_scoreNumber {
+  margin-top: 10px;
+}
+
+#scoreStats {
+  width: 100%;
+  margin-top: auto;
+}
+
+.scoreIndicator {
+  font-family: 'Modern';
+  font-weight: 100;
+  font-size: 25px;
+  line-height: 33px;
+  color: #FFFFFF;
+  padding: 7px;
+  padding-left: 13px;
+  padding-right: 13px;
+  border-radius: 5px;
+  width: calc(100% - 26px);
+}
+
+.scoreIndicator:nth-of-type(odd) {
+  background: #00000050;
+}
+
+.scoreIndicator>div {
+  display: block;
+  font-weight: 1000;
+  margin-right: auto;
+}
+
+
+.scoreIndicator>div:nth-of-type(2) {
+  width: fit-content;
+  margin-left: auto;
+  margin-right: 0px;
+  color: #FFFFFF50 !important;
+  font-weight: 300;
+  text-shadow: #FFFFFF20 0px 0px 15px !important;
+}
+
+.scoreIndicator>div {
+  font-weight: 200;
+}
+
+.scoreIndicator.perfect>div {
+  color: var(--perfect);
+  text-shadow: #FFFFFF90 0px 0px 15px;
+}
+
+.scoreIndicator.great>div {
+  color: var(--great);
+  text-shadow: #FFFFFF30 0px 0px 5px;
+}
+
+.scoreIndicator.okay>div {
+  color: var(--okay);
+  text-shadow: #FFFFFF30 0px 0px 5px;
+}
+
+.scoreIndicator.bad>div {
+  color: var(--bad);
+  text-shadow: #FFFFFF30 0px 0px 5px;
+}
+
+.scoreIndicator.miss>div {
+  color: var(--miss);
+  text-shadow: #FFFFFF30 0px 0px 5px;
+}
+
+#grade {
+  width: 400px;
+  margin-left: 150px !important;
+  height: 400px !important;
+  margin: auto;
+  border-radius: 5px;
+  display: block;
+  margin-top: -37px;
+  height: fit-content;
+  background-size: cover;
+  background-position: center;
+}
+
+
+#grade>btextm {
+  font-family: 'Modern';
+  font-weight: 100;
+  font-size: 200px;
+
+  width: 200px;
+  height: 200px;
+  margin: auto;
+  line-height: 200px;
+  display: block;
+  text-align: center;
+  border-width: 0px;
+  padding: 20px;
+  border-style: solid;
+  color: #000000;
+  border-radius: 100%;
+  transition: all var(--long) ease;
+  text-shadow: #FFFFFF90 0px 0px 10px;
+}
+
+#grade>btext {
+  font-family: 'Mono';
+  position: fixed;
+  width: 340px;
+  text-align: right;
+}
+
+#grade>btext>span {
+  font-weight: 800;
+}
+
+#grade:has(btextm) {
+  width: 100% !important;
+}
+
+#songProcedureControls {
+  width: 100%;
+  height: fit-content;
+}
+
+#songProcedureControls>btn, #scoreCard>btn {
+  text-align: center;
+  font-family: 'Moderno';
+  padding: 10px;
+  font-size: 25px;
+  width: calc(100% - 20px);
+}
+
+
+#scoreCard > btn {
+  margin-right: auto;
+  opacity: 0.67;
+  position: absolute;
+  bottom: 0;
+}
+
+#lowerScoreContainer {
+  margin-top: auto;
+  width: 400px;
+}
+#scoreCard {
+  margin-top: 0px;
+  margin-bottom: auto;
+  position: relative;
+  width: 290px;
+  margin-right: auto;
+  height: 100%;
+}
+
+
+@keyframes procedureButtonCue {
+  0% {
+    box-shadow: #FFFFFF30 0px 0px 10px 5px;
+  }
+
+  50% {
+    box-shadow: #FFFFFF10 0px 0px 0px 5px;
+  }
+
+  100% {
+    box-shadow: #FFFFFF30 0px 0px 10px 5px;
+  }
+}
+
+#gradeParent {
+  width: 700px;
+  height: 700px;
+  margin: auto;
+  margin-top: calc((100vh - 735px) / 2);
+  margin-left: 0px;
+  padding: 10px;
+  border-radius: 10px;
+  background-color: #FFFFFF10;
+  display: none;
+}
+
+.end_gradeParent {
+  margin-left: auto !important;
+  display: flex !important;
+}
+
+#controls:has(.end_gradeParent) {
+  padding: 0px !important;
+}
+
+
+.end_controls>#songData {
+  margin-top: 10px;
+  margin-right: -17px;
+}
+
+#maxCombo {
+  font-family: 'Modern';
+  font-size: 20px;
+}
+
+#maxCombo>span:nth-of-type(1) {
+  font-weight: 100;
+  opacity: 0.67;
+  padding-right: 5px;
+}
+
+#maxCombo>span:nth-of-type(2) {
+  font-weight: 200;
+  opacity: 1;
+}
+
+#hitCounts {
+  font-family: 'Modern';
+  font-size: 20px;
+}
+
+#hitCounts>span:nth-of-type(1) {
+  font-weight: 100;
+  opacity: 0.67;
+  padding-right: 5px;
+}
+
+#hitCounts>span:nth-of-type(2) {
+  font-weight: 200;
+  opacity: 1;
+}

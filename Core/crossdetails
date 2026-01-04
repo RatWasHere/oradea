@@ -1,5 +1,5 @@
 {
-  "location": "Wonderland Syndrome",
-  "difficulty": 4,
-  "map": "insane.json"
+  "location": "Casette",
+  "difficulty": "2",
+  "map": "hard.json"
 }
