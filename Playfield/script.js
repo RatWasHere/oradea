@@ -48,7 +48,7 @@ const CONFIG = {
   SWIPE_PRECHECK: 100,
   PERMISSIVE_SWIPE_PRECHECK: 230,
   PERMISSIVE_SWIPE_TIMEFRAME: 370,
-  HALF_SWIPE_MIN_MOVEMENT: 40, // these are degrees stop looking like this as if you dont know what they are. DEGREES. FUCK FARENHEIT BTW.
+  HALF_SWIPE_MIN_MOVEMENT: 70, // these are degrees stop looking like this as if you dont know what they are. DEGREES. FUCK FARENHEIT BTW.
   // SCORING
   ACCEPTANCE_THRESHOLD: 300,
   FLICK_ACCEPTANCE_THRESHOLD: 400,
@@ -895,7 +895,7 @@ class InputSystem {
     }
     const noteEndAverage = (game.gameState.currentTime + note.swipeEnd) / 2;
     this.gameState.scoringSystem.judge(noteEndAverage, true);
-
+    game.inputSystem.vibrate('STRONG')
     note.done = true;
     this.createNoteAura(note).then(() => {
       note.traceParent.remove();
@@ -1424,7 +1424,26 @@ class InputSystem {
   }
 
   vibrate(kind) {
-    return
+    let settings = {
+      w: 1,
+      s: 1,
+      d: 35
+    };
+    let effectType = "dual-rumble";
+
+    if (kind == "HOLDING") {
+      settings.d = 10;
+      settings.w = 0.1;
+      settings.s = 0.1;
+    }
+
+
+    this.gameState.gamepad.vibrationActuator.playEffect(effectType, {
+      startDelay: 0,
+      duration: settings.d,
+      weakMagnitude: settings.w,
+      strongMagnitude: settings.s,
+    });
   }
 }
 
@@ -1686,7 +1705,13 @@ class RenderingSystem {
             };
             note.desiredAngle = desiredAngle;
             note.preAngle = preAngle;
-            note.angleRange = [note.angle * CONFIG.ANGLE_MODIFIER, desiredAngle * CONFIG.ANGLE_MODIFIER];
+            let a1 = this.normalizeAngle(desiredAngle * CONFIG.ANGLE_MODIFIER);
+            let a2 = this.normalizeAngle(note.angle * CONFIG.ANGLE_MODIFIER);
+            if (note.direction == -1) {
+              note.angleRange = [a2, a1];
+            } else {
+              note.angleRange = [a1, a2];
+            }
           } else if (note.quarterSwipe) {
             let modifier = -1;
             if (note.direction == -1) modifier = 1;
@@ -1788,56 +1813,59 @@ class RenderingSystem {
     } else {
       note.tracePath.style.translate = `0% ${-offset}%`;
     }
-    if (!note.halfSwipe && !note.quarterSwipe) {
-      this.updateSwipeState(note);
-    } else {
-      // this.updateRotationalSwipeState(note)
+
+    if (note.halfSwipe) {
+      this.updateRotationalSwipeState(note);
+    } else if (note.quarterSwipe) {
       this.updateComplexSwipeState(note);
+    } else {
+      this.updateSwipeState(note);
     }
   }
 
   angleDelta(from, to) {
-    return this.normalizeAngle(((to - from + 540) % 360) - 180);
+    let d = ((to - from + 540) % 360) - 180;
+    return d;
   }
 
-  // updateRotationalSwipeState(note) {
-  //   if (note.time - game.gameState.currentTime > CONFIG.PERMISSIVE_SWIPE_PRECHECK) return;
+  updateRotationalSwipeState(note) {
+    if (note.time - game.gameState.currentTime > CONFIG.PERMISSIVE_SWIPE_PRECHECK) return;
 
-  //   let angle1 = note.angleRange[0];
-  //   let angle2 = note.angleRange[1];
+    let angle1 = note.angleRange[0];
+    let angle2 = note.angleRange[1];
 
-  //   let foundNotePoints = note.points ? note.points : ['cursor1', 'cursor2'];
-  //   let finalNotePoints = [];
-  //   for (let i = 0; i < foundNotePoints.length; i++) {
-  //     let point = this.inputSystem.points.get(foundNotePoints[i]);
-  //     if (!point || !point.analog) continue;
-  //     let pointAngle = this.inputSystem.getSegment(point.angle);
-  //     if (pointAngle == 6) pointAngle = 0;
+    let foundNotePoints = note.points ? note.points : [];
+    let finalNotePoints = {};
 
-  //     let isInRange = note.distance != -1 ? (pointAngle <= angle1 && pointAngle >= angle2) : (pointAngle >= angle1 || pointAngle <= angle2);
-  //     if (isInRange && point.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD) {
-  //       if (foundNotePoints[i].initialAngle) {
-  //         const start = foundNotePoints[i].initialAngle;
-  //         const current = point.rawAngle;
-  //         const delta = angleDelta(start, current);
+    for (let pointID in foundNotePoints) {
+      let foundPoint = this.inputSystem.points.get(pointID);
 
-  //         if (note.distance !== -1 && delta > CONFIG.HALF_SWIPE_MIN_MOVEMENT) {
-  //           this.inputSystem.swipeNote(note, point);
-  //         } else if (
-  //           note.distance === -1 &&
-  //           delta < -CONFIG.HALF_SWIPE_MIN_MOVEMENT
-  //         ) {
-  //           this.inputSystem.swipeNote(note, point);
-  //         }
+      if (foundPoint.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD) {
+        const delta = note.direction != -1 ? this.angleDelta(foundNotePoints[pointID].initialAngle, this.inputSystem.normalizeAngle(foundPoint.rawAngle)) : this.angleDelta(this.inputSystem.normalizeAngle(foundPoint.rawAngle), foundNotePoints[pointID].initialAngle);
+        if ((note.direction != -1 && delta > CONFIG.HALF_SWIPE_MIN_MOVEMENT) || (note.direction == -1 && delta < -CONFIG.HALF_SWIPE_MIN_MOVEMENT)) {
+          return this.inputSystem.swipeNote(note, foundPoint);
+        }
+      }
 
-  //       }
-  //     }
+      finalNotePoints[pointID] = foundNotePoints[pointID];
+    }
 
-  //     finalNotePoints.push(foundNotePoints[i]);
-  //   }
+    for (let [pointID, point] of this.inputSystem.points) {
+      if (finalNotePoints[pointID]) continue;
 
+      if (!point || !point.analog) continue;
+      let pointAngle = this.inputSystem.normalizeAngle(point.rawAngle);
 
-  // }
+      console.log(pointAngle, angle1, angle2, point.distance)
+      const isInRange = this.inputSystem.isAngleBetween(pointAngle, angle1, angle2);
+
+      if (isInRange && point.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD) {
+        finalNotePoints[pointID] = { id: pointID, initialAngle: pointAngle };
+      }
+    }
+
+    note.points = finalNotePoints;
+  }
 
   updateComplexSwipeState(note) {
     if (note.time - game.gameState.currentTime > CONFIG.PERMISSIVE_SWIPE_PRECHECK) return;
@@ -1866,10 +1894,11 @@ class RenderingSystem {
     }
 
     for (let [pointID, point] of this.inputSystem.points) {
+      if (finalNotePoints.indexOf(pointID) == -1) continue;
       let pointAngle = this.inputSystem.getSegment(point.angle);
       if (pointAngle == 6) pointAngle = 0;
       if (!point.associatedNote && point.analog && point.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD) {
-        if (finalNotePoints.indexOf(pointID) == -1) finalNotePoints.push(pointID);
+        finalNotePoints.push(pointID);
         if (note.toReach[pointAngle] == false) note.toReach[pointAngle] = true;
         if (!note.firstPointDetectedAt) note.firstPointDetectedAt = this.gameState.currentTime;
       }
@@ -1908,59 +1937,6 @@ class RenderingSystem {
     note.points = finalNotePoints;
   }
 
-
-  updateFlickState(note) {
-    if (!(note.holdable || note.started)) return;
-
-    let flickPoints = note.points ? note.points : [];
-    let relevantPoints = [];
-    for (let [pointID, point] of this.inputSystem.points) {
-      let foundPoint = flickPoints.find(point => point.id == pointID);
-      if (foundPoint) {
-        relevantPoints.push({
-          id: pointID,
-          rawAngle: foundPoint.rawAngle
-        });
-        if (Math.abs(foundPoint.rawAngle - point.rawAngle) >= CONFIG.FLICK_THRESHOLD) {
-          note.done = true;
-          this.inputSystem.releaseFlick(note);
-        }
-      } else if (this.inputSystem.getSegment(point.angle) == note.angle) {
-        relevantPoints.push({
-          id: pointID,
-          rawAngle: point.rawAngle
-        })
-      }
-    }
-    note.points = relevantPoints;
-  }
-
-  updateLargeFlickState(note) {
-    if (!(note.holdable || note.started)) return;
-
-    let flickPoints = note.points ? note.points : [];
-    let relevantPoints = [];
-    let desiredNoteSegment = this.inputSystem.getSegment(this.normalizeAngle((Number(note.angle) + Number(note.direction)) * CONFIG.ANGLE_MODIFIER));
-    for (let [pointID, point] of this.inputSystem.points) {
-      let foundPoint = flickPoints.find(point => point.id == pointID);
-      if (foundPoint) {
-        relevantPoints.push({
-          id: pointID,
-          startSegment: note.angle
-        });
-        if (this.inputSystem.getSegment(point.angle) == desiredNoteSegment && point.distance > CONFIG.LARGE_FLICK_OUTWARDS_PROGRESS_THRESHOLD) {
-          note.done = true;
-          this.inputSystem.releaseFlick(note);
-        }
-      } else if (this.inputSystem.getSegment(point.angle) == note.angle) {
-        relevantPoints.push({
-          id: pointID,
-          startSegment: note.angle
-        })
-      }
-    }
-    note.points = relevantPoints;
-  }
 
   updateSliderPosition(note, currentTime, timing) {
     const sliderMaxHeight = CONFIG.ADJUSTED_MAX_TRAVEL;
@@ -2025,6 +2001,7 @@ class RenderingSystem {
       if ((note.holdableStart && !note.isBeingHeld && this.gameState.currentTime >= note.time) || (!note.isBeingHeld && note.wasEverHeld)) {
         this.inputSystem.holdSlider(note);
       }
+      this.inputSystem.vibrate("HOLDING")
     } else if (!isBeingHeld && note.isBeingHeld) {
       this.inputSystem.releaseSlider(note);
     }
@@ -2398,12 +2375,16 @@ class RhythmGame {
         grade = 'SS+'
       } else if (accuracy > 92) {
         grade = 'SS'
-      } else if (accuracy > 80) {
+      } else if (accuracy > 85) {
+        grade = 'S'
+      } else if (accuracy > 75) {
         grade = 'A'
       } else if (accuracy > 70) {
         grade = 'B'
       } else if (accuracy > 40) {
         grade = 'C'
+      } else if (accuracy > 10) {
+        grade = 'D'
       } else {
         grade = 'F'
       }

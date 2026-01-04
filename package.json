@@ -12,7 +12,7 @@
     "electron": "^39.2.7"
   },
   "scripts": {
-    "start": "electron .",
+    "start": "electron . --no-sandbox",
     "pack": "electron-builder --dir"
   },
   "name": "oradea",
