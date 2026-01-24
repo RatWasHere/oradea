@@ -1,62 +1,73 @@
 <html>
-<link rel="stylesheet" href="./notes.css">
-<link rel="stylesheet" href="../Core/main.css">
-<link rel="stylesheet" href="./sfx.css">
-<link rel="stylesheet" href="./overlay.css">
-<meta charset="UTF-8">
-
-<body>
-  <div id="controls" class="flexbox">
-    <div id="buttons">
-      <btn id="pauseButton" onclick="game.pauseGame()">
-        <div class="image pause" style="width: 50px; aspect-ratio: 1/1;"></div>
-      </btn>
-      <btn id="restartButton" class="hiddenButton" onclick="game.restart()">
-        <div class="image reset" style="width: 50px; aspect-ratio: 1/1;"></div>
-      </btn>
-      <btn id="backButton" class="hiddenButton" onclick="game.uninitializeGame()">
-        <div class="image back" style="width: 50px; aspect-ratio: 1/1;"></div>
-      </btn>
+  <link rel="stylesheet" href="./notes.css" />
+  <link rel="stylesheet" href="../Core/main.css" />
+  <link rel="stylesheet" href="./sfx.css" />
+  <link rel="stylesheet" href="./overlay.css" />
+  <meta charset="UTF-8" />
+    <div id="controls" class="flexbox">
+      <div id="buttons">
+        <btn id="pauseButton" onclick="game.pauseGame()">
+          <div class="image pause" style="width: 50px; aspect-ratio: 1/1"></div>
+        </btn>
+        <btn id="restartButton" class="hiddenButton" onclick="game.restart()">
+          <div class="image reset" style="width: 50px; aspect-ratio: 1/1"></div>
+        </btn>
+        <btn
+          id="backButton"
+          class="hiddenButton"
+          onclick="game.uninitializeGame()"
+        >
+          <div class="image back" style="width: 50px; aspect-ratio: 1/1"></div>
+        </btn>
+      </div>
+      <div id="gradeParent" class="flexbox"></div>
+      <btextm id="songData">
+        <div id="songArt" class="image"></div>
+        <div id="songName"></div>
+        <div id="songArtist"></div>
+        <span
+          id="difficultyTag"
+          style="margin-left: auto"
+          class="difficulty-dot wideDot flexbox"
+        >
+          <difficulty id="difficulty"></difficulty>
+        </span>
+      </btextm>
     </div>
-    <div id="gradeParent" class="flexbox"></div>
-    <btextm id="songData">
-      <div id="songArt" class="image"></div>
-      <div id="songName"></div>
-      <div id="songArtist"></div>
-      <span id="difficultyTag" style="margin-left: auto;" class="difficulty-dot wideDot flexbox">
-        <difficulty id="difficulty"></difficulty>
-      </span>
-    </btextm>
-  </div>
-  
-  <div id="overlay">
-    <!-- <div class="lightshow_item" id="lightshow_1"></div>
-    <div class="lightshow_item" id="lightshow_2"></div>
-    <div class="lightshow_item" id="lightshow_3"></div>
-    <div class="lightshow_item" id="lightshow_4"></div>
-    <div class="lightshow_item" id="lightshow_5"></div>
-    <div class="lightshow_item" id="lightshow_6"></div>
-    <div class="lightshow_item" id="lightshow_7"></div>
-    <div class="lightshow_item" id="lightshow_8"></div> -->
 
-    <div id="topLevelContainer" class="flexbox">
-      <div id="noteContainer">
-        <div id="noteContainerFrame"></div>
+  <body>
+    <div id="overlay">
+      <div class="lightshow_item" id="lightshow_1"></div>
+      <div class="lightshow_item" id="lightshow_2"></div>
+      <div class="lightshow_item" id="lightshow_3"></div>
+      <div class="lightshow_item" id="lightshow_4"></div>
+      <div class="lightshow_item" id="lightshow_5"></div>
+      <div class="lightshow_item" id="lightshow_6"></div>
+      <div class="lightshow_item" id="lightshow_7"></div>
+      <div class="lightshow_item" id="lightshow_8"></div>
+      <div id="topLevelContainer" class="flexbox">
+        <div id="noteContainer">
+          <div id="noteContainerFrame"></div>
 
-        <div class="frame" id="centerContainer"></div>
-        <div class="center flexbox" style="--i: 0;">
-          <div style="margin: auto;">
-            <btextm id="comboText" class="small">Combo</btextm>
-            <btextm id="comboDisplay">0</btextm>
+          <div class="frame" id="centerContainer"></div>
+          <div class="center flexbox" style="--i: 0">
+            <div style="margin: auto">
+              <btextm id="comboText" class="small">Combo</btextm>
+              <btextm id="comboDisplay">0</btextm>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <div id="perfectionIndicator"></div>
-  </div>
-</body>
-<script src="4ndroid.js"></script>
-<script src="../Utilities/global.js"></script>
-<script src="script.js"></script>
-
+    <div id="perfectionIndicator">
+      <div class="indicator" id="perfect"></div>
+      <div class="indicator" id="great"></div>
+      <div class="indicator" id="okay"></div>
+      <div class="indicator" id="bad"></div>
+      <div class="indicator" id="miss"></div>
+    </div>
+  </body>
+  <script src="4ndroid.js"></script>
+  <script src="../Utilities/global.js"></script>
+  <script src="script.js"></script>
 </html>

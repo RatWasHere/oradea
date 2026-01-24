@@ -12,43 +12,36 @@ body {
   background: linear-gradient(130deg, #000000, #131313) !important;
   background-repeat: none !important;
   animation: none !important;
+  overflow: none !important;
 }
 
 #levels {
   width: 100%;
   height: calc(100% - 130px);
-  margin-top: calc(50vh - 350px);
+  max-height: 1500px;
   padding-top: 20px;
   padding-bottom: 20px;
-  overflow-x: auto;
   overflow-y: hidden;
-  display: flex;
-  flex-wrap: nowrap;
-  content-visibility: auto;
-  contain: content;
-
   /* keep them in a single row */
 }
 
 .songTile {
-  width: 250px !important;
-  min-width: 250px;
-  height: 600px;
+  width: calc(100% - 20px);
+  height: 250px;
   transform-origin: right;
   opacity: 0.5;
-  border-radius: 5px;
+  border-radius: 20px;
   margin-bottom: 10px;
   margin-top: 20px;
-  padding: 0px;
+  padding: 10px;
+  justify-content: start;
   position: relative;
   z-index: 2;
   margin-left: 10px;
   margin-right: 10px;
+  background: #FFFFFF10;
   backdrop-filter: blur(200px);
   transition: all 0.2s cubic-bezier(.17, .67, 0, .95), margin-top 0.2s linear, margin-bottom 0.2s linear !important;
-  display: block;
-  content-visibility: auto;
-  contain-intrinsic-size: auto 1000px;
 }
 
 .songTile>btextm {
@@ -67,20 +60,9 @@ body {
   transition-delay: 100ms;
   filter: grayscale(0.4);
 }
-
-.songTile.highlighted>.image {
-  filter: none;
-}
-
-.highlighted>.cover-frame {
-  /* width: 300px !important; */
-}
-
 .highlighted {
   opacity: 1;
   z-index: 5;
-  transform-origin: top;
-  margin-top: 0px;
 }
 
 
@@ -173,35 +155,31 @@ body {
 .songTile>.song-details {
   opacity: 0.5;
   transition: all 0.2s ease;
-  margin-top: -30px;
-  width: 95%;
-  margin-left: auto;
-  margin-right: auto;
+  padding-left: 20px;
+  width: 300px;
 }
 
 .songTile:not(.highlighted)>.song-details>.song_artist {
-  opacity: 0;
-  font-size: 10px
+  opacity: 0.5;
+  font-size: 16px
 }
 
 .songTile.highlighted>.song-details {
   opacity: 1;
   transition: all 0.2s 0.2s ease;
-  margin-top: 10px;
 }
 
 .song-cover {
-  width: 100%;
+  width: 250px;
+  height: 250px;
   aspect-ratio: 1;
-  border-radius: 7%;
+  border-radius: 10px;
   display: block;
-  top: 28.5% !important;
-  left: 9.4% !important;
+  margin-left: 0px;
   background: #ffffff40;
   transition: all 0.2s ease;
   background-size: cover;
   background-position: center;
-  margin-top: 60px;
   box-shadow: 0px 0px 5px 5px #00000020;
   mask-position: 100% 100%;
 }
@@ -215,16 +193,19 @@ body {
   backdrop-filter: blur(12px);
   background: #00000050;
   width: fit-content;
+  height: 40px;
   padding: 5px;
   position: relative;
-  translate: 10px 10px;
   border-radius: 10px;
   scale: 0.7;
-  transform-origin: top left;
+  transform-origin: bottom left;
+  margin-top: auto;
   transition: all 0.5s ease;
+  position: absolute;
+  bottom: 10px;
 }
 
-.highlighted > div > .difficulties-preview {
+.highlighted>div>.difficulties-preview {
   scale: 1;
 }
 
@@ -255,6 +236,7 @@ body {
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
 #song-title:hover {
   backdrop-filter: blur(12px);
   position: relative;
@@ -264,11 +246,9 @@ body {
   max-height: unset;
   overflow: unset;
   text-overflow: unset;
-  text-shadow:   1px 1px 2px rgb(62, 81, 255),
-  0 0 1em rgb(57, 184, 243),
-  0 0 0.2em rgb(168, 255, 55);;
   white-space: unset;
 }
+
 #song-difficulties {
   margin-left: auto;
   min-width: 200px;
@@ -286,9 +266,6 @@ body {
 
   /* If content exceeds height of container, overflow! */
   /* overflow-y: auto; */
-
-  /* Our height limit */
-  height: 300px;
 
   /* Need to make sure container has bottom space,
   otherwise content at the bottom is always faded out */
@@ -332,21 +309,18 @@ body {
 .song_name {
   overflow-y: none;
   display: block;
-  text-align: center;
+  text-align: left;
   text-wrap: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
   width: 100%;
   text-shadow: #00000090 0px 0px 5px;
-  font-size: 20px;
-  mask-image: linear-gradient(to left,
-      transparent,
-      black var(--fade-size, 22px));
+  font-size: 26px;
 }
 
 .song_artist {
   opacity: 0.6;
-  text-align: center;
+  text-align: left;
   width: 100%;
   display: block;
   font-size: 15px;
@@ -359,21 +333,46 @@ body {
   border-color: #00000050;
   width: auto;
   border-radius: 50px;
-  padding-left: 5px !important;
-  padding-right: 5px !important;
-  height: 20px;
+  padding: 0px;
+  width: fit-content;
   margin-right: 5px;
   margin-left: 0px;
   font-size: 12px;
+  background-color: unset !important;
 }
 
 .difficulty-dot.clickable>div {
   white-space: nowrap;
 }
 
+difficulty-name {
+  font-size: 12px;
+  opacity: 0.5;
+  width: 100%;
+  display: block;
+  text-align: center;
+}
+
+difficulty-level {
+  display: block;
+  width: 100%;
+  text-align: center;
+  font-size: 35px;
+  width: 60px;
+  height: 60px;
+  border-radius: 100px;
+  font-family: 'Modern';
+
+  box-shadow: var(--border-color) 0px 0px 0px 3px inset;
+  line-height: 60px;
+}
+
+.highlighted > .dotParent > difficulty-level {
+  background: var(--diff-color) !important;
+  box-shadow: #ffffff10 0px 0px 0px 5px inset;
+}
+
 .difficulty-dot.clickable.highlighted {
-  border-radius: 5px;
-  border-color: var(--border-color);
   opacity: 1;
 }
 
@@ -435,7 +434,13 @@ body {
 }
 
 #song-details {
-  height: 170px;
+  height: 100px;
+  width: 400px;
+  margin-right: auto;
+}
+
+#song-details-container {
+  height: fit-content
 }
 
 #picker-overlay {
@@ -466,7 +471,7 @@ body {
   margin-bottom: 10px;
 }
 
-#song-controls > #search-parent > #search {
+#song-controls>#search-parent>#search {
   background: none !important;
   padding: 0px;
   width: calc(100% - 37px);
@@ -476,7 +481,7 @@ body {
   display: block;
 }
 
-#song-controls> #search-parent > .image.search {
+#song-controls>#search-parent>.image.search {
   height: 25px;
   width: 25px;
   margin: 0px;
@@ -487,14 +492,17 @@ body {
   background: url(../Assets/Misc/search.svg);
 }
 
-#song-controls > #search-parent {
+#song-controls>#search-parent {
   height: 27px;
   width: 250px;
   margin-right: auto;
-  border-radius: 5px;;
+  border-radius: 5px;
+  ;
   padding: 4px !important;
+  backdrop-filter: blur(12px);
   align-items: start;
   background: #00000050;
+  box-shadow: inset 0 0 2px #ffffff10;
 }
 
 #amount {
@@ -517,4 +525,18 @@ body {
   left: calc(100% - 25px);
   position: absolute;
   display: var(--controller-display-state);
+}
+
+.load-segment {
+  content-visibility: auto;
+  contain: content;
+  width: fit-content;
+  height: fit-content;
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+}
+
+#levelsContent {
+  outline: none;
 }

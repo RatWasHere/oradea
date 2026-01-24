@@ -95,7 +95,7 @@ let stages = [
     text: `Interacting with the interface`,
     subtext: `via Controller`,
     additionalHTML: `
-      <video src="./controller_nav.mp4" style="max-width: 1000px; width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto;" autoplay="true"></video>
+      <video src="./controller_nav.webm" style="max-width: 1000px; width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto;" autoplay="true"></video>
     `,
     options: [
       {

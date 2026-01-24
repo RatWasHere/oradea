@@ -1,5 +1,5 @@
 {
-  "location": "Casette",
+  "location": "Parry",
   "difficulty": "2",
-  "map": "hard.json"
+  "map": "map.json"
 }

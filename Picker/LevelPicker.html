@@ -4,19 +4,21 @@
 
 <body>
 
-  <div class="flexbox" id="picker-overlay">
+  <div class="flexbox" id="picker-overlay" style="height: 100vh; width: 100vw; overflow: hidden;">
     <div id="songs" class="flexbox">
       <span id="amount"></span>
-      <div id="levels" class="masked-overflow" style="overflow-x: auto;"></div>
+      <div id="levels" class="masked-overflow">
+        <div id="levelsContent"></div>
+      </div>
       <div id="song-controls" class="flexbox">
-        <btn class="flexbox dark-btn controller_selectable" onclick="location.href = '../Home/homescreen.html'"
+        <btn class="flexbox dark-btn glyph_back" onclick="location.href = '../Home/homescreen.html'"
           style="margin-left: 0px; margin-right: 10px;">
           <btext>Home</btext>
         </btn>
-        <btn onclick="ipcRenderer.send('openWorkshop')" class="flexbox dark-btn controller_selectable" style="margin-left: 0px; margin-right: 10px;">
+        <btn onclick="ipcRenderer.send('openWorkshop')" class="flexbox dark-btn glyph_misctop" style="margin-left: 0px; margin-right: 10px;">
           <btext>Workshop</btext>
         </btn>
-        <btn onclick="location.href = '../Misc/waccastyle.html'" class="flexbox dark-btn controller_selectable" style="margin-left: 0px; margin-right: 10px;">
+        <btn onclick="location.href = '../Misc/waccastyle.html'" class="flexbox dark-btn" style="margin-left: 0px; margin-right: 10px;">
           <btext>Converter</btext>
         </btn>
         <btn class="flexbox dark-btn" style="margin-left: 0px; margin-right: 10px;">
@@ -39,7 +41,7 @@
       <div class="song-details-container" style="width: 100%; padding-bottom: 20px; margin: auto; margin-bottom: 0px;">
         <div class="image" style="background: url('../Assets/Glyphs/LB_LR_DIRECTIONS.svg'); width: 80px; height: 20px; opacity: 0.5; margin-left: 0px; margin-bottom: 5px;"></div>
         <div id="song-difficulties" class="flexbox"></div>
-        <btn id="play-button" class="controller_selectable glyph_select" onclick="play()">
+        <btn id="play-button" class="glyph_select" onclick="play()">
           <btextm style="z-index: 1000; position: relative;">Play</btextm>
         </btn>
       </div>

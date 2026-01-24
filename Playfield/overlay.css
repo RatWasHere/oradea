@@ -73,8 +73,21 @@
   /* animation: hit 0.5s ease; */
 }
 
-
 #perfectionIndicator {
+  margin: auto;
+  width: 300px;
+  height: 80px;
+  background-size: cover;
+  background-repeat: none;
+  animation-fill-mode: forwards;
+  contain: paint layout size style;
+  bottom: 50px;
+  left: calc(50% - 150px);
+  position: absolute;
+  z-index: 10;
+}
+
+.indicator {
   margin: auto;
   width: 300px;
   height: 80px;
@@ -82,6 +95,24 @@
   background-repeat: none;
   animation: show_scoring 0.25s ease;
   animation-fill-mode: forwards;
+  display: none;
+  position: absolute;
+}
+
+#perfect {
+  background-image: url('../Assets/Scoring/perfect.svg')
+}
+#great {
+  background-image: url('../Assets/Scoring/great.svg')
+}
+#good {
+  background-image: url('../Assets/Scoring/good.svg')
+}
+#okay {
+  background-image: url('../Assets/Scoring/ok.svg')
+}
+#miss {
+  background-image: url('../Assets/Scoring/miss.svg')
 }
 
 @keyframes show_scoring {
@@ -100,9 +131,12 @@
     scale: 1;
   }
 
-  100% {
+  99% {
     opacity: 0;
     scale: 0.8;
+  }
+  100% {
+    display: none;
   }
 }
 

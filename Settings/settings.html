@@ -35,7 +35,7 @@
             style="width: 300px; height: 300px; margin: auto; margin-top: 10px; margin-bottom: 10px; position: relative !important; background: url('../Assets/Playfield/frame.svg'); background-size: cover;">
             <div style="width: 100px; height: 100%; margin: auto; rotate: 30deg; position: relative !important;">
               <div id="noteForDemonstration"
-                style="width: 100%; height: 100%; background-image: url('../Assets/Headers/Note.svg'); background-repeat: no-repeat; background-size: contain; animation: noteDemonstration infinite 2s linear;">
+                style="width: 100%; aspect-ratio: 1/1; background-image: url('../Assets/Headers/geometrical/Note.svg'); background-repeat: no-repeat; background-size: cover; animation: noteDemonstration infinite 2s linear;">
               </div>
             </div>
             <btext id="note_speed_preview">[]</btext>
@@ -54,15 +54,18 @@
         <btext style="font-size: 15px; opacity: 0.5;">Hold to preview. Some songs may temporarily affect this setting.
         </btext><br>
       </div>
-      <div class="category_contents" data-function="initVisualsConfig()" data-category="Visuals"
+      <div class="category_contents" data-function="initVisualsConfig()" data-category="Gameplay"
         data-associate="category_basics" data-id="bscs_vs">
         <div></div>
         <div class="preview_window flexbox">
-          <div style="width: 50%;" class="flexbox">
+          <div style="width: 50%; margin-top: auto; margin-bottom: auto;" class="flexbox">
             <div>
               <div id="Note:Note" class="note_design_preview" style="background-image: url('../Assets/Headers/Note.svg');"></div>
               <div id="Note:Note Golden" class="note_design_preview" style="background-image: url('../Assets/Headers/Note\ Golden.svg');"></div>
+            </div>
+            <div>
               <div id="Note:Note Holdable" class="note_design_preview" style="background-image: url('../Assets/Headers/Note\ Holdable.svg');"></div>
+              <div id="Note:Starter" class="note_design_preview" style="background-image: url('../Assets/Headers/Starter.svg');"></div>
             </div>
           </div>
           <div style="width: 50%;" class="flexbox">
@@ -108,6 +111,17 @@
         </div>
         <br>
 
+        <btext>Perfection Indicator</btext>
+        <select id="perfectionIndicator">
+          <option value="0">Disabled</option>
+          <option value="1">Enabled</option>
+        </select>
+        <btext style="font-size: 15px; opacity: 0.5; display: block; text-align: left;">
+          You'll be told how well you were able to time hits in the form of PERFECT/GREAT/etc. <br>
+          If you're playing for fun or if you're having performance issues, feel free to disable this.
+        </btext><br>
+
+
         <btext>Note Hint</btext>
         <select id="noteHint">
           <option value="0">Disabled</option>
@@ -129,13 +143,13 @@
           Please disable this if you're sensitive to flashing lights.
         </btext><br>
 
-        <btext>Gimmicks</btext>
+        <btext>Hexagon Gimmicks</btext>
         <select id="gimmicksState">
           <option value="0">Disabled</option>
           <option value="1">Enabled</option>
         </select>
         <btext style="font-size: 15px; opacity: 0.5; display: block; text-align: left;">
-          Some songs offer gimmicks. Some gimmicks might reduce performance.<br>
+          Some songs offer gimmicks that apply to the playfield. Some gimmicks might reduce performance.<br>
           Certain gimmicks may have flickers.<br>
         </btext><br>
 
@@ -162,7 +176,7 @@
         <btext>Offset <span style="opacity: 0.5;" id="audio_offset_preview">(0ms)</span></btext><br>
         <input type="range" min="-750" max="750" step="5" value="0" oninput="updateOffsetAmount(this.value)"
           id="audio_offset" class="range_slider controller_selectable">
-        <btn style="width: fit-content; margin-left: 2px;" onclick="window.location.href = './calibration.html'">Calibration Wizard</btn>
+        <btn class="controller_selectable" style="width: fit-content; margin-left: 2px;" onclick="window.location.href = './calibration.html'">Audio Calibration</btn>
         <btext style="font-size: 15px; opacity: 0.5; display: block; text-align: left;">
           Bluetooth audio devices typically have a delay of ~200ms.<br>
           We recommend you go through the calibration wizard no matter your PC's specs.
@@ -211,15 +225,6 @@
       <div class="category_contents" data-category="Input" data-associate="category_hardware" data-id="hw_input"
         data-function="initInputMode()">
         <div></div>
-        <btext>
-          <span style="opacity: 0.5;">Detected inputs:</span>
-          <span id="detectedInput"></span>
-        </btext><br>
-        <btext style="opacity: 0.3; font-size: 15px;">
-          Is a controller not appearing? Try interacting with it.
-        </btext>
-        <br>
-        <br>
         <btext>
           Input Mode
         </btext>

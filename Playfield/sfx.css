@@ -215,17 +215,12 @@
 }
 
 .sfx_header.slider_header {
-  aspect-ratio: unset !important;
-  width: calc(var(--raw-size) / 2);
-  height: var(--note-radius);
-  translate: 0px 0px;
   background-image: url('../Assets/SFX/Header_Hold.svg');
   animation: sfx_header_constant 0.12s ease-in-out infinite alternate;
 }
 
 .sfx_slider_hold {
   height: calc((var(--raw-size) / 2) - var(--slider-header-overlap));
-  overflow-y: hidden;
 }
 
 .sfx_slider_hold>.midframe::after {
@@ -287,7 +282,8 @@
 }
 
 .noteContainer:has(.sfx_slider_hold) {
-  overflow: hidden;
+  height: 311px;
+  overflow-y: clip;
 }
 
 

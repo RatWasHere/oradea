@@ -96,6 +96,10 @@
   background-image: var(--goldenNote) !important;
 }
 
+.flick_large_starter {
+  background-image: var(--starterNote) !important;
+}
+
 /* TRACE STYLES  >>> */
 
 
@@ -232,5 +236,10 @@
 }
 
 .end>.hint {
+  background-image: url('../Assets/Playfield/sync_frame_hold.svg') !important;
+}
+
+.start>.hint {
+  bottom: -7.5;
   background-image: url('../Assets/Playfield/sync_frame_hold.svg') !important;
 }

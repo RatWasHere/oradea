@@ -1,7 +1,6 @@
 <svg width="400" height="200" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_422_14)">
 <path d="M343.205 82.6807V-82.6797L200 -165.358L56.7949 -82.6797V82.6807L200 165.359L343.205 82.6807Z" stroke="url(#paint0_linear_422_14)" stroke-width="60"/>
-<rect x="155" width="89" height="25" rx="12.5" fill="#FFECA0"/>
 </g>
 <defs>
 <linearGradient id="paint0_linear_422_14" x1="200" y1="200" x2="200" y2="67.5" gradientUnits="userSpaceOnUse">

@@ -295,3 +295,42 @@
   height: 25px;
   background: #FFFFFF90;
 }
+
+.range_slider {
+  -webkit-appearance: none;  /* Override default CSS styles */
+  appearance: none;
+  width: 100%; /* Full-width */
+  height: 25px; /* Specified height */
+  background: #FFFFFF40; /* Grey background */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  transition: opacity .2s;
+  position: relative;
+}
+
+.range_slider.selected {
+  opacity: 1 !important;
+  z-index: 1000;
+}
+
+.range_slider.selected::before {
+  content: "";
+  position: absolute;
+  bottom: -30;
+  left: 0;
+  width: 100px;
+  height: 25px;
+  z-index: 1000;
+  background: url('../Assets/Glyphs/LB_LR_DIRECTIONS.svg');
+  backdrop-filter: blur(12px);
+  background-color: #00000020;
+  border-radius: 5px;
+  background-size: 100px 25px;
+  background-repeat: no-repeat;
+  opacity: 0.8;
+}
+
+.range_slider + btext {
+  opacity: 0;
+}

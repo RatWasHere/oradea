@@ -167,49 +167,28 @@ const InputModeManager = {
     });
 
     this.updateInputExplanations();
-    this.detectInputDevices();
-    this.setupGamepadListeners();
   },
 
-  detectInputDevices() {
-    const detectedInput = document.getElementById('detectedInput');
-    const inputs = ['Keyboard', 'Mouse'];
-    const gamepads = navigator.getGamepads();
-
-    gamepads.forEach(gamepad => {
-      if (gamepad) {
-        const vendorID = gamepad.id.toLowerCase();
-        const gamepadVendor = this.identifyGamepadVendor(vendorID);
-        inputs.push(`${gamepadVendor} Controller (#${gamepad.index + 1})`);
-
-        if (gamepadVendor === 'Xbox') this.gamepadMode = 'XB';
-        else if (gamepadVendor === 'Playstation') this.gamepadMode = 'PS';
+  listen(i) {
+    this.updateInputExplanations();
+    requestAnimationFrame(() => {
+      let eventListener = (event) => {
+        if (event.key.length > 1) return;
+        if (event.key == 'Escape') this.updateInputExplanations();
+        if (!settings.keybinds || typeof settings.keybinds != 'object') {
+          settings.keybinds = {};
+        }
+        settings.keybinds[i] = event.key.toUpperCase();
+        saveSettings();
+        document.removeEventListener("keydown", eventListener);
+        this.updateInputExplanations();
       }
-    });
 
-    if (detectedInput) {
-      detectedInput.textContent = inputs.join(', ');
-    }
-  },
+      document.addEventListener("keydown", eventListener);
+      document.getElementById('keybind' + i).innerHTML = 'Press any key..'
+      document.getElementById('keybind' + i).classList.add('toBePressed')
+    })
 
-  identifyGamepadVendor(vendorID) {
-    const vendors = [
-      { keywords: ['xbox', 'xinput', 'microsoft', '045e'], name: 'Xbox' },
-      { keywords: ['playstation', 'sony', '054c'], name: 'Playstation' }
-    ];
-
-    for (const vendor of vendors) {
-      if (vendor.keywords.some(keyword => vendorID.includes(keyword))) {
-        return vendor.name;
-      }
-    }
-
-    return 'Unknown';
-  },
-
-  setupGamepadListeners() {
-    window.addEventListener('gamepadconnected', () => this.detectInputDevices());
-    window.addEventListener('gamepaddisconnected', () => this.detectInputDevices());
   },
 
   updateInputExplanations() {
@@ -220,7 +199,8 @@ const InputModeManager = {
 
     const explanations = {
       joysticks: this.getJoysticksExplanation(),
-      buttons: this.getButtonsExplanation()
+      buttons: this.getButtonsExplanation(),
+      keyboard: this.getKeyboardExplanation()
     };
 
     explanationContainer.innerHTML = explanations[inputType] || '';
@@ -266,6 +246,19 @@ const InputModeManager = {
         See the video above for your controller's mapping
       </btext>
     `;
+  },
+
+  getKeyboardExplanation() {
+    return `
+      <div style="background: url('../Assets/Playfield/frame.svg'); position: relative; background-size: cover; width: 350px; height: 350px; margin: auto;">
+        <btn class="keybind" id="keybind1" onclick="listenToKeybind(1)" style="top: 10px; left: 70px;">${settings.keybinds?.[1] || "W"}</btn>
+        <btn class="keybind" id="keybind2" onclick="listenToKeybind(2)" style="top: 10px; right: 70px;">${settings.keybinds?.[2] || "I"}</btn>
+        <btn class="keybind" id="keybind3" onclick="listenToKeybind(3)" style="top: 145px; right: 10px;">${settings.keybinds?.[3] || "K"}</btn>
+        <btn class="keybind" id="keybind4" onclick="listenToKeybind(4)" style="top: 145px; left: 10px;">${settings.keybinds?.[4] || "A"}</btn>
+        <btn class="keybind" id="keybind5" onclick="listenToKeybind(5)" style="bottom: 10px; left: 70px;">${settings.keybinds?.[5] || "Z"}</btn>
+        <btn class="keybind" id="keybind6" onclick="listenToKeybind(6)" style="bottom: 10px; right: 70px;">${settings.keybinds?.[6] || "M"}</btn>
+      </div>
+    `
   }
 };
 
@@ -358,6 +351,11 @@ const VisualsConfig = {
       settingKey: 'note_hint',
       defaultValue: '0.5'
     })
+    this.noteHint = selectMenuFactory.create({
+      id: 'perfectionIndicator',
+      settingKey: 'perfection_indicator',
+      defaultValue: '1'
+    })
     this.flashingLightsState = selectMenuFactory.create({
       id: 'flashingLightsState',
       settingKey: 'flashing_lights',
@@ -391,7 +389,7 @@ const VisualsConfig = {
 
   updateDesigns() {
     let noteDesigns = [
-      'Note', 'Note Golden', 'Note Holdable',
+      'Note', 'Note Golden', 'Note Holdable', 'Starter'
     ]
     let sliderDesigns = [
       'Top', 'Top Golden', 'Top Holdable',
@@ -501,8 +499,6 @@ function initialize() {
 }
 
 window.selectCategory = (index) => CategoryManager.selectCategory(index);
-window.initInputMode = () => InputModeManager.detectInputDevices();
-window.initDisplayConfig = () => InputModeManager.detectInputDevices();
 window.updateInputExplanations = () => InputModeManager.updateInputExplanations();
 window.initPlayfieldConfig = () => PlayfieldConfig.init();
 window.initVisualsConfig = () => VisualsConfig.init();
@@ -515,6 +511,7 @@ window.updateOffsetAmount = (val) => AudioConfig.updateOffsetAmount(val);
 window.updateSFXVolume = (val) => AudioConfig.updateSFXVolume(val);
 window.updateMusicVolume = (val) => AudioConfig.updateMusicVolume(val);
 window.initDisplay = () => DisplayConfig.init();
+window.listenToKeybind = (i) => InputModeManager.listen(i);
 
 if (document.readyState === 'loading') {
   document.addEventListener('DOMContentLoaded', initialize);

@@ -1,9 +1,10 @@
 {
   "dependencies": {
+    "clusterize.js": "^1.0.0",
     "node-hid": "^3.2.0",
     "oceanic.js": "^1.12.0",
     "onframe": "^0.1.0",
-    "osu-mania-parser": "^1.0.0",
+    "osu-mania-parser": "github:anima-ex-inani/osu-mania-parser",
     "slim-select": "^2.12.1",
     "steamworks.js": "^0.4.0",
     "usb": "^2.16.0"

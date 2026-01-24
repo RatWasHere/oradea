@@ -56,7 +56,7 @@ class CalibrationSystem {
 
   async loadAudio() {
     const normalHit = fs.readFileSync('./Assets/hit_normal.mp3');
-    const goldenHit = fs.readFileSync('./Assets/golden_hit.mp3');
+    const goldenHit = fs.readFileSync('./Assets/hit_golden.mp3');
     
     const normalBuffer = normalHit.buffer.slice(normalHit.byteOffset, normalHit.byteOffset + normalHit.byteLength);
     const goldenBuffer = goldenHit.buffer.slice(goldenHit.byteOffset, goldenHit.byteOffset + goldenHit.byteLength);

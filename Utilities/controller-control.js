@@ -5,9 +5,25 @@ function getSelectableRects() {
   }));
 }
 let currentEl = null;
+let handleShoulder = (direction) => {
+  if (currentEl?.type == 'range' && (direction == 'left' || direction == 'right')) {
+    currentEl.value = Number(currentEl.value) + (direction == 'left' ? -Number(currentEl.step || 1) : Number(currentEl.step || 1));
+    currentEl.oninput(currentEl.value);
+    currentEl.onmousedown();
+    setTimeout(() => {
+      currentEl.onmouseup();
+      // window.focus();
+    }, 500);
+    return
+  }
+}
 let globalControllerActions = {
-  rightTrigger: () => { },
-  leftTrigger: () => { },
+  rightTrigger: () => { handleShoulder('right') },
+  leftTrigger: () => { handleShoulder('left') },
+  upMove: () => { },
+  downMove: () => { },
+  leftMove: () => { },
+  rightMove: () => { },
   playTrigger: () => { },
   aTrigger: () => { },
   bTrigger: () => { },
@@ -29,30 +45,18 @@ function moveSelection(direction) {
   if (lastDirection == direction && Date.now() - lastDirectionTime < 220) return;
   lastDirection = `${direction}`;
   lastDirectionTime = Date.now();
-  if (currentEl?.type == 'range' && (direction == 'left' || direction == 'right')) {
-    currentEl.value = Number(currentEl.value) + (direction == 'left' ? -Number(currentEl.step || 1) : Number(currentEl.step || 1));
-    currentEl.oninput(currentEl.value);
-    currentEl.onmousedown();
-    setTimeout(() => {
-      currentEl.onmouseup();
-      // window.focus();
-    }, 500);
-    return
-  }
   const selectables = getSelectableRects();
   if (!currentEl && selectables.length > 0) {
     setSelection(selectables[0].el);
     return;
   }
   let scrollToElement = currentEl;
-  while (scrollToElement.dataset.unscrollable == 'true') {
-    scrollToElement = scrollToElement.parentElement;
+  if (!window.location.href.includes('playfield.html')) {
+    while (scrollToElement.dataset.unscrollable == 'true') {
+      scrollToElement = scrollToElement.parentElement;
+    }
+    scrollToElement.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
   }
-  console.log('crollin g', scrollToElement.offsetTop)
-  scrollToElement.parentElement.scrollTo({
-    top: scrollToElement.offsetTop,
-    behavior: 'smooth'
-  })
 
   const currentRect = currentEl.getBoundingClientRect();
 
@@ -115,7 +119,53 @@ let gamepadButtonStates = {
   right: false
 };
 let areGlyphsHidden = null;
+let cancelPolling;
+
+// Track repeat timers for each button to enable hold-to-repeat functionality
+let buttonRepeatTimers = {
+  shoulderLeft: null,
+  shoulderRight: null,
+  a: null,
+  b: null,
+  x: null,
+  y: null,
+  play: null,
+  up: null,
+  down: null,
+  left: null,
+  right: null
+};
+
+const REPEAT_DELAY = 500; // milliseconds before first repeat
+const REPEAT_INTERVAL = 100; // milliseconds between subsequent repeats
+
+function startButtonRepeat(buttonName, action) {
+  if (!action) return;
+
+  // Clear any existing timer for this button
+  if (buttonRepeatTimers[buttonName]) {
+    clearTimeout(buttonRepeatTimers[buttonName]);
+  }
+
+  // Set initial delay before first repeat
+  buttonRepeatTimers[buttonName] = setTimeout(() => {
+    // Function to handle repeated calls
+    const repeatAction = () => {
+      try { action(); } catch (e) { console.error(e); }
+      buttonRepeatTimers[buttonName] = setTimeout(repeatAction, REPEAT_INTERVAL);
+    };
+    repeatAction();
+  }, REPEAT_DELAY);
+}
+
+function stopButtonRepeat(buttonName) {
+  if (buttonRepeatTimers[buttonName]) {
+    clearTimeout(buttonRepeatTimers[buttonName]);
+    buttonRepeatTimers[buttonName] = null;
+  }
+}
 function pollGamepads() {
+  if (cancelPolling) return;
   const pads = navigator.getGamepads();
   let sheet = document.styleSheets[0];
   let isZero = pads.filter(pad => !!pad).length === 0;
@@ -179,17 +229,60 @@ function pollGamepads() {
       lastControllerState.shoulderRight = lastControllerState.shoulderRight || false;
     }
 
+    // Edge detection for directional movement: trigger only when direction becomes pressed (wasn't pressed last poll)
+    if (currentUp && !lastControllerState.up) {
+      if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.upMove === 'function') {
+        try { globalControllerActions.upMove(); } catch (e) { console.error(e); }
+        startButtonRepeat('up', globalControllerActions.upMove);
+      }
+    } else if (!currentUp && lastControllerState.up) {
+      stopButtonRepeat('up');
+    }
+
+    if (currentDown && !lastControllerState.down) {
+      if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.downMove === 'function') {
+        try { globalControllerActions.downMove(); } catch (e) { console.error(e); }
+        startButtonRepeat('down', globalControllerActions.downMove);
+      }
+    } else if (!currentDown && lastControllerState.down) {
+      stopButtonRepeat('down');
+    }
+
+    if (currentLeft && !lastControllerState.left) {
+      if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.leftMove === 'function') {
+        try { globalControllerActions.leftMove(); } catch (e) { console.error(e); }
+        startButtonRepeat('left', globalControllerActions.leftMove);
+      }
+    } else if (!currentLeft && lastControllerState.left) {
+      stopButtonRepeat('left');
+    }
+
+    if (currentRight && !lastControllerState.right) {
+      if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.rightMove === 'function') {
+        try { globalControllerActions.rightMove(); } catch (e) { console.error(e); }
+        startButtonRepeat('right', globalControllerActions.rightMove);
+      }
+    } else if (!currentRight && lastControllerState.right) {
+      stopButtonRepeat('right');
+    }
+
     // Edge detection for shoulder buttons: trigger only when button becomes pressed (wasn't pressed last poll)
     if (shoulderLeft && !lastControllerState.shoulderLeft) {
       if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.leftTrigger === 'function') {
         try { globalControllerActions.leftTrigger(); } catch (e) { console.error(e); }
+        startButtonRepeat('shoulderLeft', globalControllerActions.leftTrigger);
       }
+    } else if (!shoulderLeft && lastControllerState.shoulderLeft) {
+      stopButtonRepeat('shoulderLeft');
     }
 
     if (shoulderRight && !lastControllerState.shoulderRight) {
       if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.rightTrigger === 'function') {
         try { globalControllerActions.rightTrigger(); } catch (e) { console.error(e); }
+        startButtonRepeat('shoulderRight', globalControllerActions.rightTrigger);
       }
+    } else if (!shoulderRight && lastControllerState.shoulderRight) {
+      stopButtonRepeat('shoulderRight');
     }
 
     // Read face buttons and Start/Play
@@ -218,34 +311,53 @@ function pollGamepads() {
     if (btnA && !lastControllerState.a) {
       if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.aTrigger === 'function') {
         try { globalControllerActions.aTrigger(); } catch (e) { console.error(e); }
+        startButtonRepeat('a', globalControllerActions.aTrigger);
       }
+    } else if (!btnA && lastControllerState.a) {
+      stopButtonRepeat('a');
     }
+
     if (btnB && !lastControllerState.b) {
       if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.bTrigger === 'function') {
         try { globalControllerActions.bTrigger(); } catch (e) { console.error(e); }
+        startButtonRepeat('b', globalControllerActions.bTrigger);
       }
+    } else if (!btnB && lastControllerState.b) {
+      stopButtonRepeat('b');
     }
+
     if (btnX && !lastControllerState.x) {
       if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.xTrigger === 'function') {
         try { globalControllerActions.xTrigger(); } catch (e) { console.error(e); }
+        startButtonRepeat('x', globalControllerActions.xTrigger);
       }
+    } else if (!btnX && lastControllerState.x) {
+      stopButtonRepeat('x');
     }
+
     if (btnY && !lastControllerState.y) {
       if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.yTrigger === 'function') {
         try { globalControllerActions.yTrigger(); } catch (e) { console.error(e); }
+        startButtonRepeat('y', globalControllerActions.yTrigger);
       }
+    } else if (!btnY && lastControllerState.y) {
+      stopButtonRepeat('y');
     }
+
     if (btnPlay && !lastControllerState.play) {
       if (typeof globalControllerActions !== 'undefined' && typeof globalControllerActions.playTrigger === 'function') {
         try { globalControllerActions.playTrigger(); } catch (e) { console.error(e); }
+        startButtonRepeat('play', globalControllerActions.playTrigger);
       }
+    } else if (!btnPlay && lastControllerState.play) {
+      stopButtonRepeat('play');
     }
 
     // D-pad / analog movement (still allow holding to move selection based on existing behavior)
-    if (currentUp) moveSelection("up");
-    if (currentDown) moveSelection("down");
-    if (currentLeft) moveSelection("left");
-    if (currentRight) moveSelection("right");
+    if (currentUp && !globalControllerActions.upMoveTakenDown) moveSelection("up");
+    if (currentDown && !globalControllerActions.downMoveTakenDown) moveSelection("down");
+    if (currentLeft && !globalControllerActions.leftMoveTakenDown) moveSelection("left");
+    if (currentRight && !globalControllerActions.rightMoveTakenDown) moveSelection("right");
 
     // A button (unchanged)
     if (pad.buttons[0].pressed) {

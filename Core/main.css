@@ -85,7 +85,7 @@ btext {
 
 
 
-body {
+html {
   font-family:
     "Arial",
     Arial,
@@ -235,22 +235,22 @@ a {
 
 .easy {
   --diff-color: #00FF0030;
-  --border-color: #00FF00;
+  --border-color: #00ff0019;
 }
 
 .medium {
   --diff-color: #FFA50030;
-  --border-color: #FFA500;
+  --border-color: #FFA50019;
 }
 
 .hard {
   --diff-color: #FF000030;
-  --border-color: #FF0000;
+  --border-color: #FF000019;
 }
 
 .expert {
   --diff-color: #ff00ff30;
-  --border-color: #c300ff;
+  --border-color: #c300ff19;
 }
 
 .difficulty-dot {

@@ -70,6 +70,8 @@ const CONFIG = {
   LONG_ANIMATION: 300,
   LONGER_ANIMATION: 500,
 
+  SCORING_INDICATORS: false,
+
   DIFFICULTY_MAP: {
     1: "Easy",
     2: "Medium",
@@ -78,7 +80,7 @@ const CONFIG = {
   },
 
   AUTOPLAY: false,
-  BUTTONS: true,
+  BUTTONS: false,
   TOUCHSCREEN: false,
 
   FLASHING_LIGHTS: 1,
@@ -122,7 +124,7 @@ class GameState {
           this.lightMap = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/light_${this.crossDetails.map}`, 'utf8'));
         } catch (error) { };
       } else {
-        const SERVER_URL = 'http://192.168.100.235:5500/'; // Replace with your actual server IP:port
+        const SERVER_URL = 'http://192.168.100.11:5500'; // Replace with your actual server IP:port
         try {
           // Fetch crossdetails
           const crossResponse = await fetch(`${SERVER_URL}/Core/crossdetails`);
@@ -162,12 +164,19 @@ class GameState {
       this.score = 0;
 
       CONFIG.AUDIO_OFFSET = getSetting('audio_offset', 0);
-      CONFIG.HINT_VISIBILITY = getSetting('note_hint', 0.5);
+      CONFIG.HINT_VISIBILITY = getSetting('note_hint', 0);
       CONFIG.FLASHING_LIGHTS = getSetting('flashing_lights', 1);
       CONFIG.GIMMICKS = getSetting('gimmicks', 1);
       CONFIG.VFX_CACHE_MULTIPLIER = getSetting('vfx_cache', 3);
       CONFIG.INPUT_MODE = getSetting('input_mode', 'buttons');
       CONFIG.VFX_DURATION = getSetting('vfx_duration', 600);
+      CONFIG.NOTE_PREVIEW_DELAY = (5 / getSetting('note_speed', 6)) * 1000;
+      CONFIG.SCORING_INDICATORS = Number(getSetting('perfection_indicator', 1));
+      if (!CONFIG.SCORING_INDICATORS) {
+        document.getElementById('perfectionIndicator').remove();
+      }
+      CONFIG.HINT_START = (CONFIG.NOTE_PREVIEW_DELAY / (CONFIG.CONTAINER_RADIUS)) * 3.7;
+      CONFIG.SCALE_DURATION = (CONFIG.NOTE_PREVIEW_DELAY / 100) * 85;
       if (CONFIG.INPUT_MODE == "buttons") {
         CONFIG.BUTTONS = true;
       } else if (CONFIG.INPUT_MODE == "touch" || isAndroid) {
@@ -185,6 +194,7 @@ class GameState {
         note: "Note",
         holdNote: "Note Holdable",
         goldenNote: "Note Golden",
+        starterNote: "Starter",
       }
       let holdNoteDesigns = {
         sliderTop: "Top",
@@ -286,10 +296,16 @@ class GameState {
         5: false,
         6: false,
         7: false,
+      },
+      scoringIndicators: {
+        'perfect': document.getElementById('perfect'),
+        'great': document.getElementById('great'),
+        'ok': document.getElementById('okay'),
+        'bad': document.getElementById('bad'),
+        'miss': document.getElementById('miss')
       }
     };
-
-    CONFIG.NOTE_PREVIEW_DELAY = (5 / getSetting('note_speed', 6)) * 1000;
+    this.lastScoringIndicatorDisplayed = null;
 
     // this.elements.topLevelContainer.style.scale = getSetting('hexagon_size', 1);
 
@@ -429,21 +445,21 @@ class GameState {
     }
 
 
-    const rect = this.elements.container.getBoundingClientRect();
-    const centerX = rect.x + (rect.width / 2);
-    const centerY = rect.y + (rect.height / 2);
+    var rect = this.elements.container.getBoundingClientRect();
+    var centerX = rect.x + (rect.width / 2);
+    var centerY = rect.y + (rect.height / 2);
     this.cachedRects = { rect, centerX, centerY };
     setTimeout(() => {
-      const rect = this.elements.container.getBoundingClientRect();
-      const centerX = rect.x + (rect.width / 2);
-      const centerY = rect.y + (rect.height / 2);
+      var rect = this.elements.container.getBoundingClientRect();
+      var centerX = rect.x + (rect.width / 2);
+      var centerY = rect.y + (rect.height / 2);
       this.cachedRects = { rect, centerX, centerY };
 
     }, 3000);
     window.addEventListener('resize', () => {
-      const rect = this.elements.container.getBoundingClientRect();
-      const centerX = rect.x + (rect.width / 2);
-      const centerY = rect.y + (rect.height / 2);
+      var rect = this.elements.container.getBoundingClientRect();
+      var centerX = rect.x + (rect.width / 2);
+      var centerY = rect.y + (rect.height / 2);
       this.cachedRects = { rect, centerX, centerY };
     });
   }
@@ -459,7 +475,7 @@ class GameState {
       this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
     } else {
       // Android: Fetch from server
-      const SERVER_URL = 'http://192.168.100.235:5500';
+      const SERVER_URL = 'http://192.168.100.11:5500';
       filePath = `${SERVER_URL}/Beatmaps/${this.crossDetails.location}/audio.mp3`;
 
       try {
@@ -886,10 +902,10 @@ class InputSystem {
   }
 
   swipeNote(note, point) {
+    point.associatedNote = note;
     if ((note.swipeEnd - CONFIG.PERMISSIVE_SWIPE_TIMEFRAME) > game.gameState.currentTime) {
       note.tracePath.classList.add('permissive-swipe');
       note.shouldBeDone = true;
-      return point.associatedNote = note;
     }
     const noteEndAverage = (game.gameState.currentTime + note.swipeEnd) / 2;
     this.gameState.scoringSystem.judge(noteEndAverage, true);
@@ -1028,15 +1044,23 @@ class InputSystem {
       return note.time <= currentTime && !note.done;
     });
 
-    // Process each relevant note
     relevantNotes.forEach(note => {
-      if (note.slider && !note.isBeingHeld) {
-        note.blockRelease = true;
-        this.holdSlider(note);
-      } else if (note.slider && note.isBeingHeld && currentTime > note.sliderEnd) {
-        this.releaseSlider(note);
+      if (note.slider) {
+        // Hold slider if we haven't started and haven't passed the start time
+        if (!note.wasEverHeld && currentTime >= note.time) {
+          note.blockRelease = true;
+          this.holdSlider(note);
+        }
+        // Release slider when we pass the end time
+        else if (note.isBeingHeld && currentTime >= note.sliderEnd) {
+          note.blockRelease = false;
+          this.releaseSlider(note);
+        }
       } else if (note.swipe) {
-        this.swipeNote(note)
+        this.swipeNote(note);
+      } else {
+        console.log(note.time)
+        this.hitNote(note);
       }
     });
   }
@@ -1282,6 +1306,10 @@ class InputSystem {
       note.wasEverHeld = true;
       this.gameState.scoringSystem.judge(note.time);
     }
+    if (note.hint) {
+      note.hint.remove();
+      note.hint = null;
+    }
   }
 
   releaseSlider(note) {
@@ -1513,7 +1541,7 @@ class RenderingSystem {
   }
 
   createNewNoteElements(currentTime) {
-    const relevantNotes = this.gameState.sheet.filter(note => (!note.element && (currentTime >= (note.startAt || note.time) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION + CONFIG.CREATION_ANTIDELAY))));
+    const relevantNotes = this.gameState.sheet.filter(note => (!note.element && (currentTime >= ((note.startAt ? this.timingSystem.fromSpecial(note.startAt) : note.time)) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION + CONFIG.CREATION_ANTIDELAY))));
 
     for (let i = 0; i < relevantNotes.length; i++) {
       const note = relevantNotes[i];
@@ -1598,6 +1626,13 @@ class RenderingSystem {
         hint.style.scale = 0;
         hint.style.opacity = CONFIG.HINT_VISIBILITY;
         note.hint = hint;
+
+        const endHint = document.createElement('div');
+        endHint.classList.add('hint');
+        header.appendChild(endHint);
+        endHint.style.scale = 0;
+        endHint.style.opacity = CONFIG.HINT_VISIBILITY;
+        note.endHint = endHint;
       }
 
       note.endElement = header2;
@@ -1613,11 +1648,12 @@ class RenderingSystem {
       header.classList.add('header');
       noteElement.appendChild(header);
 
-      if (!note.swipe) {
+      if (CONFIG.HINT_VISIBILITY != 0) {
         const hint = document.createElement('div');
         hint.classList.add('hint');
-
         header.appendChild(hint);
+        hint.style.scale = 0;
+        hint.style.opacity = CONFIG.HINT_VISIBILITY;
         note.hint = hint;
       }
 
@@ -1763,6 +1799,7 @@ class RenderingSystem {
       let pointAngle = this.inputSystem.getSegment(point.angle);
       if (pointAngle == 6) pointAngle = 0;
       if (pointAngle == note.angle) {
+        if (!CONFIG.TOUCHSCREEN && point.analog) continue
         return this.inputSystem.hitNote(note, pointID)
       }
     }
@@ -1796,7 +1833,11 @@ class RenderingSystem {
     }
 
     if (note.halfSwipe) {
-      this.updateRotationalSwipeState(note);
+      if (CONFIG.TOUCHSCREEN) {
+        this.updateComplexSwipeState(note);
+      } else {
+        this.updateRotationalSwipeState(note);
+      }
     } else if (note.quarterSwipe) {
       this.updateComplexSwipeState(note);
     } else {
@@ -1820,6 +1861,7 @@ class RenderingSystem {
 
     for (let pointID in foundNotePoints) {
       let foundPoint = this.inputSystem.points.get(pointID);
+      if (!foundPoint) continue
 
       if (foundPoint.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD) {
         const delta = note.direction != -1 ? this.angleDelta(foundNotePoints[pointID].initialAngle, this.inputSystem.normalizeAngle(foundPoint.rawAngle)) : this.angleDelta(this.inputSystem.normalizeAngle(foundPoint.rawAngle), foundNotePoints[pointID].initialAngle);
@@ -1875,7 +1917,7 @@ class RenderingSystem {
     }
 
     for (let [pointID, point] of this.inputSystem.points) {
-      if (finalNotePoints.indexOf(pointID) == -1) continue;
+      if (finalNotePoints.indexOf(pointID) != -1) continue;
       let pointAngle = this.inputSystem.getSegment(point.angle);
       if (pointAngle == 6) pointAngle = 0;
       if (!point.associatedNote && point.analog && point.distance > CONFIG.PERMISSIVE_SWIPE_TRESHOLD) {
@@ -1956,6 +1998,9 @@ class RenderingSystem {
     if (note.hint) {
       note.hint.style.scale = getProgress(currentTime, sliderStart - previewDelay, sliderStart);
     }
+    if (note.endHint) {
+      note.endHint.style.scale = getProgress(currentTime, sliderEnd - previewDelay, sliderEnd);
+    }
     let currentHeight = progress * maxHeight;
     if ((currentTime + previewDelay) <= sliderEnd) {
       note.midframe.style.scale = `1 ${(currentHeight) / CONFIG.NOTE_RADIUS}`;
@@ -2017,7 +2062,7 @@ class RenderingSystem {
     note.element.style.transform = `scale(${scale})`;
 
     if (note.hint) {
-      note.hint.style.scale = Math.min(1.1, getProgress(currentTime + previewDelay, noteTime, noteTime + previewDelay));
+      note.hint.style.scale = Math.min(1.1, getProgress(currentTime + previewDelay, noteTime - CONFIG.HINT_START, noteTime + previewDelay));
     }
 
     note.element.style.translate = `0px ${Math.min(
@@ -2111,9 +2156,20 @@ class ScoringSystem {
     }
     this.gameState.scoringPad[accuracy].push(noteTime - currentTime);
 
-    this.gameState.elements.perfectionIndicator.style.backgroundImage = `url('./Assets/Scoring/${accuracy}.svg')`;
-    this.gameState.elements.perfectionIndicator.style.animationName = 'none'
-    requestAnimationFrame(() => { this.gameState.elements.perfectionIndicator.style.animationName = null });
+    if (CONFIG.SCORING_INDICATORS) {
+      if (this.gameState.lastScoringIndicatorDisplayed) {
+        this.gameState.lastScoringIndicatorDisplayed.style.display = 'none';
+        this.gameState.lastScoringIndicatorDisplayed.style.animationName = 'none'
+      }
+      this.gameState.elements.scoringIndicators[accuracy].style.display = 'none';
+      this.gameState.elements.scoringIndicators[accuracy].style.animationName = 'none';
+      requestAnimationFrame(() => {
+        this.gameState.elements.scoringIndicators[accuracy].style.display = 'block'
+        this.gameState.elements.scoringIndicators[accuracy].style.animationName = null;
+        this.gameState.lastScoringIndicatorDisplayed = this.gameState.elements.scoringIndicators[accuracy];
+      });
+    }
+
     if (note?.slider) return;
     try {
       this.gameState.playHitSound(note)
@@ -2178,7 +2234,7 @@ class RhythmGame {
       }
     } else {
       // Android: Fetch from server
-      const SERVER_URL = 'http://192.168.100.235:5500';
+      const SERVER_URL = 'http://192.168.100.11:5500';
       for (let type in audioPaths) {
         try {
           // build correct URL (audioPaths like "./Assets/hit_normal.mp3")
@@ -2256,8 +2312,12 @@ class RhythmGame {
 
   pauseGame() {
     if (this.gameState.paused) return this.unpauseGame();
+    try {
+      cancelPolling = false;
+    } catch (e) { }
     this.gameState.audioContext.suspend();
     this.gameState.paused = true;
+    return
     this.gameState.elements.noteContainerFrame.parentElement.parentElement.style.opacity = 0;
     this.gameState.elements.noteContainerFrame.parentElement.style.scale = 0.9;
     this.gameState.elements.pauseButton.firstElementChild.classList.remove('pause');
@@ -2272,7 +2332,9 @@ class RhythmGame {
     let cc = document.createElement('script');
     cc.src = '../Utilities/controller-control.js'
     document.head.appendChild(cc);
-    this.gameState.pauseScript = cc;
+    cc.onload = () => {
+      this.gameState.pauseScript = cc;
+    }
   }
 
   unpauseGame(force) {
@@ -2280,8 +2342,6 @@ class RhythmGame {
     document.getElementById('restartButton').classList.remove('controller_selectable', 'selected');
     document.getElementById('backButton').classList.remove('controller_selectable', 'selected');
     if (!force && this.gameState.ended) return;
-    this.gameState.audioContext.resume();
-    this.gameState.paused = false;
     this.gameState.elements.noteContainerFrame.parentElement.parentElement.style.opacity = 1;
     this.gameState.elements.noteContainerFrame.parentElement.style.scale = 1;
     this.gameState.elements.pauseButton.firstElementChild.classList.remove('play');
@@ -2291,7 +2351,18 @@ class RhythmGame {
     this.gameState.elements.backButton.classList.add('hiddenButton');
     this.gameState.elements.restartButton.classList.add('hiddenButton');
     this.gameState.pauseScript.remove();
+    cancelPolling = true;
+
+    setTimeout(() => {
+      // perfectionIndicator.innerHTML = ''
+    }, 1000);
+    setTimeout(() => {
+      this.gameState.playHitSound()
+    }, 3000);
+
     this.startGameLoop();
+    this.gameState.audioContext.resume();
+    this.gameState.paused = false;
     pollGamepads = null;
   }
 
@@ -2376,7 +2447,7 @@ class RhythmGame {
 
       scoreStats.innerHTML = `
       <btext id="hitCounts"><span>${accuracy}%</span></btext> • 
-      <btext id="maxCombo"><span>Max Combo</span> <span>${maxCombo}</span></btext>
+      <btext id="maxCombo"><span>Max Combo</span> <span>${this.gameState.maxCombo}</span></btext>
       <br>
         <div class="scoreIndicator flexbox perfect"><div class="label">PERFECT</div><div class="count">${this.gameState.scoringPad.perfect.length}</div></div>
         <div class="scoreIndicator flexbox great"><div class="label">GREAT</div><div class="count">${this.gameState.scoringPad.great.length}</div></div>

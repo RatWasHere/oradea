@@ -28,10 +28,10 @@ app.on('ready', () => {
     settings = {};
   }
   var window = new BrowserWindow({
-    width: 1000,
+    width: 1100,
     height: 800,
     minHeight: 800,
-    minWidth: 1000,
+    minWidth: 1100,
     titleBarStyle: 'default',
     autoHideMenuBar: true,
     titleBarOverlay: {
@@ -88,6 +88,8 @@ app.on('ready', () => {
       center: true,
       frame: false,
       modal: true,
+      skipTaskbar: true,
+
       parent: window,
       webPreferences: {
         nodeIntegration: true,
@@ -170,6 +172,8 @@ app.on('ready', () => {
       minWidth: width,
       minHeight: height,
       resizable: false,
+      alwaysOnTop: true,
+      title: "Settings",
       movable: false,
       center: true,
       frame: false,

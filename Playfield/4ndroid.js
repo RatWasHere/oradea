@@ -1,4 +1,4 @@
-const isAndroid = /Android/i.test(navigator.userAgent);
+var isAndroid = /Android/i.test(navigator.userAgent);
 
 if (isAndroid) {
   var settings = {

@@ -1,5 +1,5 @@
 let levels = [];
-
+const Clusterize = require('clusterize.js');
 let files = fs.readdirSync('./Beatmaps/');
 
 for (let i in files) {
@@ -31,61 +31,57 @@ let difficultyMap = {
   4: "Expert"
 }
 
-levelsDisplay.innerHTML = `
-  <div class="songTile" style="width: 500px" data-name=""></div>
-`
-
-levels.forEach((level, index) => {
+let mappedLevels = levels.map((level, index) => {
   try {
     let difficulties = ``;
     for (let i in level.information.difficulties) {
       difficulties += `<div class="difficulty-dot flexbox ${difficultyMap[i].toLowerCase()}"><difficulty>${level.information.ratings[i]}</difficulty></div>`;
     }
-    let item = document.createElement('div');
-    level.element = item;
-    item.className = 'songTile flexbox'
-    item.id = `level-${index}`
     level.difficulties = difficulties;
-    item.dataset.name = level.information.name.toLowerCase();
-    item.dataset.artist = level.information.artist.toLowerCase();
-    item.innerHTML = `
-    <div class="song-cover controller_selectable" onclick="highlightSong(${index})" data-hitc="play()" data-highlight="highlightSong(${index})" style="background-image: url('${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}/${level.information.cover}')">
-      <div class="flexbox difficulties-preview">${difficulties}</div>
-    </div>
-    <div class="song-details">
-      <btextm class="song_name">${level.information.name} <span class="small">${level.information.romanizedName || ""}</span></btextm>
-      <btextm class="song_artist" style="margin-bottom: auto;">${level.information.artist}</btextm>
+    return `
+    <div class="songTile flexbox" onclick="highlightSong(${index})" id="level-${index}" data-index="${index}" data-name="${level.information.name.toLowerCase()}" data-artist="${level.information.artist.toLowerCase()}">  
+      <div class="song-cover" style="background-image: url('${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}/${level.information.cover}')">
+      </div>
+      <div class="song-details">
+          <btextm class="song_name">${level.information.name} <span class="small">${level.information.romanizedName || ""}</span></btextm>
+          <btextm class="song_artist" style="margin-bottom: auto;">${level.information.artist}</btextm>
+        <div class="flexbox difficulties-preview">${difficulties}</div>
+      </div>
     </div>
     `
+
     levelsDisplay.appendChild(item);
   } catch (error) { }
 });
-levelsDisplay.innerHTML += `
-  <div class="songTile" style="min-width: 50vw"></div>
-  `
+var clusterize = new Clusterize({
+  rows: mappedLevels,
+  scrollId: "levels",
+  contentId: "levelsContent",
+  rows_in_block: 5,
+  blocks_in_cluster: 4,
+})
 
 
 let currentAudio = null;
 let currentAudioStopTimer = null;
-let lastSelectedDifficulty = 0;
+let lastSelectedDifficulty = getSetting('preferredDifficulty', 1);
 
 async function highlightSong(index, scrollOffset = 0) {
-  if (levels[index].element.style.display == 'none') {
-    return;
-  };
-  // Remove highlight from previous song
+  // if (levels[index].element.style.display == 'none') {
+  //   return;
+  // };
+
   document.getElementById('level-' + chosenSong)?.classList.remove('highlighted');
-  // Add highlight to new song
   document.getElementById('level-' + index)?.classList.add('highlighted');
   const levelsContainer = document.getElementById('levels');
   const selectedTile = document.getElementById('level-' + index);
   const containerRect = levelsContainer.getBoundingClientRect();
   const tileRect = selectedTile.getBoundingClientRect();
-  const scrollLeft = selectedTile.offsetLeft - (containerRect.width / 2) + (tileRect.width / 2);
+  const scrollTop = (selectedTile.offsetTop - levelsContainer.offsetTop) - (containerRect.height / 2) + (tileRect.height / 2);
 
-  levelsContainer.scrollTo({
-    left: scrollLeft,
-    top: 0,
+
+  document.getElementById('levels').scrollTo({
+    top: scrollTop,
     behavior: 'smooth'
   });
 
@@ -103,21 +99,21 @@ async function highlightSong(index, scrollOffset = 0) {
   document.getElementById('song-credits').innerHTML = level.information.credits || "Unknown credits";
   // document.getElementById('song-author').innerText = level.information.artist;
   let difficulties = ``;
-  if (!level.information.difficulties[lastSelectedDifficulty]) lastSelectedDifficulty = Object.keys(level.information.difficulties)[0];
+  let difficulties_ = level.information.difficulties;
+  if (lastSelectedDifficulty != `${settings.preferredDifficulty}` && difficulties_[`${settings.preferredDifficulty}`]) {lastSelectedDifficulty = `${settings.preferredDifficulty}`} else
+  if (!difficulties_[lastSelectedDifficulty] && difficulties_[settings.preferredDifficulty]) {lastSelectedDifficulty = `${settings.preferredDifficulty}`}
+  else if (!difficulties_[lastSelectedDifficulty]) lastSelectedDifficulty = Object.keys(level.information.difficulties)[0];
+
   for (let i in level.information.difficulties) {
-    difficulties += `<div id="difficulty-${i}" onclick="selectDifficulty(${i})" class="difficulty-dot controller_selectable flexbox clickable ${difficultyMap[i].toLowerCase()} ${i == lastSelectedDifficulty ? 'highlighted' : ''}"><div style="margin: auto;">${difficultyMap[i]} - ${level.information.ratings[i]}</div></div>`;
+    difficulties += `<div id="difficulty-${i}" onclick="selectDifficulty(${i})" class="difficulty-dot flexbox clickable ${difficultyMap[i].toLowerCase()} ${i == lastSelectedDifficulty ? 'highlighted' : ''}"><div class="dotParent"><difficulty-name>${difficultyMap[i]}</difficulty-name> <difficulty-level>${level.information.ratings[i]}</difficulty-level></div></div>`;
   }
   document.getElementById('song-difficulties').innerHTML = difficulties;
-  // Stop previous audio preview and cleanup
   stopCurrentPreview();
 
-  // Create new audio
   const audio = new Audio(`../Beatmaps/${level.location}/audio.mp3`);
   currentAudio = audio;
 
-  // Set up play handler
   const playPreview = () => {
-    // Ensure this is still the current audio (user hasn't clicked another song)
     if (audio !== currentAudio) return;
     audio.volume = 0
 
@@ -137,17 +133,14 @@ async function highlightSong(index, scrollOffset = 0) {
       audio.volume = 1;
     }, 250);
 
-    // Play from the middle
     if (audio.duration) {
       audio.currentTime = Math.min(Math.floor(audio.duration / 2), audio.duration - 15);
     } else {
-      // Fallback if duration isn't available yet
       audio.currentTime = 30;
     }
 
     audio.play().catch(e => console.error("Audio play failed:", e));
 
-    // Set timeout to stop after 15 seconds
     currentAudioStopTimer = setTimeout(() => {
       if (audio === currentAudio) {
         stopCurrentPreview();
@@ -175,7 +168,11 @@ function selectDifficulty(difficulty) {
   difficulties.querySelectorAll('.difficulty-dot').forEach(dot => dot.classList.remove('highlighted'));
   difficulties.querySelector(`#difficulty-${difficulty}`).classList.add('highlighted');
   lastSelectedDifficulty = difficulty;
+  settings.preferredDifficulty = difficulty;
+  saveSettings();
 }
+
+
 
 function stopCurrentPreview() {
   if (currentAudioStopTimer) {
@@ -206,7 +203,6 @@ document.onkeydown = (event) => {
 function play() {
   document.getElementById('song').style.transform = 'translateX(500px)';
   document.getElementById('songs').style.transform = 'translateX(-100vw)';
-  document.getElementById('level-' + chosenSong).classList.remove('highlighted');
 
   setTimeout(() => {
     fs.writeFileSync('./Core/crossdetails', JSON.stringify({ location: levels[chosenSong].location, difficulty: lastSelectedDifficulty, map: levels[chosenSong].information.difficulties[lastSelectedDifficulty] }, null, 2));
@@ -217,11 +213,26 @@ function play() {
 let wheelEvent = (event) => {
   event.preventDefault();
   if (event.deltaY > 0) {
-    highlightSong((chosenSong + 1) % levels.length);
+    if (chosenSong == levels.length - 1) return;
+    highlightSong((chosenSong + 1));
   } else if (event.deltaY < 0) {
+    if (chosenSong == 0) return;
     highlightSong((chosenSong + levels.length - 1) % levels.length);
   }
 }
+
+globalControllerActions.downMove = () => {
+  if (chosenSong == levels.length - 1) return;
+  highlightSong((chosenSong + 1));
+}
+
+globalControllerActions.upMove = () => {
+  if (chosenSong == 0) return;
+  highlightSong((chosenSong + levels.length - 1) % levels.length);
+}
+globalControllerActions.upMoveTakenDown = true;
+globalControllerActions.downMoveTakenDown = true;
+
 
 document.addEventListener('wheel', wheelEvent, { passive: false });
 
@@ -242,6 +253,10 @@ globalControllerActions.rightTrigger = () => {
   selectDifficulty(supposedDifficulty);
 }
 
+globalControllerActions.aTrigger = () => {
+  play();
+}
+
 let mouseDownStarted = null;
 document.addEventListener('mousedown', (event) => {
   console.log('md')
@@ -251,19 +266,19 @@ document.addEventListener('mouseup', () => {
   mouseDownStarted = null;
 })
 
-document.addEventListener('mousemove', (event) => {
-  if (mouseDownStarted) {
-    let movement = Math.abs(event.x - mouseDownStarted.x);
-    let addition = -1;
-    if (event.x < mouseDownStarted.x) {
-      addition = 1;
-    }
-    if (movement > 90) {
-      wheelEvent({ deltaY: addition, preventDefault: () => { } });
-      mouseDownStarted = { x: event.x };
-    }
-  }
-})
+// document.addEventListener('mousemove', (event) => {
+//   if (mouseDownStarted) {
+//     let movement = Math.abs(event.y - mouseDownStarted.y);
+//     let addition = -1;
+//     if (event.y < mouseDownStarted.y) {
+//       addition = 1;
+//     }
+//     if (movement > 90) {
+//       wheelEvent({ deltaY: addition, preventDefault: () => { } });
+//       mouseDownStarted = { y: event.y };
+//     }
+//   }
+// })
 
 function startSearch(query) {
   let possibleMatches = document.querySelectorAll('.songTile');
@@ -285,3 +300,11 @@ function startSearch(query) {
     highlightSong(firstSelected);
   }
 }
+
+setInterval(() => {
+  try {
+    if (!document.getElementById('level-' + chosenSong).classList.contains('highlighted')) {
+      document.getElementById('level-' + chosenSong).classList.add('highlighted');
+    }
+  } catch (error) { console.log(error) }
+}, 50)

@@ -1,0 +1,20 @@
+*{box-sizing:border-box;font-family:Inter, Arial, sans-serif}
+body{background:#111;color:#eee;margin:0;padding:16px}
+#app{max-width:1100px;margin:0 auto}
+header{display:flex;align-items:center;gap:12px}
+#controls{display:flex;gap:8px;align-items:center;margin:12px 0}
+#controls select, #controls button{padding:6px 8px;background:#222;border:1px solid #444;color:#fff}
+#editorArea{display:flex;gap:12px}
+#timeline{background:#0b0b0b;border:1px solid #333;margin-bottom:8px;width:100%}
+#notesPanel{width:240px;background:#0e0e0e;padding:8px;border:1px solid #333}
+#notesList{list-style:none;padding:0;margin:0}
+#notesList li{padding:6px;border-bottom:1px solid #222;display:flex;justify-content:space-between}
+button{cursor:pointer}
+#status{margin-left:12px;font-size:0.9em;color:#9ad}
+
+label{display:flex;align-items:center;gap:6px}
+#controls input[type="number"]{width:84px;padding:6px}
+#controls select{padding:6px}
+.note-tap{fill:#ff6}
+.note-hold{fill:#6cf}
+.note-slide{fill:#f96}
