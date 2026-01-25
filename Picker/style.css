@@ -37,6 +37,7 @@ body {
   justify-content: start;
   position: relative;
   z-index: 2;
+  box-shadow: inset 0 0 2px #ffffff15;
   margin-left: 10px;
   margin-right: 10px;
   background: #FFFFFF10;

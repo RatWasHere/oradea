@@ -1302,13 +1302,13 @@ class InputSystem {
   holdSlider(note) {
     note.isBeingHeld = true;
     this.createNoteAura(note);
-    if (!note.wasEverHeld) {
-      note.wasEverHeld = true;
-      this.gameState.scoringSystem.judge(note.time);
-    }
     if (note.hint) {
       note.hint.remove();
       note.hint = null;
+    }
+    if (!note.wasEverHeld) {
+      note.wasEverHeld = true;
+      this.gameState.scoringSystem.judge(note.time);
     }
   }
 
@@ -1999,7 +1999,11 @@ class RenderingSystem {
       note.hint.style.scale = getProgress(currentTime, sliderStart - previewDelay, sliderStart);
     }
     if (note.endHint) {
+      let scale = getProgress(currentTime, sliderEnd - previewDelay, sliderEnd);
       note.endHint.style.scale = getProgress(currentTime, sliderEnd - previewDelay, sliderEnd);
+      if (scale > 1.05) {
+        note.endHint.style.opacity = 0;
+      }
     }
     let currentHeight = progress * maxHeight;
     if ((currentTime + previewDelay) <= sliderEnd) {
@@ -2317,7 +2321,6 @@ class RhythmGame {
     } catch (e) { }
     this.gameState.audioContext.suspend();
     this.gameState.paused = true;
-    return
     this.gameState.elements.noteContainerFrame.parentElement.parentElement.style.opacity = 0;
     this.gameState.elements.noteContainerFrame.parentElement.style.scale = 0.9;
     this.gameState.elements.pauseButton.firstElementChild.classList.remove('pause');

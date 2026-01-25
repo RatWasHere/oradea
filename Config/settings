@@ -1,5 +1,5 @@
 {
-  "note_speed": 6,
+  "note_speed": 16,
   "hexagon_size": "1",
   "input_mode": "buttons",
   "snap_extension": "0",
@@ -18,7 +18,7 @@
   "noteDesign": "geometrical",
   "holdNoteDesign": "geometrical",
   "offset": 71,
-  "preferredDifficulty": 1,
+  "preferredDifficulty": 2,
   "keybinds": {
     "1": "A",
     "2": "J",
