@@ -37,6 +37,7 @@ const CONFIG = {
   GAMEPAD_DEADZONE: 0.2,
 
   AUDIO_OFFSET: 0,
+  AUDIO_START_DELAY: 10, // ms delay before audio starts 
 
   FLICK_THRESHOLD: 13,
   FLICK_OFFSET: 20,
@@ -154,6 +155,8 @@ class GameState {
         }
       }
 
+      this.bpm = this.information.bpm;
+
       document.getElementById('songArt').style.backgroundImage = `url('../Beatmaps/${this.crossDetails.location}/${this.information.cover}')`;
       document.getElementById('songName').innerHTML = this.information.name;
       document.getElementById('songArtist').innerHTML = this.information.artist;
@@ -162,6 +165,7 @@ class GameState {
       this.combo = 0;
       this.maxCombo = 0;
       this.score = 0;
+      this.noteIndex = 2147483647;
 
       CONFIG.AUDIO_OFFSET = getSetting('audio_offset', 0);
       CONFIG.HINT_VISIBILITY = getSetting('note_hint', 0);
@@ -170,13 +174,19 @@ class GameState {
       CONFIG.VFX_CACHE_MULTIPLIER = getSetting('vfx_cache', 3);
       CONFIG.INPUT_MODE = getSetting('input_mode', 'buttons');
       CONFIG.VFX_DURATION = getSetting('vfx_duration', 600);
-      CONFIG.NOTE_PREVIEW_DELAY = (5 / getSetting('note_speed', 6)) * 1000;
+      let noteSpeed = getSetting('note_speed', 6) * 40;
       CONFIG.SCORING_INDICATORS = Number(getSetting('perfection_indicator', 1));
+      // 185% is a beat
+      let bpm = this.information.bpm || 100;
+      let beatDuration = (60 / bpm) * noteSpeed;
+      let fullDuration = (beatDuration / 100)
+      CONFIG.NOTE_PREVIEW_DELAY = (5 / getSetting('note_speed', 6)) * 1000;
+      CONFIG.SCALE_DURATION = (CONFIG.NOTE_PREVIEW_DELAY / 100) * 85;
       if (!CONFIG.SCORING_INDICATORS) {
         document.getElementById('perfectionIndicator').remove();
       }
-      CONFIG.HINT_START = (CONFIG.NOTE_PREVIEW_DELAY / (CONFIG.CONTAINER_RADIUS)) * 3.7;
-      CONFIG.SCALE_DURATION = (CONFIG.NOTE_PREVIEW_DELAY / 100) * 85;
+      CONFIG.HINT_START = CONFIG.NOTE_PREVIEW_DELAY / 2.5;
+      this.beatDuration = (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.HINT_START);
       if (CONFIG.INPUT_MODE == "buttons") {
         CONFIG.BUTTONS = true;
       } else if (CONFIG.INPUT_MODE == "touch" || isAndroid) {
@@ -214,6 +224,9 @@ class GameState {
       for (let design in holdNoteDesigns) {
         document.styleSheets[0].insertRule(`:root { --${design}: url('../Assets/Headers/${holdNoteDesign}/${holdNoteDesigns[design]}.svg') }`);
       }
+
+      // Precache startAt values for performance
+      this.precacheStartAtValues();
 
       let lastNote = this.sheet[this.sheet.length - 1];
       let determinedTime = lastNote.time;
@@ -262,9 +275,23 @@ class GameState {
     }
   }
 
+  precacheStartAtValues() {
+    // Pre-calculate startAt times for notes that have special timing
+    for (let i = 0; i < this.sheet.length; i++) {
+      const note = this.sheet[i];
+      if (note.startAt) {
+        // Cache the computed value to avoid repeated calculations
+        note._cachedStartAt = this.timingSystem ?
+          this.timingSystem.fromSpecial(note.startAt) :
+          note.time;
+      }
+    }
+  }
+
   initializeDOM() {
     this.elements = {
       container: document.getElementById('noteContainer'),
+      centerContainer: document.getElementById('centerContainer'),
       topLevelContainer: document.getElementById('topLevelContainer'),
       comboDisplay: document.getElementById('comboDisplay'),
       previewers: document.querySelectorAll('.previewer_parent'),
@@ -280,12 +307,17 @@ class GameState {
       backButton: document.getElementById('backButton'),
       restartButton: document.getElementById('restartButton'),
       controls: document.getElementById('controls'),
+      tunnel_vision: document.getElementById('tunnel_vision'),
       overlay: document.getElementById('overlay'),
+      bpmFrame: document.getElementById('bpmFrame'),
+      usedScoreNumber: document.getElementById('usedScore'),
+      unusedScoreNumber: document.getElementById('unusedScore'),
       flickers: [
-        document.getElementById('lightshow_1'), document.getElementById('lightshow_2'),
+        document.getElementById('lightshow_8'), document.getElementById('lightshow_1'),
+        document.getElementById('lightshow_2'),
         document.getElementById('lightshow_3'), document.getElementById('lightshow_4'),
         document.getElementById('lightshow_5'), document.getElementById('lightshow_6'),
-        document.getElementById('lightshow_7'), document.getElementById('lightshow_8'),
+        document.getElementById('lightshow_7')
       ],
       flickerStates: {
         0: false,
@@ -307,7 +339,7 @@ class GameState {
     };
     this.lastScoringIndicatorDisplayed = null;
 
-    // this.elements.topLevelContainer.style.scale = getSetting('hexagon_size', 1);
+    this.elements.topLevelContainer.style.scale = getSetting('hexagon_size', 1);
 
     this.effectItems = []
     for (let i = 0; i < 4 * CONFIG.VFX_CACHE_MULTIPLIER; i++) {
@@ -503,15 +535,19 @@ class GameState {
     this.audioSource = this.audioContext.createBufferSource();
     this.audioSource.buffer = this.audioBuffer;
     this.audioSource.connect(this.gainNode);
-    this.audioSource.start(0);
-    this.audioStartTime = this.audioContext.currentTime;
+    const audioDelaySeconds = CONFIG.AUDIO_START_DELAY / 1000;
+    const startTime = this.audioContext.currentTime + audioDelaySeconds;
+
+    this.audioSource.start(startTime);
+
+    // 2. Set this as your absolute "Zero"
+    this.audioStartTime = startTime;
     this.paused = false;
-    this.gainNode.gain.value = Number(getSetting('music_volume', 90)) / 100;
   }
 
   get currentTime() {
     // if (!this.audioBuffer || !this.audioStartTime) return (Performance.now() - (loadTime));
-    return ((this.audioContext.currentTime - this.audioStartTime) * 1000)
+    return (this.audioContext.currentTime - this.audioStartTime) * 1000;
   }
 
   seekToTime(timeInMs) {
@@ -522,12 +558,13 @@ class GameState {
 
     this.audioSource = this.audioContext.createBufferSource();
     this.audioSource.buffer = this.audioBuffer;
-    this.audioSource.connect(this.audioContext.destination);
+    this.audioSource.connect(this.gainNode);
 
     const timeInSeconds = timeInMs / 1000;
-    this.audioStartTime = this.audioContext.currentTime - timeInSeconds;
+    const audioDelaySeconds = CONFIG.AUDIO_START_DELAY / 1000;
+    this.audioStartTime = this.audioContext.currentTime;
 
-    this.audioSource.start(0, timeInSeconds);
+    this.audioSource.start(audioDelaySeconds, timeInSeconds);
   }
 }
 class TimingSystem {
@@ -622,14 +659,8 @@ class TimingSystem {
       let modifier = timingPoint.flickers[i];
       const flicker = game.gameState.elements.flickers[modifier.source];
       let duration = modifier.duration || 0;
-      flicker.style.transition = `opacity ${duration}ms ease`
-      if (game.gameState.elements.flickerStates[modifier.source]) {
-        game.gameState.elements.flickerStates[modifier.source] = false;
-        flicker.style.opacity = '0';
-      } else {
-        game.gameState.elements.flickerStates[modifier.source] = true;
-        flicker.style.opacity = modifier.strength || '1';
-      }
+      flicker.style.transition = `opacity ${duration}ms ${modifier.easing || 'ease'}`;
+      flicker.style.opacity = modifier.opacity;
     }
   }
 
@@ -902,13 +933,18 @@ class InputSystem {
   }
 
   swipeNote(note, point) {
-    point.associatedNote = note;
+    if (point) {
+      point.associatedNote = note;
+    }
     if ((note.swipeEnd - CONFIG.PERMISSIVE_SWIPE_TIMEFRAME) > game.gameState.currentTime) {
       note.tracePath.classList.add('permissive-swipe');
       note.shouldBeDone = true;
     }
-    const noteEndAverage = (game.gameState.currentTime + note.swipeEnd) / 2;
-    this.gameState.scoringSystem.judge(noteEndAverage, true);
+    if (CONFIG.PERMISSIVE_SWIPE_TIMEFRAME > (note.swipeEnd - note.time)) {
+      this.gameState.scoringSystem.judge(note.time, true);
+    } else {
+      this.gameState.scoringSystem.judge(note.swipeEnd, true);
+    }
     note.done = true;
     this.createNoteAura(note).then(() => {
       note.traceParent.remove();
@@ -985,7 +1021,14 @@ class InputSystem {
       const t = e.changedTouches[i];
       const id = `touch_${t.identifier}`;
       const pt = this.computeTouchPoint(t.clientX, t.clientY);
-      console.log(pt.rawAngle)
+      if (this.points.get(id)?.associatedNote) {
+        let point = this.points.get(id);
+        let pointSegment = this.getSegment(point.angle);
+        if (pointSegment == 6) pointSegment = 0;
+        if (pointSegment != point.associatedNote.desiredAngle || point.distance < CONFIG.GAMEPAD_DEADZONE) {
+          point.associatedNote = null;
+        }
+      }
       this.updatePoint(id, { angle: this.snapAngle(pt.angleDeg), rawAngle: pt.rawAngle, distance: pt.normalized });
     }
   }
@@ -1075,6 +1118,7 @@ class InputSystem {
     const gamepad = navigator.getGamepads()[0];
     if (!gamepad) return;
 
+    if (gamepad.buttons[9]?.pressed) return this.gameState.pauseGame();
     let stickStates = this.getJoystickStates(gamepad);
     const leftTrigger = gamepad.buttons[6]?.pressed || gamepad.buttons[4]?.pressed;
     const rightTrigger = gamepad.buttons[7]?.pressed || gamepad.buttons[5]?.pressed;
@@ -1261,16 +1305,43 @@ class InputSystem {
     return ((parseFloat(deg) % 360) + 360) % 360;
   }
 
+  // findMatchingNotes(rotation) {
+  //   return this.gameState.sheet.filter(note => {
+  //     if (!note.element || note.done) return false;
+  //     const matchesTime = (note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD;
+  //     if (!matchesTime) return false;
+  //     return this.isInArc(note, rotation);
+  //   })
+  // }
+
   findMatchingNotes(rotation) {
-    return this.gameState.sheet.filter(note => {
-      if (!note.element || note.done) return false;
-      const matchesTime = (note.time - this.gameState.currentTime) <= CONFIG.ACCEPTANCE_THRESHOLD;
-      if (!matchesTime) return false; // avoid running the function if it doesn't match, save even the tiniest microsecond
-      return this.isInArc(note, rotation);
-    })
+    const matches = [];
+    const sheet = this.gameState.sheet;
+    const currentTime = this.gameState.currentTime;
+    const threshold = CONFIG.ACCEPTANCE_THRESHOLD;
+
+    for (let i = 0; i < sheet.length; i++) {
+      const note = sheet[i];
+
+      // 1. Cheapest checks first: Booleans and existence
+      if (!note.element || note.done) continue;
+
+      // 2. Simple Math: Time difference
+      // We check if the note is within the "hit window"
+      const timeDiff = note.time - currentTime;
+
+      // If the note is already in the past (beyond threshold), skip it
+      // If the note is too far in the future, skip it
+      if (Math.abs(timeDiff) > threshold) continue;
+
+      // 3. Most expensive check last: Trigonometry/Arc calculation
+      // This only runs for the 1 or 2 notes that passed the time check
+      if (this.isInArc(note, rotation)) {
+        matches.push(note);
+      }
+    }
+    return matches;
   }
-
-
   getSegment(rotation) {
     return rotation / CONFIG.ANGLE_MODIFIER
   }
@@ -1492,8 +1563,25 @@ class RenderingSystem {
     this.createNewNoteElements(currentTime);
     this.updateNotePositions(currentTime);
     this.cleanupFailedNotes(currentTime);
+    this.cleanupFailedNotes(currentTime);
+    // this.updateBeatMarkerScale(currentTime);
   }
+  updateBeatMarkerScale(currentTime) {
+    const beatsPerCycle = 2; // or 2, or make it a variable
+    const cycleDuration = this.gameState.beatDuration * beatsPerCycle;
+    const cycleProgress = (currentTime % cycleDuration) / cycleDuration;
 
+    // Only scale on the first beat of each cycle
+    const beatInCycle = Math.floor((currentTime / this.gameState.beatDuration) % beatsPerCycle);
+
+    if (beatInCycle === 0) {
+      // Scale from 0 to 1 during the first beat
+      this.gameState.elements.bpmFrame.style.scale = (currentTime % this.gameState.beatDuration) / this.gameState.beatDuration;
+    } else {
+      // Stay at 1 for the remaining beats
+      this.gameState.elements.bpmFrame.style.scale = 1;
+    }
+  }
   updatePreviewSectors() {
     const sectors = [
       (Math.round(this.normalizeAngle(this.gameState.rotations[0] + 270) / 60) + 1) % CONFIG.PREVIEW_COUNT,
@@ -1541,7 +1629,7 @@ class RenderingSystem {
   }
 
   createNewNoteElements(currentTime) {
-    const relevantNotes = this.gameState.sheet.filter(note => (!note.element && (currentTime >= ((note.startAt ? this.timingSystem.fromSpecial(note.startAt) : note.time)) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION + CONFIG.CREATION_ANTIDELAY))));
+    const relevantNotes = this.gameState.sheet.filter(note => (!note.element && (currentTime >= ((note._cachedStartAt !== undefined ? note._cachedStartAt : note.time)) - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION + CONFIG.CREATION_ANTIDELAY))));
 
     for (let i = 0; i < relevantNotes.length; i++) {
       const note = relevantNotes[i];
@@ -1552,6 +1640,11 @@ class RenderingSystem {
   }
 
   createNoteElement(note) {
+    let scaleStart = (note.time) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
+    let scaleEnd = (note.time) - CONFIG.NOTE_PREVIEW_DELAY;
+    note.scaleStart = scaleStart;
+    note.scaleEnd = scaleEnd;
+
     const noteElement = document.createElement('div');
     noteElement.classList.add('item');
 
@@ -1580,10 +1673,6 @@ class RenderingSystem {
     // Set note reference
     note.element = noteElement;
     noteElement.style.setProperty('--r', rotation + 'deg');
-    let scaleStart = (note.time) - ((CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION));
-    let scaleEnd = (note.time) - CONFIG.NOTE_PREVIEW_DELAY;
-    note.scaleStart = scaleStart;
-    note.scaleEnd = scaleEnd;
 
     this.gameState.displayedNotes.push(note);
   }
@@ -1600,7 +1689,7 @@ class RenderingSystem {
 
       noteElement.style.translate = `0px`;
 
-      noteElement.style.setProperty('--sliderHeight', `${actualHeight}px`);
+      // noteElement.style.setProperty('--sliderHeight', `${actualHeight}px`);
 
       note.height = actualHeight;
 
@@ -1623,14 +1712,14 @@ class RenderingSystem {
         const hint = document.createElement('div');
         hint.classList.add('hint');
         header2.appendChild(hint);
-        hint.style.scale = 0;
+        hint.style.transform = `scale(0)`;
         hint.style.opacity = CONFIG.HINT_VISIBILITY;
         note.hint = hint;
 
         const endHint = document.createElement('div');
         endHint.classList.add('hint');
         header.appendChild(endHint);
-        endHint.style.scale = 0;
+        endHint.style.transform = `scale(0)`;
         endHint.style.opacity = CONFIG.HINT_VISIBILITY;
         note.endHint = endHint;
       }
@@ -1647,12 +1736,15 @@ class RenderingSystem {
       const header = document.createElement('div');
       header.classList.add('header');
       noteElement.appendChild(header);
+      header.style.zIndex = this.gameState.noteIndex;
+      this.gameState.noteIndex = this.gameState.noteIndex - 1;
+
 
       if (CONFIG.HINT_VISIBILITY != 0) {
         const hint = document.createElement('div');
         hint.classList.add('hint');
         header.appendChild(hint);
-        hint.style.scale = 0;
+        hint.style.transform = `scale(0)`;
         hint.style.opacity = CONFIG.HINT_VISIBILITY;
         note.hint = hint;
       }
@@ -1666,6 +1758,9 @@ class RenderingSystem {
 
       if (note.swipe) {
         let traceParent = document.createElement('div');
+        traceParent.style.maskImage = 'none';
+        traceParent.style.zIndex = this.gameState.noteIndex;
+        this.gameState.noteIndex = this.gameState.noteIndex - 1;
         traceParent.classList.add('trace-parent');
         let wildCard = 0;
         if (note.halfSwipe) {
@@ -1674,13 +1769,13 @@ class RenderingSystem {
         }
         if (note.quarterSwipe) {
           let multiplier = note.direction == -1 ? -1 : 1;
-          wildCard = 30 * multiplier
+          wildCard = (30 * multiplier) + (30 * multiplier);
         }
         if (note.shortSwipe) {
           let multiplier = note.direction == -1 ? -1 : 1;
-          wildCard = 30 * multiplier;
+          wildCard = (30 * multiplier);
         }
-        traceParent.style.rotate = ((note.angle * CONFIG.ANGLE_MODIFIER) + 300 + 150 + wildCard) + 'deg';
+        traceParent.style.transform = `rotate(${(note.angle * CONFIG.ANGLE_MODIFIER) + 300 + 150 + wildCard}deg`;
 
         let traceType = 'trace-normal';
         let additionalClass = null;
@@ -1695,8 +1790,10 @@ class RenderingSystem {
         traceParent.appendChild(tracePath);
         note.traceParent = traceParent;
         note.tracePath = tracePath;
+        note.fadeInEnd = (note.time - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION)) + (CONFIG.NOTE_PREVIEW_DELAY / 2);
+        note.fadeInStart = (note.time - CONFIG.NOTE_PREVIEW_DELAY) - CONFIG.SCALE_DURATION;
 
-        noteElement.style.setProperty('--duration', `${note.swipeEnd - note.time}ms`)
+        // noteElement.style.setProperty('--duration', `${note.swipeEnd - note.time}ms`)
 
         this.gameState.elements.container.appendChild(traceParent);
         noteElement.classList.add('flick_large_starter');
@@ -1811,26 +1908,26 @@ class RenderingSystem {
     };
     if (note.time - time > (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION)) return;
     if (note.time > time) {
-      let noteAppearanceDuration = Math.max(note.swipeEnd - note.time, CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION);
-      let noteAppearanceProgress = getProgress(time, note.time - noteAppearanceDuration, note.time);
-      note.tracePath.style.opacity = noteAppearanceProgress;
+      note.tracePath.style.opacity = getProgress(time, note.fadeInStart, note.fadeInEnd);
     }
-    if (note.time <= time) {
+    if (note.fadeInEnd <= time) {
       note.tracePath.style.opacity = 1;
     }
 
     let progress = Math.min(getProgress(time, note.time, note.swipeEnd), 1);
     let offset = Math.floor(progress * 100);
 
-    if (note.halfSwipe || note.quarterSwipe) {
-      if (note.quarterSwipe) {
-        note.tracePath.style.transform = `rotate(${-offset}deg)`;
-      } else {
+    if (progress != 0) {
+      note.traceParent.style.maskImage = null;
+      if (note.halfSwipe) {
         note.tracePath.style.transform = `rotate(${-offset * 1.8}deg)`;
+      } else if (note.quarterSwipe) {
+        note.tracePath.style.transform = `translate(0%, ${-offset / 2.3}%)`;
+      } else {
+        note.tracePath.style.transform = `translate(0%, ${-offset}%)`;
       }
-    } else {
-      note.tracePath.style.translate = `0% ${-offset}%`;
     }
+
 
     if (note.halfSwipe) {
       if (CONFIG.TOUCHSCREEN) {
@@ -1838,8 +1935,6 @@ class RenderingSystem {
       } else {
         this.updateRotationalSwipeState(note);
       }
-    } else if (note.quarterSwipe) {
-      this.updateComplexSwipeState(note);
     } else {
       this.updateSwipeState(note);
     }
@@ -1996,11 +2091,11 @@ class RenderingSystem {
     const maxHeight = ((sliderEnd - sliderStart) / previewDelay) * sliderMaxHeight;
     const progress = getProgress(currentTime + previewDelay, sliderStart, sliderEnd);
     if (note.hint) {
-      note.hint.style.scale = getProgress(currentTime, sliderStart - previewDelay, sliderStart);
+      note.hint.style.transform = `scale(${getProgress(currentTime, sliderStart - previewDelay, sliderStart)})`;
     }
     if (note.endHint) {
       let scale = getProgress(currentTime, sliderEnd - previewDelay, sliderEnd);
-      note.endHint.style.scale = getProgress(currentTime, sliderEnd - previewDelay, sliderEnd);
+      note.endHint.style.transform = `scale(${scale})`;
       if (scale > 1.05) {
         note.endHint.style.opacity = 0;
       }
@@ -2028,7 +2123,10 @@ class RenderingSystem {
       }
     }
     if (isBeingHeld) {
-      if ((note.holdableStart && !note.isBeingHeld && this.gameState.currentTime >= note.time) || (!note.isBeingHeld && note.wasEverHeld)) {
+      if (note.holdableEnd && note.sliderEnd <= this.gameState.currentTime) {
+        return this.inputSystem.releaseSlider(note);
+      }
+      if ((!note.isBeingHeld && note.wasEverHeld)) {
         this.inputSystem.holdSlider(note);
       }
       this.inputSystem.vibrate("HOLDING")
@@ -2066,7 +2164,7 @@ class RenderingSystem {
     note.element.style.transform = `scale(${scale})`;
 
     if (note.hint) {
-      note.hint.style.scale = Math.min(1.1, getProgress(currentTime + previewDelay, noteTime - CONFIG.HINT_START, noteTime + previewDelay));
+      note.hint.style.transform = `scale(${Math.min(1.1, getProgress(currentTime + previewDelay, noteTime - CONFIG.HINT_START, noteTime + previewDelay))})`;
     }
 
     note.element.style.translate = `0px ${Math.min(
@@ -2090,7 +2188,7 @@ class RenderingSystem {
         note.done = true;
 
         this.gameState.combo = 0;
-        this.gameState.scoringSystem.updateComboDisplay();
+        this.gameState.scoringSystem.updateScoreDisplays();
 
         this.gameState.scoringPad.miss.push(CONFIG.ACCEPTANCE_THRESHOLD)
 
@@ -2147,6 +2245,8 @@ class ScoringSystem {
       }
     }
 
+    this.gameState.score += CONFIG.ACCURACY_SCORES[accuracy] || 0;
+
     if (affectCombo) {
       if (difference > 200 || isNaN(difference)) {
         this.gameState.combo = 0;
@@ -2156,23 +2256,25 @@ class ScoringSystem {
           this.gameState.maxCombo = this.gameState.combo;
         }
       }
-      this.updateComboDisplay();
+      this.updateScoreDisplays();
     }
     this.gameState.scoringPad[accuracy].push(noteTime - currentTime);
 
     if (CONFIG.SCORING_INDICATORS) {
       if (this.gameState.lastScoringIndicatorDisplayed) {
         this.gameState.lastScoringIndicatorDisplayed.style.display = 'none';
-        this.gameState.lastScoringIndicatorDisplayed.style.animationName = 'none'
+        this.gameState.lastScoringIndicatorDisplayed.style.animation = 'none'
       }
       this.gameState.elements.scoringIndicators[accuracy].style.display = 'none';
-      this.gameState.elements.scoringIndicators[accuracy].style.animationName = 'none';
+      this.gameState.elements.scoringIndicators[accuracy].style.animation = 'none';
       requestAnimationFrame(() => {
         this.gameState.elements.scoringIndicators[accuracy].style.display = 'block'
-        this.gameState.elements.scoringIndicators[accuracy].style.animationName = null;
+        this.gameState.elements.scoringIndicators[accuracy].style.animation = null;
         this.gameState.lastScoringIndicatorDisplayed = this.gameState.elements.scoringIndicators[accuracy];
       });
     }
+
+
 
     if (note?.slider) return;
     try {
@@ -2181,14 +2283,22 @@ class ScoringSystem {
     return accuracy;
   }
 
-  updateComboDisplay() {
+  updateScoreDisplays() {
+    let scoreLength = `${this.gameState.score}`.length;
+    let lastScoreLength = this.gameState.cachedScoreLength || 0;
+    if (scoreLength > lastScoreLength) {
+      this.gameState.elements.unusedScoreNumber.textContent = '0'.repeat(15 - scoreLength);
+    }
+    this.gameState.cachedScoreLength = scoreLength;
+    this.gameState.elements.usedScoreNumber.textContent = this.gameState.score;
+
     const comboText = `${this.gameState.combo}`;
     if (this.gameState.elements.comboDisplay.innerHTML !== comboText) {
       this.gameState.elements.comboDisplay.style.animation = 'none';
-      this.gameState.elements.comboDisplay.innerHTML = comboText;
-      setTimeout(() => {
+      this.gameState.elements.comboDisplay.textContent = comboText;
+      requestAnimationFrame(() => {
         this.gameState.elements.comboDisplay.style.animation = null;
-      }, 20);
+      })
     }
   }
 }
@@ -2215,7 +2325,7 @@ class RhythmGame {
     // initialize audio and then start loop
     requestAnimationFrame(() => {
       this.init();
-    })
+    });
   }
 
   async init() {
@@ -2267,10 +2377,22 @@ class RhythmGame {
       }, CONFIG.INITIAL_DELAY);
     })
     loadTime = performance.now();
+    await new Promise((res) => {
+      const img = new Image();
+      img.src = '../Assets/HUD/ScoreOverlay.svg';
+      img.onload = () => {
+        this.gameState.scoreOverlayImage = img;
+        res();
+      }
+    })
 
-    await this.gameState.initializeAudio();
+    setTimeout(async () => {
+      await this.gameState.initializeAudio();
+      this.startGameLoop();
+      this.gameState.pauseGame = this.pauseGame.bind(this);
+    }, 1500);
 
-    this.startGameLoop();
+
   }
 
   playHitSound(note) {
@@ -2321,14 +2443,16 @@ class RhythmGame {
     } catch (e) { }
     this.gameState.audioContext.suspend();
     this.gameState.paused = true;
+    return;
     this.gameState.elements.noteContainerFrame.parentElement.parentElement.style.opacity = 0;
     this.gameState.elements.noteContainerFrame.parentElement.style.scale = 0.9;
     this.gameState.elements.pauseButton.firstElementChild.classList.remove('pause');
     this.gameState.elements.pauseButton.firstElementChild.classList.add('play');
-    this.gameState.elements.songData.style.scale = 1.2;
+    this.gameState.elements.songData.classList.add('viewing');
     this.gameState.elements.songArt.classList.add('viewing');
     this.gameState.elements.backButton.classList.remove('hiddenButton');
     this.gameState.elements.restartButton.classList.remove('hiddenButton');
+    document.getElementById('overlay').style.backgroundImage = 'unset';
     document.getElementById('pauseButton').classList.add('controller_selectable', 'selected');
     document.getElementById('restartButton').classList.add('controller_selectable');
     document.getElementById('backButton').classList.add('controller_selectable');
@@ -2349,8 +2473,9 @@ class RhythmGame {
     this.gameState.elements.noteContainerFrame.parentElement.style.scale = 1;
     this.gameState.elements.pauseButton.firstElementChild.classList.remove('play');
     this.gameState.elements.pauseButton.firstElementChild.classList.add('pause');
-    this.gameState.elements.songData.style.scale = 1;
+    this.gameState.elements.songData.classList.remove('viewing');
     this.gameState.elements.songArt.classList.remove('viewing');
+    document.getElementById('overlay').style.backgroundImage = null;
     this.gameState.elements.backButton.classList.add('hiddenButton');
     this.gameState.elements.restartButton.classList.add('hiddenButton');
     this.gameState.pauseScript.remove();
@@ -2363,17 +2488,25 @@ class RhythmGame {
       this.gameState.playHitSound()
     }, 3000);
 
-    this.startGameLoop();
-    this.gameState.audioContext.resume();
-    this.gameState.paused = false;
-    pollGamepads = null;
+    setTimeout(() => {
+      this.startGameLoop();
+      this.gameState.audioContext.resume();
+      this.gameState.paused = false;
+      pollGamepads = null;
+
+    }, 2000);
   }
 
   endGame() {
     const link = document.createElement('link');
     link.rel = 'stylesheet';
     link.href = './scorescreen.css';
+    document.getElementById('overlay').style.backgroundImage = 'unset';
     document.head.appendChild(link);
+
+    try {
+      cancelPolling = false;
+    } catch (e) { }
 
     this.gameState.elements.controls.style.opacity = 0;
     this.gameState.elements.controls.style.scale = 0.9;
@@ -2382,6 +2515,8 @@ class RhythmGame {
     let cc = document.createElement('script');
     cc.src = '../Utilities/controller-control.js'
     document.head.appendChild(cc);
+    document.getElementById('scoreHUD').classList.add('end_scoreHUD');
+
     setTimeout(() => {
       document.getElementById('buttons').remove();
       this.gameState.elements.controls.classList.add('end_controls');
@@ -2409,13 +2544,13 @@ class RhythmGame {
       document.getElementById('scoreNumber').classList.add('end_scoreNumber');
       let scoreStats = document.getElementById('scoreStats');
 
-      let score = 0;
-      score += this.gameState.scoringPad.perfect.length * 1000;
-      score += this.gameState.scoringPad.great.length * 500;
-      score += this.gameState.scoringPad.ok.length * 100;
-      score += this.gameState.scoringPad.bad.length * 50;
-      score += this.gameState.scoringPad.miss.length * 0;
-      this.gameState.score = score;
+      let score = this.gameState.score;
+      // score += this.gameState.scoringPad.perfect.length * 1000;
+      // score += this.gameState.scoringPad.great.length * 500;
+      // score += this.gameState.scoringPad.ok.length * 100;
+      // score += this.gameState.scoringPad.bad.length * 50;
+      // score += this.gameState.scoringPad.miss.length * 0;
+      // this.gameState.score = score;
 
       let toCount = [];
       for (let i = 0; this.gameState.scoringPad.perfect[i]; i++) toCount.push(100);
@@ -2449,7 +2584,7 @@ class RhythmGame {
       }
 
       scoreStats.innerHTML = `
-      <btext id="hitCounts"><span>${accuracy}%</span></btext> • 
+      <btext id="hitCounts"><span>${`${accuracy}` == "NaN" ? "0" : `${accuracy}`}%</span></btext> • 
       <btext id="maxCombo"><span>Max Combo</span> <span>${this.gameState.maxCombo}</span></btext>
       <br>
         <div class="scoreIndicator flexbox perfect"><div class="label">PERFECT</div><div class="count">${this.gameState.scoringPad.perfect.length}</div></div>
@@ -2502,7 +2637,7 @@ class RhythmGame {
       document.getElementById('grade').style.backgroundImage = `url('../Assets/Scoring/${grade}.svg')`;
 
       document.getElementById('scoreCard').innerHTML += `
-            <btn class="controller_selectable">Replay</btn>
+            <btn class="controller_selectable" onclick="location.reload();">Replay</btn>
       `
       document.getElementById('songProcedureControls').innerHTML = `
       <btn class="controller_selectable" onclick="location.href = '../Picker/LevelPicker.html'">Home</btn>

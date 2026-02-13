@@ -1,0 +1,108 @@
+<html>
+  <link rel="stylesheet" href="../Core/main.css" />
+  <link rel="stylesheet" href="./style.css" />
+  <link rel="stylesheet" href="./contact.css" />
+  <link rel="stylesheet" href="./settings.css" />
+  <style>
+    @keyframes in {
+      0% {
+        opacity: 0;
+        scale: 0.5 1;
+        filter: blur(12px);
+      }
+      50% {
+        scale: 1;
+        opacity: 1;
+        filter: blur(0px);
+      }
+      90% {
+        scale: 1;
+        opacity: 1;
+        filter: blur(0px);
+      }
+      100% {
+        scale: 2;
+        opacity: 0;
+      }
+    }
+
+    #text {
+      color: #ffffff99;
+      opacity: 0;
+      transition: all 0.5s ease;
+    }
+  </style>
+
+  <body>
+    <div
+      class="flexbox"
+      id="bg-overlay"
+      onclick="window.location.href = './homescreen.html'"
+      style="
+        width: 100vw;
+        height: 100vh;
+        backdrop-filter: blur(100px);
+        background: #00000090;
+      "
+    >
+      <div
+        class="mainland_china"
+        id="https://discord.com/channels/1247604511107715182/1247611086882996408/1450999425370689627"
+        style="margin: auto; height: fit-content; display: block; width: 100%"
+      >
+        <div
+          id="text"
+          style="width: 100%; transition: all 0.2s ease; text-align: center"
+        ></div>
+      </div>
+    </div>
+  </body>
+
+  <script src="../Utilities/global.js"></script>
+  <script src="../Utilities/controller-control.js"></script>
+  <script src="../Core/defaultComponents.js"></script>
+  <script src="../Core/slimselect.min.js"></script>
+  <script src="./settings.js"></script>
+
+  <script>
+    function goto(to) {
+      document.getElementById("text").style.opacity = "1";
+      document.getElementById("text").style.animation = null;
+      document.getElementById("text").style.animationName = null;
+
+      setTimeout(() => {
+        document.getElementById("text").style.opacity = "0";
+      }, 300);
+      setTimeout(() => {
+        window.location.href = to;
+      }, 900);
+    }
+
+    let audio = new Audio("../Assets/kick.wav");
+    let audio2 = new Audio("../Assets/bass.wav");
+
+    setTimeout(() => {
+      document.getElementById("text").innerHTML = `made by rat`;
+      requestAnimationFrame(() => {
+        document.getElementById("text").style.opacity = `1`;
+        audio.play();
+      });
+    }, 1000);
+
+    setTimeout(() => {
+      document.getElementById("text").style.opacity = `0`;
+      setTimeout(() => {
+        audio2.play();
+        document.getElementById("text").innerHTML = `
+        <div style="background: url('../Assets/Oradea.svg'); width: 500px; aspect-ratio: 843.39 / 128.48; background-size: cover; margin: auto; animation: in 4s ease forwards;"></div>
+        `;
+        requestAnimationFrame(() => {
+          document.getElementById("text").style.opacity = `1`;
+        });
+        setTimeout(() => {
+          goto("./homescreen.html");
+        }, 2500);
+      }, 400);
+    }, 2000);
+  </script>
+</html>

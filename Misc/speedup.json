@@ -1,0 +1,20 @@
+{
+  "startAt":  [{ "operation": "multiply", "operand": -1 }],
+  "timeSheet": [
+    {
+      "time": [{"operation": "multiply", "operand": -2}],
+      "offset": [{ "operation": "multiply", "operand": -2 }]
+    },
+    {
+      "time": [{ "operation": "multiply", "operand": -0.64 }],
+      "offset": 0.001,
+      "transition": [{ "operation": "multiply", "operand": 0.64 }],
+      "from": {
+        "offset": [{ "operation": "multiply", "operand": -1 }]
+      }
+    },
+    {
+      "time": 1
+    }
+  ]
+}

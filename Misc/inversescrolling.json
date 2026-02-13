@@ -1,0 +1,13 @@
+{
+  "startAt":  [{ "operation": "multiply", "operand": -1.5 }, { "operation": "subtraction", "operand": 600}],
+  "timeSheet": [
+    {
+      "time": [{ "operation": "multiply", "operand": -1.2 }, { "operation": "subtraction", "operand": 600}],
+      "offset": [{ "operation": "percentage", "operand": -54.05 }],
+      "transition": [{ "operation": "multiply", "operand": 1.2 },  { "operation": "addition", "operand": 600}],
+      "from": {
+        "offset": [{ "operation": "addition", "operand": 300}]
+      }
+    }
+  ]
+}

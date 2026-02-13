@@ -1,13 +1,13 @@
 <svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
 <g clip-path="url(#clip0_552_60)">
 <g filter="url(#filter0_d_552_60)">
-<rect x="12.3553" y="200" width="265.129" height="265.129" rx="85" transform="rotate(-45 12.3553 200)" stroke="#D1F0FF" stroke-width="50"/>
+<rect x="12.3553" y="200" width="265.129" height="265.129" rx="46" transform="rotate(-45 12.3553 200)" stroke="url(#paint0_linear_552_60)" stroke-width="50"/>
 </g>
-<rect x="138" y="186" width="123" height="27" rx="13.5" fill="#CEF0FF"/>
-<rect x="186" y="261" width="123" height="27" rx="13.5" transform="rotate(-90 186 261)" fill="#CEF0FF"/>
+<rect x="138" y="186" width="123" height="27" rx="13.5" fill="white"/>
+<rect x="186" y="261" width="123" height="27" rx="13.5" transform="rotate(-90 186 261)" fill="white"/>
 </g>
 <defs>
-<filter id="filter0_d_552_60" x="-3.13652" y="-2.96603" width="405.932" height="405.932" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+<filter id="filter0_d_552_60" x="-19.2909" y="-19.1204" width="438.241" height="438.241" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
 <feFlood flood-opacity="0" result="BackgroundImageFix"/>
 <feColorMatrix in="SourceAlpha" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0" result="hardAlpha"/>
 <feOffset/>
@@ -16,6 +16,11 @@
 <feBlend mode="normal" in2="BackgroundImageFix" result="effect1_dropShadow_552_60"/>
 <feBlend mode="normal" in="SourceGraphic" in2="effect1_dropShadow_552_60" result="shape"/>
 </filter>
+<linearGradient id="paint0_linear_552_60" x1="134.564" y1="200" x2="134.564" y2="515.129" gradientUnits="userSpaceOnUse">
+<stop stop-color="white"/>
+<stop offset="0.495192" stop-color="#ABABAB"/>
+<stop offset="1" stop-color="white"/>
+</linearGradient>
 <clipPath id="clip0_552_60">
 <rect width="400" height="400" fill="white"/>
 </clipPath>

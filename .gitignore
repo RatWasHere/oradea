@@ -3,3 +3,4 @@ node_modules/
 Asets/SFX
 Release/
 Release/win32
+out/

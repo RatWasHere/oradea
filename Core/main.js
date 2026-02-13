@@ -1,442 +1,358 @@
-const electron = require('electron');
+const { BrowserWindow, app, screen, ipcMain, dialog, globalShortcut } = require('electron');
 const fs = require('fs');
-const { BrowserWindow, app, screen } = require('electron');
-app.commandLine.appendSwitch('disable-http-cache');
-app.commandLine.appendSwitch('disable-background-timer-throttling');
-app.commandLine.appendSwitch('disable-renderer-backgrounding');
-app.commandLine.appendSwitch('disable-component-extensions-with-background-pages');
-app.commandLine.appendSwitch('disable-backgrounding-occluded-windows');
 
-var client;
-var workshop;
+// Configure app command line switches
+[
+  'no-sandbox',
+  'disable-setuid-sandbox',
+  'disable-http-cache',
+  'disable-background-timer-throttling',
+  'disable-renderer-backgrounding',
+  'disable-component-extensions-with-background-pages',
+  'disable-backgrounding-occluded-windows'
+].forEach(switchName => app.commandLine.appendSwitch(switchName));
+
+// Global variables
+let mainWindow;
+let settingsWindow;
+let hexapreviewWindow;
+let client;
+let workshop;
+
+// Steamworks initialization (disabled for now)
 try {
   // const steamworks = require('steamworks.js');
-  // var client = steamworks.init(3994990);
-  // var workshop = client.workshop;
-  // client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, 'Search Workshop', '', 256, false);
+  // client = steamworks.init(3994990);
+  // workshop = client.workshop;
 } catch (error) { }
 
+// ==================== Window Management ====================
 
+/**
+ * Creates and manages a new window with common settings
+ * @param {Object} config Configuration object
+ * @returns {BrowserWindow} The created window
+ */
+function createWindow(config) {
+  const {
+    file,
+    width = 900,
+    height = 600,
+    minHeight = 100,
+    minWidth = 100,
+    resizable = false,
+    modal = false,
+    parent = mainWindow,
+    transparent = false,
+    alwaysOnTop = false,
+    frame = false,
+    movable = false,
+    onClose = null,
+    onReady = null
+  } = config;
 
-var window;
+  const windowConfig = {
+    width,
+    height,
+    resizable,
+    movable,
+    center: true,
+    frame,
+    modal,
+    minWidth,
+    minHeight,
+    transparent,
+    alwaysOnTop,
+    ...(parent && { parent }),
+    webPreferences: {
+      nodeIntegration: true,
+      contextIsolation: false,
+      spellcheck: false,
+      sandbox: false
+    }
+  };
+
+  if (!resizable) {
+    windowConfig.maxWidth = width;
+    windowConfig.maxHeight = height;
+    windowConfig.minWidth = width;
+    windowConfig.minHeight = height;
+  }
+
+  const newWindow = new BrowserWindow(windowConfig);
+
+  if (file) {
+    newWindow.loadFile(file);
+  }
+
+  if (onReady) {
+    newWindow.once('ready-to-show', onReady);
+  }
+
+  if (onClose) {
+    newWindow.on('close', onClose);
+  }
+
+  return newWindow;
+}
 
 app.on('ready', () => {
-  var settings = {};
+  let settings = {};
   try {
     settings = JSON.parse(fs.readFileSync('./Config/settings', 'utf8'));
   } catch (error) {
     settings = {};
   }
-  var window = new BrowserWindow({
+  // globalShortcut.register('Control+Shift+I', () => {
+  //   // When the user presses Ctrl + Shift + I, this function will get called
+  //   // You can modify this function to do other things, but if you just want
+  //   // to disable the shortcut, you can just return false
+  //   return false;
+  // });
+
+  // Create main window
+  mainWindow = createWindow({
+    file: './Home/photoepilepsy.html',
     width: 1100,
     height: 800,
-    minHeight: 800,
-    minWidth: 1100,
-    titleBarStyle: 'default',
-    autoHideMenuBar: true,
-    titleBarOverlay: {
-      height: 32
-    },
-    title: "ORADEA",
-    icon: './Assets/Glyphs/Logo.png',
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      spellcheck: false,
-    },
+    minWidth: 800,
+    minHeight: 600,
+    resizable: true,
+    frame: true,
+    parent: null
   });
-  window.setMenuBarVisibility(false);
-  window.setFullScreen(settings.screen_state)
+
+  ipcMain.on('quit_app', () => {
+    app.quit();
+  })
+
+  const iconPath = './Assets/Glyphs/Logo.png';
+  try {
+    mainWindow.setIcon(iconPath);
+  } catch (error) { }
+
+  mainWindow.webContents.setFrameRate(getFrameRate(settings.frame_cap));
+  mainWindow.setMenuBarVisibility(false);
+  updateScreenState(settings?.screen_state, mainWindow);
+
+  // ==================== Screen State Management ====================
+
+  function getFrameRate(frameCap) {
+    if (frameCap === 'auto' || frameCap === undefined) {
+      return 60;
+    } else if (frameCap === 'unlimited') {
+      return 240;
+    }
+    return Number(frameCap);
+  }
 
   function updateScreenState(state) {
-    if (state == 'full' || state == undefined) {
-      window.setFullScreen(true);
-    } else if (state == 'maximized') {
-      window.setFullScreen(false);
-      window.maximize();
-    } else if (state == 'windowed') {
-      window.setFullScreen(false);
-      window.unmaximize();
+    if (state === 'full' || state === undefined) {
+      mainWindow.setFullScreen(true);
+    } else if (state === 'maximized') {
+      mainWindow.setFullScreen(false);
+      mainWindow.maximize();
+    } else if (state === 'windowed') {
+      mainWindow.setFullScreen(false);
+      mainWindow.unmaximize();
     }
   }
 
-  if (settings?.frame_cap == 'auto' || settings.frame_cap == undefined) {
-    // window.webContents.setFrameRate(screen.getDisplayNearestPoint(window.getBounds()).displayFrequency);
-  } else if (settings.frame_cap == 'unlimited') {
-    window.webContents.setFrameRate(240);
-  } else {
-    window.webContents.setFrameRate(Number(settings.frame_cap));
-  }
-
-  // window.setMenuBarVisibility(false);
-  updateScreenState(settings?.screen_state)
-  electron.ipcMain.on('updateScreenState', (event, state) => {
+  ipcMain.on('updateScreenState', (event, state) => {
     updateScreenState(state);
-  })
-  electron.ipcMain.on('openWorkshop', () => {
-    let width = 900;
-    let height = 600;
-    let workshop = new BrowserWindow({
-      width: width,
-      height: height,
-      maxWidth: width,
-      maxHeight: height,
-      minWidth: width,
-      minHeight: height,
+  });
+  // ==================== Workshop Window ====================
+
+  ipcMain.on('openWorkshop', () => {
+    let workshopWindow = createWindow({
+      file: './Workshop/workshop.html',
+      width: 900,
+      height: 600,
       resizable: false,
-      movable: false,
-      center: true,
-      frame: false,
       modal: true,
-      skipTaskbar: true,
-
-      parent: window,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
-        spellcheck: false
-      }
-    });
-    workshop.loadFile('./Workshop/workshop.html');
-    setTimeout(() => {
-      workshop.focus();
-    }, 100);
-    electron.ipcMain.once('closeWorkshop', () => {
-      window.focus()
-      workshop.destroy();
+      frame: false,
+      parent: mainWindow,
+      onReady: () => workshopWindow.focus()
     });
 
-    electron.ipcMain.on('show_workshop_keyboard', () => {
-      let position = workshop.getBounds();
-      client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, position.x, position.y, position.width, position.height / 2);
-    })
+    ipcMain.once('closeWorkshop', () => {
+      mainWindow.focus();
+      workshopWindow.destroy();
+    });
+
+    ipcMain.on('show_workshop_keyboard', () => {
+      if (!client) return;
+      const position = workshopWindow.getBounds();
+      client.utils.showFloatingGamepadTextInput(
+        client.utils.FloatingGamepadTextInputMode.SingleLine,
+        position.x,
+        position.y,
+        position.width,
+        position.height / 2
+      );
+    });
   });
 
-  var hexapreview;
-  var wereHexapreviewFunctionsCreated = false;
-  function createHexaPreview(force) {
-    if (hexapreview && !force) return;
-    const bounds = settings.getBounds();
-    const display = electron.screen.getDisplayMatching(bounds);
+  // ==================== Hexapreview Window ====================
 
-    hexapreview = new BrowserWindow({
+  function createHexaPreview(force = false) {
+    if (hexapreviewWindow && !force) return;
+
+    const display = screen.getPrimaryDisplay();
+
+    hexapreviewWindow = createWindow({
+      file: './Settings/hexapreview.html',
       width: display.workArea.width,
       height: display.workArea.height,
       resizable: false,
-      movable: false,
-      center: true,
-      frame: false,
       transparent: true,
-      thickFrame: false,
-
       alwaysOnTop: true,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
-        spellcheck: false
-      },
-      hiddenInMissionControl: true,
-      fullscreen: false
+      frame: false,
+      movable: false,
+      parent: null
     });
-    hexapreview.loadFile('./Settings/hexapreview.html');
-    hexapreview.setIgnoreMouseEvents(true);
-    hexapreview.hide();
 
-    if (wereHexapreviewFunctionsCreated) return;
+    hexapreviewWindow.setIgnoreMouseEvents(true);
+    hexapreviewWindow.hide();
 
-    electron.ipcMain.on('updateHexagon', (c, v) => {
-      if (!hexapreview) createHexaPreview(true);
+    ipcMain.on('updateHexagon', (event, value) => {
+      if (!hexapreviewWindow) createHexaPreview(true);
       try {
-        hexapreview.webContents.send('updateHexagon', v);
-        hexapreview.focusOnWebView();
-        hexapreview.show();
+        hexapreviewWindow.webContents.send('updateHexagon', value);
+        hexapreviewWindow.focusOnWebView();
+        hexapreviewWindow.show();
       } catch (error) { }
     });
-    electron.ipcMain.on('doneUpdatingHexagon', () => {
-      hexapreview.hide();
-      settings.focus();
-    });
 
-    wereHexapreviewFunctionsCreated = true;
+    ipcMain.on('doneUpdatingHexagon', () => {
+      hexapreviewWindow.hide();
+      mainWindow.focus();
+    });
   }
 
-  var settings;
-  electron.ipcMain.on('openSettings', (event, options) => {
-    let width = 900;
-    let height = 600;
-    settings = new BrowserWindow({
-      width: width,
-      height: height,
-      maxWidth: width,
-      maxHeight: height,
-      minWidth: width,
-      minHeight: height,
-      resizable: false,
-      alwaysOnTop: true,
-      title: "Settings",
-      movable: false,
-      center: true,
-      frame: false,
-      modal: true,
-      parent: window,
-      webPreferences: {
-        nodeIntegration: true,
-        contextIsolation: false,
-        spellcheck: false
-      }
-    });
+  // ==================== Settings Window ====================
 
-    createHexaPreview();
+  ipcMain.on('openSettings', (event, options) => {
+    try {
+      settingsWindow = createWindow({
+        file: options?.calibrate ? './Settings/calibration.html' : './Settings/settings.html',
+        width: 900,
+        height: 600,
+        resizable: false,
+        modal: true,
+        alwaysOnTop: true,
+        frame: false,
+        parent: mainWindow,
+        onReady: () => {
+          settingsWindow.webContents.send('');
+          settingsWindow.focus();
+        },
+        onClose: () => {
+          try {
+            hexapreviewWindow?.close();
+          } catch (error) { }
+          settingsWindow = null;
+          hexapreviewWindow = null;
+        }
+      });
 
-    if (options?.calibrate) {
-      settings.loadFile('./Settings/calibration.html');
-    } else {
-      settings.loadFile('./Settings/settings.html');
+      settingsWindow.on('blur', () => {
+        try {
+          settingsWindow.focus(true);
+        } catch (error) { }
+      });
+
+      createHexaPreview();
+
+      ipcMain.once('closeSettings', () => {
+        try {
+          mainWindow.focus();
+          settingsWindow.close();
+          hexapreviewWindow?.close();
+        } catch (error) { }
+      });
+    } catch (error) {
+      console.error('Error opening settings:', error);
     }
-    setTimeout(() => {
-      settings.focus();
-    }, 100);
-    settings.on('ready-to-show', () => {
-      settings.webContents.send('')
-    });
-    electron.ipcMain.once('closeSettings', () => {
-      try {
-        window.focus()
-        settings.close();
-        hexapreview.close();
-      } catch (error) { }
-    });
-    settings.on('close', () => {
-      try {
-        hexapreview.close();
-      } catch (err) { }
-      settings = null;
-      hexapreview = null;
-    })
-
-    electron.ipcMain.on('show_settings_keyboard', () => {
-      let position = settings.getBounds();
-      client.utils.showFloatingGamepadTextInput(client.utils.FloatingGamepadTextInputMode.SingleLine, position.x, position.y, position.width, position.height / 2);
-    })
-  });
-
-
-
-  window.loadFile('./Home/homescreen.html');
-
-  window.once('ready-to-show', () => {
-    // window.webContents.openDevTools();
   });
 });
 
-electron.ipcMain.on('privacy', () => {
-  let privacyWindow = new BrowserWindow({
-    height: 600,
+// ==================== Legal Windows ====================
+
+ipcMain.on('privacy', () => {
+  const privacyWindow = createWindow({
+    file: './Legal/privacy.html',
     width: 600,
+    height: 600,
     resizable: false,
-    movable: false,
-    center: true,
-    frame: false,
     modal: true,
-    parent: window,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      spellcheck: false
-    }
+    frame: false,
+    parent: mainWindow
   });
-  privacyWindow.loadFile('./Legal/privacy.html');
-  electron.ipcMain.once('closePrivacy', () => {
+
+  ipcMain.once('closePrivacy', () => {
     privacyWindow.close();
-  })
-});
-electron.ipcMain.on('tos', () => {
-  let termsWindow = new BrowserWindow({
-    height: 600,
-    width: 600,
-    resizable: false,
-    movable: false,
-    center: true,
-    frame: false,
-    modal: true,
-    parent: window,
-    webPreferences: {
-      nodeIntegration: true,
-      contextIsolation: false,
-      spellcheck: false
-    }
   });
-  termsWindow.loadFile('./Legal/terms.html');
-  electron.ipcMain.once('closeTerms', () => {
-    termsWindow.close();
-  })
 });
 
+ipcMain.on('tos', () => {
+  const termsWindow = createWindow({
+    file: './Legal/terms.html',
+    width: 600,
+    height: 600,
+    resizable: false,
+    modal: true,
+    frame: false,
+    parent: mainWindow
+  });
 
-const { dialog } = require('electron')
+  ipcMain.once('closeTerms', () => {
+    termsWindow.close();
+  });
+});
 
-electron.ipcMain.on('uploadFolder', () => {
-  electron.dialog.showOpenDialog(window, {
+// ==================== File Uploads ====================
+
+ipcMain.on('uploadFolder', () => {
+  dialog.showOpenDialog(mainWindow, {
     properties: ['openDirectory']
   }).then(result => {
     if (result.filePaths[0]) {
-      console.log(result.filePaths[0])
-      workshop.createItem(3994990).then((item) => {
-        console.log("item created", {
-          changeNote: "Add in cotent",
-          visibility: workshop.UgcItemVisibility.Public,
-          previewPath: result.filePaths[0] + '\\cover.jpg',
-          contentPath: result.filePaths[0],
-          title: "Item",
-          description: "No description has been provided for this item",
-        })
-        workshop.updateItem(item.itemId, {
-          changeNote: "Add in cotent",
-          visibility: workshop.UgcItemVisibility.Public,
-          previewPath: result.filePaths[0].replaceAll('\\', '/') + '/cover.jpg',
-          contentPath: result.filePaths[0].replaceAll('\\', '/'),
-          title: "Item",
-          description: "No description has been provided for this item",
-        }).then((i) => {
-          console.log(i.itemId)
-        }).catch(console.error);
-      }).catch(console.error);
-      console.log(result.filePaths[0]);
-      window.webContents.send('uploadFolder', result.filePaths[0]);
+      const folderPath = result.filePaths[0];
+
+      if (workshop) {
+        workshop.createItem(3994990)
+          .then((item) => {
+            workshop.updateItem(item.itemId, {
+              changeNote: "Add in content",
+              visibility: workshop.UgcItemVisibility.Public,
+              previewPath: folderPath.replaceAll('\\', '/') + '/cover.jpg',
+              contentPath: folderPath.replaceAll('\\', '/'),
+              title: "Item",
+              description: "No description has been provided for this item",
+            }).then((updatedItem) => {
+              console.log('Workshop item updated:', updatedItem.itemId);
+            }).catch(console.error);
+          }).catch(console.error);
+      }
+
+      mainWindow.webContents.send('uploadFolder', folderPath);
     }
-  })
+  });
 });
 
+// ==================== DualSense Controller (Disabled) ====================
+// Uncomment below to enable DualSense controller support
 
 // const ds = require('../Utilities/dualsense.js');
-
+// const HID = require('node-hid');
+//
 // setTimeout(() => {
-//     const device = ds.connect();
-// if (device) {
-//   // Max resistance on right trigger
-//   ds.setTrigger(device, 'right', 1, [0, 255]);
-
-//   // Red lightbar
-//   ds.setLED(device, 255, 0, 0);
-
-//   // Show player 1 LED
-//   ds.setPlayerLEDs(device, 1);
-
-// }
-
+//   const device = ds.connect();
+//   if (device) {
+//     ds.setTrigger(device, 'right', 1, [0, 255]);
+//     ds.setLED(device, 255, 0, 0);
+//     ds.setPlayerLEDs(device, 1);
+//   }
 // }, 2000);
-// setTimeout(() => {
-//   const HID = require('node-hid');
-//   console.log('Finding DualSense...');
-
-//   function findAllDualSense() {
-//     const devices = HID.devices();
-//     return devices.filter(d =>
-//       d.vendorId === 0x054C &&
-//       (d.productId === 0x0CE6 || d.productId === 0x0DF2)
-//     );
-//   }
-
-//   function setTriggerResistance(device, trigger, mode, params) {
-//     const report = Buffer.alloc(48);
-//     report[0] = 0x02;
-//     report[1] = 0xFF;
-//     report[2] = 0xF7;
-
-//     const offset = trigger === 'left' ? 11 : 22;
-//     report[offset] = mode;
-//     for (let i = 0; i < params.length; i++) {
-//       report[offset + 1 + i] = params[i];
-//     }
-
-//     console.log('Attempting write with .write()...');
-//     try {
-//       device.write(Array.from(report));
-//       console.log('✅ .write() successful!');
-//       return true;
-//     } catch (e1) {
-//       console.log('❌ .write() failed:', e1.message);
-
-//       console.log('Attempting with .sendFeatureReport()...');
-//       try {
-//         device.sendFeatureReport(Array.from(report));
-//         console.log('✅ .sendFeatureReport() successful!');
-//         return true;
-//       } catch (e2) {
-//         console.log('❌ .sendFeatureReport() failed:', e2.message);
-
-//         // Try without report ID
-//         console.log('Attempting without report ID...');
-//         try {
-//           device.sendFeatureReport(Array.from(report.slice(1)));
-//           console.log('✅ Write without ID successful!');
-//           return true;
-//         } catch (e3) {
-//           console.log('❌ All methods failed');
-//           throw e1;
-//         }
-//       }
-//     }
-//   }
-
-//   setTimeout(() => {
-//     const devices = findAllDualSense();
-//     console.log(`Found ${devices.length} DualSense device(s)`);
-
-//     if (devices.length === 0) {
-//       console.error('No DualSense found!');
-//       return;
-//     }
-
-//     // Log all devices
-//     devices.forEach((d, i) => {
-//       console.log(`\nDevice ${i}:`);
-//       console.log('  Path:', d.path);
-//       console.log('  Interface:', d.interface);
-//       console.log('  Usage:', d.usage);
-//       console.log('  UsagePage:', d.usagePage);
-//       console.log('  Product:', d.product);
-//     });
-
-//     // Try EACH device path
-//     let workingDevice = null;
-
-//     for (let i = 0; i < devices.length; i++) {
-//       const deviceInfo = devices[i];
-//       console.log(`\n--- Trying device ${i} (${deviceInfo.path}) ---`);
-
-//       try {
-//         const device = new HID.HID(deviceInfo.path);
-//         console.log('Device opened successfully');
-
-//         // Try to write
-//         if (setTriggerResistance(device, 'right', 0x01, [0x00, 0xFF])) {
-//           console.log('🎉 THIS DEVICE WORKS!');
-//           workingDevice = device;
-
-//           // Keep it active for 5 seconds
-
-//           break; // Stop trying other devices
-//         } else {
-//           device.close();
-//         }
-
-//       } catch (error) {
-//         console.log(`Failed to open device ${i}:`, error.message);
-//       }
-//     }
-
-//     if (!workingDevice) {
-//       console.error('\n❌ No working device found!');
-//       console.error('Possible issues:');
-//       console.error('  1. Another program is using the controller (Steam, DS4Windows, etc)');
-//       console.error('  2. Need to run as Administrator (Windows)');
-//       console.error('  3. Controller is in Bluetooth mode (try USB cable)');
-//     }
-
-//   }, 2000);
-
-// }, 1000);
-
-// steamworks.electronEnableSteamOverlay();
 

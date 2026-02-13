@@ -1,4 +1,7 @@
-<html>
+<!DOCTYPE html> 
+<html lang="en">
+  <head>
+<meta charset="utf-8">  </head>
 <link rel="stylesheet" href="../Core/main.css">
 <link rel="stylesheet" href="./style.css">
 
@@ -13,20 +16,20 @@
       <div id="song-controls" class="flexbox">
         <btn class="flexbox dark-btn glyph_back" onclick="location.href = '../Home/homescreen.html'"
           style="margin-left: 0px; margin-right: 10px;">
-          <btext>Home</btext>
+          <btext>Back</btext>
         </btn>
         <btn onclick="ipcRenderer.send('openWorkshop')" class="flexbox dark-btn glyph_misctop" style="margin-left: 0px; margin-right: 10px;">
           <btext>Workshop</btext>
         </btn>
-        <btn onclick="location.href = '../Misc/waccastyle.html'" class="flexbox dark-btn" style="margin-left: 0px; margin-right: 10px;">
+        <btn onclick="location.href = '../Misc/waccastyle.html'" class="flexbox dark-btn" style="margin-left: 0px;  margin-right: 10px;">
           <btext>Converter</btext>
         </btn>
-        <btn class="flexbox dark-btn" style="margin-left: 0px; margin-right: 10px;">
+        <btn class="flexbox dark-btn" style="margin-left: 0px; pointer-events: none; opacity: 0; margin-right: 10px;">
           <btext>Sort</btext>
         </btn>
-        <div id="search-parent" class="flexbox">
+        <div id="search-parent" style="pointer-events: none; opacity: 0;"; class="flexbox">
           <div class="image search"></div>
-          <input oninput="startSearch(this.value)" id="search" placeholder="Search...">
+          <input oninput="return; startSearch(this.value)" id="search" placeholder="Search...">
         </div>
       </div>
     </div>
@@ -50,7 +53,8 @@
 </body>
 
 <script src="../Utilities/global.js"></script>
+<script src="../Utilities/dynamix.js"></script>
 <script src="../Utilities/controller-control.js"></script>
-<script src="./script.js"></script>
+<script src="./script.js"></script>C
 
 </html>

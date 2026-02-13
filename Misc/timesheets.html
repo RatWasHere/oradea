@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <title>TimeSheets Editor</title>
+  <link rel="stylesheet" href="./timesheets.css">
+</head>
+
+<body>
+  <div class="container">
+    <header>
+      <h1>TimeSheets Filter Editor</h1>
+      <a href="./waccastyle.html" class="back-link">← Back</a>
+    </header>
+
+    <div class="main-content">
+      <div class="left-panel">
+        <section class="filter-section">
+          <h2>Note Type Filters</h2>
+          <div class="checkbox-group">
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterHolds" class="filter-checkbox">
+              <span>Holds / Sliders</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterNormal" class="filter-checkbox">
+              <span>Normal Notes</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterHoldable" class="filter-checkbox">
+              <span>Holdable Notes</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterSwipe" class="filter-checkbox">
+              <span>Swipe Notes</span>
+            </label>
+            <label class="checkbox-label">
+              <input type="checkbox" id="filterGolden" class="filter-checkbox">
+              <span>Golden Notes</span>
+            </label>
+          </div>
+        </section>
+
+        <section class="filter-section">
+          <h2>Time Range (Milliseconds)</h2>
+          <div class="time-range-group">
+            <div class="time-input-wrapper">
+              <label for="timeStart">Start Time:</label>
+              <input type="number" id="timeStart" placeholder="0" value="0" min="0">
+            </div>
+            <div class="time-input-wrapper">
+              <label for="timeEnd">End Time:</label>
+              <input type="number" id="timeEnd" placeholder="999999" value="999999" min="0">
+            </div>
+          </div>
+        </section>
+
+        <section class="filter-section">
+          <h2>JSON Template</h2>
+          <textarea id="jsonInput" class="json-textarea" placeholder='Enter JSON template with variables:
+$DIFFERENCE_FROM_FIRST_NOTE$ - milliseconds since first note
+$DIFFERENCE_FROM_MOST_RECENT_NOTE$ - milliseconds since last note
+
+Example:
+{
+  "custom": "$DIFFERENCE_FROM_FIRST_NOTE$",
+  "delta": "$DIFFERENCE_FROM_MOST_RECENT_NOTE$"
+}'></textarea>
+        </section>
+
+        <div class="button-group">
+          <button id="applyButton" class="btn btn-primary">Apply Filter & Replace</button>
+          <button id="downloadButton" class="btn btn-secondary">Download JSON</button>
+          <button id="clearButton" class="btn btn-secondary">Clear</button>
+        </div>
+      </div>
+
+      <div class="right-panel">
+        <section class="output-section">
+          <h2>Preview / Output</h2>
+          <div id="outputContainer" class="output-container">
+            <p class="placeholder">Output will appear here...</p>
+          </div>
+        </section>
+
+        <div class="info-section">
+          <h3>How to use:</h3>
+          <ul>
+            <li>Select which note types to filter</li>
+            <li>Set a time range (in milliseconds)</li>
+            <li>Enter a JSON template with replacement variables</li>
+            <li>Click "Apply Filter & Replace" to generate the modified JSON</li>
+            <li>Use "Download JSON" to save the output</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="./timesheets.js"></script>
+</body>
+
+</html>

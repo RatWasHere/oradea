@@ -17,17 +17,21 @@ let stages = [
       },
       {
         text: 'Agree and Continue',
-        onclick: () => { showStage(1); }
+        onclick: () => { dismissContent('welcome'); showStage(15); }
       }
     ]
   },
   {
     text: "Welcome",
-    subtext: "Before you play, we recommend you go through this intro.<br><span style='font-size: 15px'>The game is a new concept, but we've explained it shortly (~2min).</span>",
+    subtext: "Before you play, we recommend you go through this intro.<br><span style='font-size: 15px'>The game is a new concept, but we've explained it shortly (~3min).</span>",
     options: [
       {
         text: 'Skip',
-        onclick: () => { location.href = './homescreen.html' }
+        onclick: () => {
+          document.getElementById('https://discord.com/channels/1247604511107715182/1247611086882996408/1450999425370689627').style.opacity = '0'; setTimeout(() => {
+            location.href = './homescreen.html'
+          }, 400);
+        }
       },
       {
         text: 'Continue',
@@ -43,7 +47,6 @@ let stages = [
         text: 'Keyboard',
         onclick: () => {
           settings.input_mode = 'keyboard';
-          location.href = './homescreen.html'
           saveSettings();
           showStage(3);
         }
@@ -67,8 +70,8 @@ let stages = [
     ]
   },
   {
-    text: `Tutorial`,
-    subtext: `Please watch the following video`,
+    text: ``,
+    subtext: ``,
     options: [
       {
         text: 'Back',
@@ -77,26 +80,19 @@ let stages = [
       {
         text: 'Next',
         onclick: () => {
-          if (settings.input_mode == 'buttons') {
             showStage(4);
-          } else {
-            showStage(5);
-          }
         }
       }
     ],
     get additionalHTML() {
       return `
-        <video src="./${settings.input_mode}_tutorial.mp4" style="max-width: 1000px; width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto;" autoplay="true"></video>
+        <div src="" style="max-width: 1000px; background: url('../Assets/Tutorial/${settings.input_mode} step 1.png'); width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto; background-size: cover;"></div>
       `
     }
   },
-  {
-    text: `Interacting with the interface`,
-    subtext: `via Controller`,
-    additionalHTML: `
-      <video src="./controller_nav.webm" style="max-width: 1000px; width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto;" autoplay="true"></video>
-    `,
+    {
+    text: ``,
+    subtext: ``,
     options: [
       {
         text: 'Back',
@@ -105,35 +101,154 @@ let stages = [
       {
         text: 'Next',
         onclick: () => {
-          showStage(5);
+            showStage(5);
+        }
+      }
+    ],
+    get additionalHTML() {
+      return `
+        <div src="" style="max-width: 1000px; background: url('../Assets/Tutorial/${settings.input_mode} step 2.png'); width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto; background-size: cover;"></div>
+      `
+    }
+  },
+    {
+    text: ``,
+    subtext: ``,
+    options: [
+      {
+        text: 'Back',
+        onclick: () => { showStage(4); }
+      },
+      {
+        text: 'Next',
+        onclick: () => {
+            showStage(6);
+        }
+      }
+    ],
+    get additionalHTML() {
+      return `
+        <div src="" style="max-width: 1000px; background: url('../Assets/Tutorial/${settings.input_mode} step 3.png'); width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto; background-size: cover;"></div>
+      `
+    }
+  },
+    {
+    text: ``,
+    subtext: ``,
+    options: [
+      {
+        text: 'Back',
+        onclick: () => { showStage(5); }
+      },
+      {
+        text: 'Next',
+        onclick: () => {
+            showStage(7);
+        }
+      }
+    ],
+    get additionalHTML() {
+      return `
+        <div src="" style="max-width: 1000px; background: url('../Assets/Tutorial/${settings.input_mode} step 4.png'); width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto; background-size: cover;"></div>
+      `
+    }
+  },
+    {
+    text: ``,
+    subtext: ``,
+    options: [
+      {
+        text: 'Back',
+        onclick: () => { showStage(6); }
+      },
+      {
+        text: 'Next',
+        onclick: () => {
+            showStage(8);
+        }
+      }
+    ],
+    get additionalHTML() {
+      return `
+        <div src="" style="max-width: 1000px; background: url('../Assets/Tutorial/${settings.input_mode} step 5.png'); width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto; background-size: cover;"></div>
+      `
+    }
+  },
+    {
+    text: ``,
+    subtext: ``,
+    options: [
+      {
+        text: 'Back',
+        onclick: () => { showStage(7); }
+      },
+      {
+        text: 'Next',
+        onclick: () => {
+          if (settings.input_mode == 'buttons') {
+            showStage(9);
+          } else {
+            showStage(10);
+          }
+        }
+      }
+    ],
+    get additionalHTML() {
+      return `
+        <div src="" style="max-width: 1000px; background: url('../Assets/Tutorial/${settings.input_mode} step 6.png'); width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto; background-size: cover;"></div>
+      `
+    }
+  },
+  {
+    text: ``,
+    subtext: ``,
+    additionalHTML: `
+      <video src="./controller_nav.webm" style="max-width: 1000px; width: 80vw; aspect-ratio: 16/9; display: block; border-radius: 10px; margin: auto;" autoplay="true"></video>
+    `,
+    options: [
+      {
+        text: 'Back',
+        onclick: () => { showStage(8); }
+      },
+      {
+        text: 'Next',
+        onclick: () => {
+          showStage(10);
         }
       }
     ]
   },
   {
     text: `Do you like hit sounds?`,
-    subtext: `These are the sounds played when you interact with notes. They typically help new players time hits better.`,
+    subtext: `These are the sounds played when you interact with notes. They typically help players time hits better.`,
     options: [
+      {
+        text: 'Preview',
+        onclick: () => {
+          let audio = new Audio('../Assets/hit_normal.mp3');
+          audio.play();
+        }
+      },
       {
         text: 'No',
         onclick: () => {
           settings.sfx_volume = 0;
           saveSettings();
-          showStage(6);
+          showStage(11);
         }
       },
       {
         text: 'Somewhat',
         onclick: () => {
           settings.sfx_volume = 50;
-          showStage(6);
+          showStage(11);
         }
       },
       {
         text: 'Absolutely',
         onclick: () => {
           settings.sfx_volume = 100;
-          showStage(6);
+          showStage(11);
         }
       }
     ]
@@ -147,21 +262,28 @@ let stages = [
         onclick: () => {
           settings.note_speed = 6;
           saveSettings();
-          showStage(7);
+          showStage(12);
         }
       },
       {
         text: 'Intermediate',
         onclick: () => {
-          settings.note_speed = 8;
-          showStage(7);
+          settings.note_speed = 10;
+          showStage(12);
         }
       },
       {
         text: 'Expert',
         onclick: () => {
-          settings.note_speed = 11;
-          showStage(7);
+          settings.note_speed = 12.5;
+          showStage(12);
+        }
+      },
+      {
+        text: 'Insane',
+        onclick: () => {
+          settings.note_speed = 16;
+          showStage(12);
         }
       }
     ]
@@ -173,14 +295,14 @@ let stages = [
       {
         text: 'No',
         onclick: () => {
-          showStage(8);
+          showStage(13);
         }
       },
       {
         text: 'Yes',
         onclick: () => {
           ipcRenderer.send('openSettings', { calibrate: true });
-          showStage(8);
+          showStage(13);
         }
       }
     ]
@@ -226,7 +348,7 @@ let stages = [
           settings.noteDesign = 'geometrical';
           settings.holdNoteDesign = 'geometrical';
           saveSettings();
-          showStage(9);
+          showStage(14);
         }
       },
       {
@@ -235,7 +357,7 @@ let stages = [
           settings.noteDesign = 'thin';
           settings.holdNoteDesign = 'thin';
           saveSettings();
-          showStage(9);
+          showStage(14);
         }
       }
     ]
@@ -253,11 +375,25 @@ let stages = [
       {
         text: 'Yes',
         onclick: () => {
-          location.href = './homescreen.html'
+          document.getElementById('https://discord.com/channels/1247604511107715182/1247611086882996408/1450999425370689627').style.opacity = '0'; setTimeout(() => {
+            location.href = './homescreen.html'
+          }, 400);
         }
       }
     ]
-  }
+  },
+  {
+    text: "Message from the developer",
+    subtext: `Hi! Thank you for downloading the demo. This is just a small bit of the full game.<br>
+    The full game will have a lot more content. We will be adding new songs to the demo occasionally!<br>
+    `,
+    options: [
+      {
+        text: 'Continue',
+        onclick: () => { showStage(1); }
+      },
+    ]
+  },
 ]
 
 
@@ -305,6 +441,3 @@ async function showStage(number) {
 }
 
 showStage(0);
-let audio = new Audio(`../Assets/Misc/Ethereal.mp3`);
-audio.play();
-audio.play().then(() => audio.volume = 0.05);

@@ -151,7 +151,6 @@ async function proceedTutorialFromFlick() {
     elementsRemovedForTutorial.forEach((el) => el.classList.add('controller_selectable'));
     document.getElementById('buttons-container').style.opacity = ''
     document.getElementById('logo').style.opacity = ''
-    dismissContent("welcome");
   }
 
   document.getElementById('noteForDemonstration').style.backgroundImage = "url('../Assets/Headers/Frame.svg')";
@@ -172,6 +171,5 @@ function openSettings() {
 }
 
 if (!isDismissed("welcome")) {
-  dismissContent("welcome");
   fadeThisOut('./firstContact.html');
 }

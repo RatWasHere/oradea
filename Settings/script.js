@@ -366,6 +366,11 @@ const VisualsConfig = {
       settingKey: 'gimmicks',
       defaultValue: '1'
     });
+    this.gimmicksState = selectMenuFactory.create({
+      id: 'SSFX',
+      settingKey: 'ssfx',
+      defaultValue: '1'
+    });
     this.vfxCache = selectMenuFactory.create({
       id: 'vfxCache',
       settingKey: 'vfx_cache',

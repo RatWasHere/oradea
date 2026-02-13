@@ -1,16 +1,185 @@
 /* PLAY OVERLAY  >>> */
 
+body {
+  background-size: cover;
+  background-position: center;
+  background-image: url('../Assets/Playfield/black_frame_insertion.png');
+  animation: bodyIn 2s 1s ease forwards;
+}
+
+@keyframes bodyIn {
+  0% {
+    background-image: url('../Assets/Playfield/black_frame_insertion.png');
+  }
+
+  100% {
+    background-image: url('../Assets/bg.png');
+  }
+}
+
 .center {
   --size: var(--note-radius);
   width: var(--size);
   aspect-ratio: 1;
   border-radius: var(--size);
   z-index: 500;
-  background: #000000;
   position: absolute;
   translate: 315px 315px
     /* calc(var(--raw-size) / 2 - var(--size) / 2) calc(var(--raw-size) / 2 - var(--size) / 2) */
   ;
+}
+
+#overlay {
+  width: 100%;
+  height: 100%;
+  /* display: block; */
+  background-image: url('../Assets/Playfield/tunnel_vision.png');
+  background-size: cover;
+  background-position: center;
+
+  backdrop-filter: blur(100px);
+  background-color: #000000b4;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: auto;
+  opacity: 0;
+  contain: content style paint;
+  transition: all var(--longer) ease;
+
+  animation: pickerKickIn 1s ease forwards;
+}
+
+.dust {
+  width: 100vw; 
+  height: 100vh;
+  position: absolute;
+  will-change: opacity;
+  contain: paint layout size style;
+}
+.dust::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  scale: 2;
+  background: url('../Assets/SFX/Dust_above.svg') repeat;
+  transform-origin: bottom right;
+  animation: particlesFadeReverse 160s linear infinite reverse;
+  opacity: 0.01;
+}
+.dust::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  scale: 2;
+  background: url('../Assets/SFX/Dust_above.svg') repeat;
+  transform-origin: bottom right;
+  animation: particlesFade 160s linear infinite;
+  opacity: 0.01;
+}
+@keyframes particlesFade {
+  0% {
+    translate: 0% 0%;
+  }
+  50% {
+    translate: 100% 100%;
+  }
+  100% {
+    translate: 0% 0%;
+  }
+}
+@keyframes particlesFadeReverse {
+  0% {
+    translate: 0% 0%;
+  }
+  50% {
+    translate: -100% -100%;
+  }
+  100% {
+    translate: 0% 0%;
+  }
+}
+
+#overlay::before {
+  content: "";
+  position: absolute;
+
+  width: max(100vw, 100vh);
+  height: max(100vw, 100vh);
+
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-image: inherit;
+  scale: 1.1;
+  animation:overlayRotate 35s linear infinite;
+}
+#overlay::after {
+  content: "";
+  position: absolute;
+
+  width: max(100vw, 100vh);
+  height: max(100vw, 100vh);
+
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-image: inherit;
+  scale: 1.1;
+  animation:overlayRotate 35s linear infinite reverse;
+}
+@keyframes overlayRotate {
+  0% {
+    rotate: 0deg;
+    opacity: 0.3;
+  }
+  20% {
+    opacity: 0.5;
+  }
+  40% {
+    opacity: 0.3;
+  }
+  60% {
+    opacity: 0.5;
+  }
+  80% {
+    opacity: 0.3;
+  }
+
+  100% {
+    opacity: 0.3;
+    rotate: 360deg;
+  }
+}
+
+@keyframes overlayPulse {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0.2;
+  }
+}
+
+
+@keyframes pickerKickIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
 }
 
 #comboDisplay {
@@ -30,22 +199,24 @@
 #comboText {
   font-family: 'Modern';
   font-weight: 100;
+  width: 100px;
+  text-align: center;
 }
 
 
 .frame {
-  --frame-size: calc(var(--inner-container-size) + var(--frame-tolerance));
-  width: var(--frame-size);
-  height: var(--frame-size);
+  width: 200px;
+  height: 200px;
   background: url(../Assets/Playfield/frame.svg);
   background-size: cover;
-  margin-left: calc((var(--raw-size) - var(--frame-size)) / 2);
-  margin-top: calc((var(--raw-size) - var(--frame-size)) / 2);
+  margin-left: 270px;
+  margin-top: 270px;
   position: absolute;
   transform-origin: bottom;
 }
 
 #centerContainer {
+  transform-origin: center;
   background: url('../Assets/Playfield/frame_in.svg');
   background-size: cover !important;
 }
@@ -53,7 +224,7 @@
 
 #noteContainer {
   /* scale: 1.2; */
-  opacity: 1 !important;
+  opacity: 1;
   width: var(--raw-size);
   height: var(--raw-size);
   transition: all var(--long) ease;
@@ -71,6 +242,31 @@
   transition: all var(--long) ease;
 
   /* animation: hit 0.5s ease; */
+}
+
+#noteContainerFrame::before {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-image: url('../Assets/Playfield/frame_out.svg');
+  animation:overlayRotate 35s linear infinite;
+}
+#noteContainerFrame::after {
+  content: "";
+  display: block;
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-image: url('../Assets/Playfield/frame_out.svg');
+  animation: overlayRotate 35s linear infinite reverse;
 }
 
 #perfectionIndicator {
@@ -102,15 +298,19 @@
 #perfect {
   background-image: url('../Assets/Scoring/perfect.svg')
 }
+
 #great {
   background-image: url('../Assets/Scoring/great.svg')
 }
+
 #good {
   background-image: url('../Assets/Scoring/good.svg')
 }
+
 #okay {
   background-image: url('../Assets/Scoring/ok.svg')
 }
+
 #miss {
   background-image: url('../Assets/Scoring/miss.svg')
 }
@@ -135,6 +335,7 @@
     opacity: 0;
     scale: 0.8;
   }
+
   100% {
     display: none;
   }
@@ -168,6 +369,8 @@
 
 #pauseButton {
   margin-right: 10px;
+  backdrop-filter: unset !important;
+  box-shadow: none;;
 }
 
 #scoreText,
@@ -243,32 +446,33 @@ btn:has(.pause) {
 
 #songData {
   width: 330px;
+  right: 95px;
   margin-left: calc(100vw - 400px);
   transform-origin: right top;
   position: absolute;
   transition: all var(--long) ease;
 }
+#songData.viewing {
+  scale: 1.2;
+  right: 300px; 
+}
 
 #songArt {
-  opacity: 0;
+  opacity: 1;
   border-radius: 5px;
-  width: 330px;
-  height: 0px;
+  width: 65px;
+  height: 65px;
   margin-right: auto;
   margin-left: 0px;
   background-size: cover;
   background-position: 0px 0px;
-  scale: 0.8;
-  filter: blur(12px);
-  transform-origin: top left;
+  transform-origin: top right;
+  position: absolute;
+  right: 20px;
 }
 
 #songArt.viewing {
-  opacity: 1 !important;
-  scale: 1 !important;
-  filter: blur(0px) !important;
-  height: 330px;
-  margin-bottom: 10px;
+  scale: 4;
 }
 
 .hiddenButton {
@@ -295,4 +499,46 @@ btn:has(.pause) {
     scale: 1;
     opacity: 1;
   }
+}
+
+#scoreHUD {
+  z-index: 1000;
+  width: 300px;
+  height: 60px;
+  background: url('../Assets/HUD/ScoreOverlay.svg');
+  left: 100;
+  top: 28;
+  position: absolute;
+  font-size: 30px;
+  contain: paint content layout size transform;
+}
+
+#unusedScore {
+  opacity: 0.5;
+  left: 26;
+}
+#usedScore {
+  width: 240px;
+  text-align: right;
+  text-anchor: end;
+  right: 4px;
+  opacity: 0.8;
+}
+
+#unusedScore, #usedScore {
+  font-family: Mono;
+  top: 27px;
+  position: absolute;
+  display: inline-block !important;
+}
+
+
+#reactiveFrame {
+  background: url('../Assets/Playfield/delimitator.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  width: 240px;
+  height: 240px;
+  position: absolute;
 }

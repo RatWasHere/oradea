@@ -21,8 +21,8 @@ for (let i in files) {
 
 let chosenSong = 0;
 let levelsDisplay = document.getElementById('levels')
+document.getElementById('amount').innerHTML = `${levels.length} Songs • More coming soon`;
 
-document.getElementById('amount').innerHTML = `${levels.length} Songs`;
 
 let difficultyMap = {
   1: "Easy",
@@ -95,14 +95,30 @@ async function highlightSong(index, scrollOffset = 0) {
   document.getElementById('songs').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
   document.getElementById('song-cover').style.scale = '1';
   document.getElementById('song-cover').style.opacity = '1';
-  document.getElementById('song-title').innerText = level.information.name;
+  document.getElementById('song-title').innerHTML = level.information.name;
   document.getElementById('song-credits').innerHTML = level.information.credits || "Unknown credits";
+  document.getElementById('song-title').style.animationName = 'unset'
+  document.getElementById('song-title').classList.remove('marquee');
+  document.documentElement.style.setProperty('--nameX2', `"${level.information.name}"`);
+  requestAnimationFrame(() => {
+    console.log(document.getElementById('song-title').getBoundingClientRect().width)
+    if (document.getElementById('song-title').getBoundingClientRect().width > 310) {
+      document.getElementById('song-title').classList.add('marquee');
+    }
+    document.getElementById('song-title').style.animationName = ''
+
+    let elements = document.getElementsByTagName('a');
+    for (let element of elements) {
+      element.onclick = () => { require('electron').shell.openExternal(element.href); return false; }
+    }
+
+  })
   // document.getElementById('song-author').innerText = level.information.artist;
   let difficulties = ``;
   let difficulties_ = level.information.difficulties;
-  if (lastSelectedDifficulty != `${settings.preferredDifficulty}` && difficulties_[`${settings.preferredDifficulty}`]) {lastSelectedDifficulty = `${settings.preferredDifficulty}`} else
-  if (!difficulties_[lastSelectedDifficulty] && difficulties_[settings.preferredDifficulty]) {lastSelectedDifficulty = `${settings.preferredDifficulty}`}
-  else if (!difficulties_[lastSelectedDifficulty]) lastSelectedDifficulty = Object.keys(level.information.difficulties)[0];
+  if (lastSelectedDifficulty != `${settings.preferredDifficulty}` && difficulties_[`${settings.preferredDifficulty}`]) { lastSelectedDifficulty = `${settings.preferredDifficulty}` } else
+    if (!difficulties_[lastSelectedDifficulty] && difficulties_[settings.preferredDifficulty]) { lastSelectedDifficulty = `${settings.preferredDifficulty}` }
+    else if (!difficulties_[lastSelectedDifficulty]) lastSelectedDifficulty = Object.keys(level.information.difficulties)[0];
 
   for (let i in level.information.difficulties) {
     difficulties += `<div id="difficulty-${i}" onclick="selectDifficulty(${i})" class="difficulty-dot flexbox clickable ${difficultyMap[i].toLowerCase()} ${i == lastSelectedDifficulty ? 'highlighted' : ''}"><div class="dotParent"><difficulty-name>${difficultyMap[i]}</difficulty-name> <difficulty-level>${level.information.ratings[i]}</difficulty-level></div></div>`;
@@ -201,11 +217,13 @@ document.onkeydown = (event) => {
 }
 
 function play() {
+  cancelPolling = true;
   document.getElementById('song').style.transform = 'translateX(500px)';
   document.getElementById('songs').style.transform = 'translateX(-100vw)';
+  document.getElementById('picker-overlay').style.background = '#000000';
 
+  fs.writeFileSync('./Core/crossdetails', JSON.stringify({ location: levels[chosenSong].location, difficulty: lastSelectedDifficulty, map: levels[chosenSong].information.difficulties[lastSelectedDifficulty] }, null, 2));
   setTimeout(() => {
-    fs.writeFileSync('./Core/crossdetails', JSON.stringify({ location: levels[chosenSong].location, difficulty: lastSelectedDifficulty, map: levels[chosenSong].information.difficulties[lastSelectedDifficulty] }, null, 2));
     location.href = '../Playfield/playfield.html'
   }, 400);
 }
@@ -255,6 +273,9 @@ globalControllerActions.rightTrigger = () => {
 
 globalControllerActions.aTrigger = () => {
   play();
+}
+globalControllerActions.bTrigger = () => {
+  location.href = '../Home/homescreen.html'
 }
 
 let mouseDownStarted = null;

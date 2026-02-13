@@ -196,8 +196,12 @@
 
 
 .end_controls>#songData {
-  margin-top: 10px;
-  margin-right: -17px;
+  display: none;
+}
+
+.end_scoreHUD {
+  transition: all 0.2s ease;
+  opacity: 0;
 }
 
 #maxCombo {

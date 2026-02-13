@@ -16,7 +16,7 @@
   margin: auto;
   position: fixed;
   top: 50%;
-  translate: 0 calc(-50% - 30px);
+  translate: 0 calc(-50% - 100px);
   background-size: cover;
   opacity: 0;
   animation: fadein ease 1s forwards;
@@ -81,7 +81,7 @@ btn.exiting {
 }
 
 #buttons-container {
-  margin-top: calc(50vh + 50px);
+  margin-top: calc(50vh - 10px);
 }
 
 
