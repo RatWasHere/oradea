@@ -114,7 +114,7 @@ function selectNoteType(type) {
 
   document.getElementById('mouseAugumenter').style.backgroundImage = `url('${noteTypeVectors[currentlySelectedNoteType]}')`;
 }
-let noteTypeButtons = [0, 1, 2, 3, 4, 5, 6, 7, 8].map(type => {
+let noteTypeButtons = [0, 1, 2, 3, 4, 5, 6, 7].map(type => {
   let button = document.getElementById(`note-type-${type}`);
   button.addEventListener('click', () => selectNoteType(type))
 });
@@ -179,12 +179,11 @@ function refreshLocalEvents() {
   if (selectedNotes.size == 1) {
     let note = selectedNotes.values().next().value;
     let noteType = 0;
-    
+
     if (note.golden) noteType = 1;
     else if (note.holdable) noteType = 2;
     else if (note.slider) noteType = 3;
-    else if (note.swipe) noteType = 4;
-    else if (note.halfSwipe) noteType = 5;
+    else if (note.shortSwipe) noteType = 5;
     else if (note.quarterSwipe) noteType = 6;
     else if (note.swipe) noteType = 4;
 
@@ -200,19 +199,19 @@ function refreshLocalEvents() {
       label: "Note",
       associatedViewID: "properties"
     },
-    {
-      label: "Events",
-      associatedViewID: "events"
-    }
-  
-  )
+      {
+        label: "Events",
+        associatedViewID: "events"
+      }
+
+    )
 
     if (note.swipe) {
       endHTML += studioUI.toggle({
         name: "Direction",
         false: "Negative",
         true: "Positive",
-        style: "width: 480px;",
+        style: "width: 475px;",
         state: note.direction != -1
       }, `saveState(); game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].direction = ${note.direction == -1 ? 1 : -1}; refreshLocalEvents(); freeNote(game.gameState.sheet[${game.gameState.sheet.indexOf(note)}]); freeSFX(game.gameState.sheet[${game.gameState.sheet.indexOf(note)}]); console.log('hello', game.gameState.sheet[${game.gameState.sheet.indexOf(note)}])`);
     }
@@ -227,7 +226,11 @@ function refreshLocalEvents() {
     }
     endHTML += `</div>
     <div class="contentContainer-tabs" id="events">
-    <div id="idfkfornow"></div>
+    <div class="eventControls">
+      <div id="noteEvents">
+      </div>
+    <btn onclick="createNoteEvent();" style="width: 50px; height: 50px; padding: 0px !important;" class="flexbox"><div class="image" id="createIcon"></div></btn>
+    </div>
     </div>
     `
   }
@@ -236,5 +239,48 @@ function refreshLocalEvents() {
   requestAnimationFrame(() => {
     studioUI.initializeTabs('local-tabs', endTabs);
   })
+
+}
+
+function createNoteEvent() {
+  let note = selectedNotes.values().next().value;
+  if (!note.timeSheet) note.timeSheet = [];
+  note.timeSheet.push({ time: 0, speed: 1 });
+  updateNoteEvents();
+}
+
+function updateNoteEvents() {
+  try {
+    let note = selectedNotes.values().next().value;
+    let events = note.timeSheet;
+    let endHTML = ``
+
+    for (let eventIndex in note.timeSheet) {
+      let event = events[eventIndex];
+
+      endHTML += `<div class="noteEvent" onmouseenter="surpressScrolling = true" onmouseleave="surpressScrolling = false">
+      <btext id="noteStartTime">time</btext>
+      <input style="width: 490px; margin: auto;" class="ss-main" value="${event.time}">
+    <div style="height: 5px;"></div>
+
+      <btext id="noteStartTime">speed</btext>
+      <input style="width: 490px; margin: auto;" class="ss-main" value="${event.speed == undefined ? 1 : event.speed}">
+    <div style="height: 5px;"></div>
+
+      <btext id="noteStartTime">offset</btext>
+      <input style="width: 490px; margin: auto;" class="ss-main" value="${event.offset == undefined ? 0 : event.offset}">
+
+      <div class="separator"></div>
+
+      <btext id="noteStartTime">transition</btext>
+      <input style="width: 490px; margin: auto;" class="ss-main" value="${event.offset == undefined ? 0 : event.offset}">
+    <div style="height: 5px;"></div>
+    <btn onclick="createNoteEvent();" style="width: 30px; height: 30px; padding: 0px !important;" class="flexbox"><div class="image" id="deleteIcon"></div></btn>
+      
+      </div>`
+    }
+
+    document.getElementById('noteEvents').innerHTML = endHTML
+  } catch (error) { console.log('error', error) }
 
 }

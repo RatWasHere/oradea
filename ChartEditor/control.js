@@ -144,6 +144,7 @@ function updateTravelTime() {
 
 
 document.addEventListener('wheel', (event) => {
+  if (surpressScrolling) return;
   let beatDuration = (60 / bpm);
   let progress = beatDuration;
   if (event.deltaY > 0) {

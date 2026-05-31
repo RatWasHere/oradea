@@ -372,3 +372,73 @@ glow_layer {
 
 
 
+
+
+.eventControls {
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+  margin-left: -10px;
+  height: 50px;
+  background: #FFFFFF10;
+  border-bottom-left-radius: 5px;
+  border-bottom-right-radius: 5px;
+}
+
+#createIcon {
+  background-image: url('../Assets/Misc/add.svg');
+  height: 30px;
+  width: 30px;
+  opacity: 0.5;
+  margin: auto;
+}
+
+#noteEvents {
+  width: 100%;
+  height: 330px;
+  position: absolute;
+  bottom: 60px;
+  overflow-y: auto;
+  padding-top: 10px;
+  padding-bottom: 10px;
+  --fade-size: 10px;
+
+  -webkit-mask-image: linear-gradient(to bottom,
+      transparent,
+      black var(--fade-size)),
+    linear-gradient(to top,
+      transparent,
+      black var(--fade-size));
+  mask-image: linear-gradient(to bottom,
+      transparent,
+      black var(--fade-size)),
+    linear-gradient(to top,
+      transparent,
+      black var(--fade-size));
+  -webkit-mask-composite: source-in, source-in;
+  mask-composite: intersect;
+}
+
+#deleteIcon {
+  background-image: url('../Assets/Misc/trash.svg');
+  height: 20px;
+  width: 20px;
+  opacity: 0.5;
+  margin: auto;
+
+}
+
+.noteEvent {
+  width: calc(100% - 10px);
+  padding: 5px;
+  background: #FFFFFF10;
+  margin-bottom: 15px;
+}
+
+.separator {
+  width: 490px;
+  margin: auto;
+  border-bottom: dashed #FFFFFF40 1px;
+  margin-top: 5px;
+  margin-bottom: 5px;
+}

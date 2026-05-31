@@ -15,6 +15,7 @@ let hoveredTime = 0;
 let dragStartCoords = { x: 0, y: 0 };
 let dragStartTime = 0;
 let dragStartLane = 0;
+let surpressScrolling = false;
 let isMovingNote = false;
 let movedNoteObject = null; // Store the object, not the index
 function getProgress(value, min, max) {
@@ -375,6 +376,7 @@ function placeNote(time, laneIndex) {
     else if (currentlySelectedNoteType == 4) additionalOptions = { slider: true, sliderEnd: time + 1000 };
     else if (currentlySelectedNoteType == 5) additionalOptions = { swipe: true, swipeEnd: time + 100 };
     else if (currentlySelectedNoteType == 6) additionalOptions = { swipe: true, shortSwipe: true, direction: 1, swipeEnd: time + 100 };
+    else if (currentlySelectedNoteType == 7) additionalOptions = { swipe: true, quarterSwipe: true, direction: 1, swipeEnd: time + 100 };
   }
 
   const angle = reverseAngleMap[laneIndex] ?? 0;
@@ -804,3 +806,4 @@ function saveChartDetails() {
     bpm: document.getElementById('beatsPerMinute').value
   }
 }
+
