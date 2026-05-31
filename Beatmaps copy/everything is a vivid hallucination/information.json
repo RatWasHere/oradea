@@ -1,0 +1,19 @@
+{
+  "name": "everything is a vivid hallucination",
+  "artist": "crxw",
+  "cover": "cover.jpg",
+  "difficulties": {
+    "4": "insane.json",
+    "3": "hard.json",
+    "2": "normal.json",
+    "1": "easy.json"
+  },
+  "ratings": {
+    "4": "30",
+    "3": "31",
+    "2": "27",
+    "1": "17"
+  },
+  "duration": 240,
+  "credits": "<a href='https://www.youtube.com/watch?v=l2ljDXGojo4' target='_blank'>Dokushite Chodai (毒して頂戴)</a> by <a href='https://www.youtube.com/@NAKISO' target='_blank'>NAKISO</a>"
+}

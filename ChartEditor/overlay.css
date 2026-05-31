@@ -1,0 +1,572 @@
+/* PLAY OVERLAY  >>> */
+
+body {
+  background-size: cover;
+  background-position: center;
+  background-image: url('../Assets/Playfield/black_frame_insertion.png');
+  transition: background-image ease 2s;
+  /* animation: bodyIn 2s 1s ease forwards; */
+}
+
+@keyframes bodyIn {
+  0% {
+    background-image: url('../Assets/Playfield/black_frame_insertion.png');
+  }
+
+  100% {
+    background-image: url('../Assets/bg.png');
+  }
+}
+
+.center {
+  --size: var(--note-radius);
+  width: var(--size);
+  aspect-ratio: 1;
+  border-radius: var(--size);
+  z-index: 500;
+  position: absolute;
+  translate: 315px 315px
+    /* calc(var(--raw-size) / 2 - var(--size) / 2) calc(var(--raw-size) / 2 - var(--size) / 2) */
+  ;
+}
+
+#overlay {
+  width: 100%;
+  height: 100%;
+  /* display: block; */
+  background-image: url('../Assets/Playfield/tunnel_vision.png');
+  background-size: cover;
+  background-position: center;
+
+  backdrop-filter: blur(100px);
+  background-color: #000000b4;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 1;
+  pointer-events: auto;
+  opacity: 0;
+  contain: content style paint;
+  transition: all var(--longer) ease;
+
+  animation: pickerKickIn 1s ease forwards;
+}
+
+.dust {
+  width: 100vw; 
+  height: 100vh;
+  position: absolute;
+  will-change: opacity;
+  pointer-events: none;
+  contain: paint layout size style;
+}
+.dust::after {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  scale: 2;
+  background: url('../Assets/SFX/Dust_above.svg') repeat;
+  transform-origin: top left;
+  animation: particlesFadeReverse 160s linear infinite;
+  opacity: 0.01;
+}
+.dust::before {
+  content: "";
+  display: block;
+  width: 100%;
+  height: 100%;
+  scale: 2;
+  background: url('../Assets/SFX/Dust_above.svg') repeat;
+  transform-origin: bottom right;
+  animation: particlesFade 160s linear infinite;
+  opacity: 0.01;
+}
+@keyframes particlesFade {
+  0% {
+    translate: 0% 0%;
+  }
+  50% {
+    translate: 100% 100%;
+  }
+  100% {
+    translate: 0% 0%;
+  }
+}
+@keyframes particlesFadeReverse {
+  0% {
+    translate: 0% -200%;
+  }
+  50% {
+    translate: -100% -100%;
+  }
+  100% {
+    translate: 0% -100%;
+  }
+}
+
+/* #overlay::before {
+  content: "";
+  position: absolute;
+
+  width: max(100vw, 100vh);
+  height: max(100vw, 100vh);
+
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-image: inherit;
+  scale: 1.1;
+  animation:overlayRotate 35s linear infinite;
+}
+#overlay::after {
+  content: "";
+  position: absolute;
+
+  width: max(100vw, 100vh);
+  height: max(100vw, 100vh);
+
+  top: 50%;
+  left: 50%;
+  translate: -50% -50%;
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-position: center;
+  background-image: inherit;
+  scale: 1.1;
+  animation:overlayRotate 35s linear infinite reverse;
+} */
+@keyframes overlayRotate {
+  0% {
+    rotate: 0deg;
+    opacity: 0.3;
+  }
+  20% {
+    opacity: 0.5;
+  }
+  40% {
+    opacity: 0.3;
+  }
+  60% {
+    opacity: 0.5;
+  }
+  80% {
+    opacity: 0.3;
+  }
+
+  100% {
+    opacity: 0.3;
+    rotate: 360deg;
+  }
+}
+
+@keyframes overlayPulse {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 0.2;
+  }
+}
+
+
+@keyframes pickerKickIn {
+  0% {
+    opacity: 0;
+  }
+
+  100% {
+    opacity: 1;
+  }
+}
+
+#comboDisplay {
+  font-size: 35px;
+  color: #ffffff;
+  margin: auto;
+  display: block;
+  align-self: center;
+  justify-self: center;
+  text-align: center;
+  animation: combo var(--long) ease;
+  font-family: 'Mono';
+  font-weight: 500;
+  margin-top: -6px;
+}
+
+#comboText {
+  font-family: 'Modern';
+  font-weight: 100;
+  width: 100px;
+  text-align: center;
+}
+
+
+.frame {
+  width: 200px;
+  height: 200px;
+  background: url(../Assets/Playfield/frame.svg);
+  background-size: cover;
+  margin-left: 270px;
+  margin-top: 270px;
+  position: absolute;
+  transform-origin: bottom;
+}
+
+#centerContainer {
+  transform-origin: center;
+  background: none;
+  background-size: cover !important;
+}
+
+
+#noteContainer {
+  /* scale: 1.2; */
+  opacity: 1;
+  width: var(--raw-size);
+  height: var(--raw-size);
+  transition: all var(--long) ease;
+  margin: auto;
+  contain: layout size style;
+}
+
+#noteContainerFrame {
+  width: var(--raw-size);
+  height: var(--raw-size);
+
+  background: url('../Assets/Playfield/frame.svg');
+  background-size: cover !important;
+  position: absolute;
+  transition: all var(--long) ease;
+
+  /* animation: hit 0.5s ease; */
+}
+
+#perfectionIndicator {
+  margin: auto;
+  width: 300px;
+  height: 80px;
+  background-size: cover;
+  background-repeat: none;
+  animation-fill-mode: forwards;
+  contain: paint layout size style;
+  bottom: 50px;
+  left: calc(50% - 150px);
+  position: absolute;
+  z-index: 10;
+}
+
+.indicator {
+  margin: auto;
+  width: 300px;
+  height: 80px;
+  background-size: cover;
+  background-repeat: none;
+  animation: show_scoring 0.25s ease;
+  animation-fill-mode: forwards;
+  display: none;
+  position: absolute;
+}
+
+#perfect {
+  background-image: url('../Assets/Scoring/perfect.svg')
+}
+
+#great {
+  background-image: url('../Assets/Scoring/great.svg')
+}
+
+#good {
+  background-image: url('../Assets/Scoring/good.svg')
+}
+
+#okay {
+  background-image: url('../Assets/Scoring/ok.svg')
+}
+
+#miss {
+  background-image: url('../Assets/Scoring/miss.svg')
+}
+
+@keyframes show_scoring {
+  0% {
+    opacity: 0.5;
+    scale: 0.8;
+  }
+
+  25% {
+    opacity: 1;
+    scale: 1;
+  }
+
+  85% {
+    opacity: 1;
+    scale: 1;
+  }
+
+  99% {
+    opacity: 0;
+    scale: 0.8;
+  }
+
+  100% {
+    display: none;
+  }
+}
+
+#controls {
+  padding: 20px;
+  position: absolute;
+  width: calc(100% - 48px);
+  z-index: 1000;
+  height: 0px;
+  transition: all var(--longer) ease;
+  contain: paint layout content;
+}
+
+#buttons {
+  position: absolute;
+  top: 28 !important;
+  left: 28;
+}
+
+.pause {
+  background-image: url('../Assets/Playfield/pause.svg');
+}
+
+.save {
+  background-image: url('../Assets/Misc/save.svg');
+}
+
+.play {
+  background-image: url('../Assets/Playfield/play.svg');
+}
+
+.reset {
+  background-image: url('../Assets/Playfield/reset.svg');
+}
+
+.back {
+  background-image: url('../Assets/Playfield/back.svg');
+}
+
+#backButton {
+  backdrop-filter: unset !important;
+  box-shadow: none;;
+}
+#saveButton {
+  backdrop-filter: unset !important;
+  box-shadow: none;;
+  margin-top: 5px;
+}
+#scoreText,
+#scoreComparison {
+  margin-left: 4px;
+  margin-right: 0px;
+  margin-bottom: 0px;
+  width: 100%;
+  height: fit-content;
+  font-size: 20px;
+  display: block;
+  text-shadow: #FFFFFF30 0px 0px 6px;
+  opacity: 0.5;
+  font-family: 'Mono';
+  position: absolute;
+  bottom: 105px;
+}
+
+#scoreComparison {
+  bottom: unset;
+}
+
+btn:has(.pause) {
+  box-shadow: #FFFFFF10 0px 0px 5px 4px;
+}
+
+
+#scoreNumber {
+  background: #FFFFFF10;
+  height: fit-content;
+  padding-left: 8px;
+  padding-right: 8px;
+  border-radius: 5px;
+  margin-top: 2px;
+  margin-left: 0px;
+  font-size: 25px;
+  font-family: 'Mono';
+  width: calc(100% - 16px);
+  position: absolute;
+  bottom: 73px;
+}
+
+#scoreNumber>#unusedScoreNumbers {
+  opacity: 0.5;
+}
+
+#songName {
+  margin-left: auto;
+  font-family: 'Modern';
+  font-size: 35px;
+  font-weight: 150;
+  line-height: 30px;
+  text-align: right;
+overflow: hidden;
+white-space: nowrap;
+  max-width: 350px;
+}
+#songName:after {
+  content: "  "
+}
+
+#songArtist {
+  opacity: 0.5;
+  font-family: 'Modern';
+  margin-left: 0px;
+  margin-right: 0px;
+  font-size: 20px;
+  margin-top: -7px;
+  font-weight: 100;
+  text-align: right;
+}
+
+#topLevelContainer {
+  margin: auto;
+  width: 100%;
+  height: 100%;
+  transition: all var(--long) ease;
+}
+
+#songData {
+  width: 330px;
+  right: 95px;
+  margin-left: calc(100vw - 400px);
+  transform-origin: right top;
+  position: absolute;
+  transition: all var(--long) ease;
+}
+#songData.viewing {
+  scale: 1.2;
+  right: 300px; 
+}
+
+#songArt {
+  opacity: 1;
+  border-radius: 5px;
+  width: 65px;
+  height: 65px;
+  margin-right: auto;
+  margin-left: 0px;
+  background-size: cover;
+  background-position: 0px 0px;
+  transform-origin: top right;
+  position: absolute;
+  right: 20px;
+}
+
+#songArt.viewing {
+  scale: 4;
+}
+
+.hiddenButton {
+  scale: 0 !important;
+  opacity: 0 !important;
+  margin-top: 0px;
+}
+
+@keyframes combo {
+  0% {
+    scale: 0.7;
+    opacity: 0.8;
+  }
+
+  100% {
+    scale: 1;
+    opacity: 1;
+  }
+}
+
+#scoreHUD {
+  z-index: 1000;
+  width: 300px;
+  height: 60px;
+  background: url('../Assets/HUD/ScoreOverlay.svg');
+  left: 100;
+  top: 28;
+  position: absolute;
+  font-size: 30px;
+  contain: paint content layout size transform;
+}
+
+#unusedScore {
+  opacity: 0.5;
+  left: 26;
+}
+#usedScore {
+  width: 240px;
+  text-align: right;
+  text-anchor: end;
+  right: 4px;
+  opacity: 0.8;
+}
+
+#unusedScore, #usedScore {
+  font-family: Mono;
+  top: 27px;
+  position: absolute;
+  display: inline-block !important;
+}
+
+
+.leftHandPane {
+  background: #FFFFFF10;
+  width: 70px;
+  height: fit-content;
+  position: fixed;
+  bottom: 20; left: 20;
+  z-index: 10000;
+  border-radius: 10px;
+  padding: 5px;
+  padding-bottom: 0px;
+}
+
+.largeButton {
+  --easing-local: cubic-bezier(.09,1.33,.3,1.79);
+  --duration: 0.1s;
+  width: 50px;
+  height: 50px;
+  border-radius: 5px;
+  z-index: 1000000000000;
+  padding: 10px;
+  margin-bottom: 5px;
+  background: #FFFFFF10;
+  backdrop-filter: blur(12px);
+  opacity: 1;
+  transition: all 0.15s cubic-bezier(0,1.26,.3,1.79), background 0.05s ease;
+}
+.largeButton:not(.activeLargeButton):hover {
+  background: #FFFFFF20;
+}
+
+.largeButton:not(.activeLargeButton):active {
+  background: #FFFFFF05;
+}
+
+.largeButton > div {
+  width: 100%;
+  height: 100%;
+  background-size: contain;
+  background-repeat: no-repeat !important;
+  background-position: center;
+  position: relative;
+}
+
+.activeLargeButton {
+  rotate: 4deg;
+  translate: 12px 0px;
+  background: #FFFFFF20;
+  z-index: 10000;
+}

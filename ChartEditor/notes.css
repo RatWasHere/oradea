@@ -1,0 +1,321 @@
+/* CONTAINER / SIZING STYLES  >>> */
+
+.noteContainer,
+.lane,
+.item {
+  contain: layout style;
+  position: absolute !important;
+}
+
+.lane {
+  height: var(--raw-size);
+  width: var(--note-radius);
+
+  margin-left: 315px;
+
+  /* transform: perspective(370px) rotateX(24deg) scaleY(0.80);
+  transform-style: preserve-3d;
+  transform-origin: center; */
+
+  margin-right: auto;
+  position: absolute;
+  opacity: 1;
+  overflow: visible;
+  pointer-events: none;
+}
+
+@keyframes rotate {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+
+.laneParent {
+  width: var(--raw-size);
+  height: var(--raw-size);
+  position: absolute;
+}
+
+.noteContainer {
+  width: 100%;
+  height: 375px;
+  /* from 315px */
+  overflow: visible;
+  /* scale: 1 -1; */
+  /* transform: translateY(calc(-100% - (var(--note-radius) / 2))); */
+  padding-top: 375px;
+  transform-origin: center;
+  /* from 370px */
+  /* transition: all var(--long) ease; */
+}
+
+/* NOTE STYLES  >>> */
+/* 
+:root {
+  --perspective: 870px;
+  --marginTop: 269ox
+} */
+ 
+
+.item {
+  width: var(--note-radius);
+  height: var(--note-radius);
+  margin-top: 260px;
+  /* was calc((((var(--real-size) - var(--note-radius)) / 2) + var(--gap))) */
+  background: var(--note);
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  background-position: center !important;
+  z-index: 500;
+  transform: scale(0);
+  pointer-events: auto;
+  position: relative;
+  shape-rendering: crispEdges;
+  will-change: transform, opacity;
+  /* animation: note_in_classic 100ms ease; */
+}
+
+.item.slider {
+  transform: unset;
+  background: none;
+}
+
+.holdable {
+  background: var(--holdNote);
+}
+
+.header {
+  width: var(--note-radius);
+  height: 55px;
+  /* calc(var(--note-radius) / 2) */
+
+  background-size: cover !important;
+  background-repeat: no-repeat !important;
+  shape-rendering: geometricPrecision;
+}
+
+.header.end {
+  background: var(--sliderBottom);
+  transform-origin: top;
+  transform: translateY(-1px);
+}
+
+.header.start {
+  background: var(--sliderTop);
+  margin-top: auto;
+  transform-origin: bottom;
+  transform: translateY(1px);
+}
+
+.header.midframe {
+  background: var(--sliderFrame);
+  height: var(--note-radius) !important;
+  background-size: var(--note-radius) var(--note-radius) !important;
+  background-repeat: repeat-y !important;
+  transform-origin: top;
+}
+
+.golden {
+  background-image: var(--goldenNote) !important;
+}
+
+.flick_large_starter {
+  background-image: var(--starterNote) !important;
+}
+
+/* TRACE STYLES  >>> */
+
+
+.traceable {
+  width: 120px;
+  margin-left: auto;
+  margin-right: auto;
+  position: static;
+  height: 100%;
+  background-size: cover;
+  background-position: center;
+  will-change: transform opacity;
+  opacity: 0;
+  filter: opacity(0.5);
+}
+
+.trace-normal {
+  width: 100px;
+  height: 582px;
+  background-size: 100px 582px;
+  background-image: url('../Assets/Headers/Trace.svg');
+  background-repeat: no-repeat;
+}
+
+.trace-short {
+  width: 100px;
+  height: 514px;
+  margin-right: 0px;
+  transform-origin: left;
+  background-image: url('../Assets/Headers/Trace\ Short.svg');
+  background-position: center;
+  background-repeat: no-repeat;
+  transform-origin: bottom;
+  margin-top: 70px;
+  /* translate: 140px 0px; */
+  rotate: 30deg;
+}
+.trace-inverted.trace-short {
+  rotate: -30deg !important;
+}
+
+.trace-half {
+  width: 370px;
+  height: 740px;
+  margin-right: 0px;
+  transform-origin: left;
+  background-image: url('../Assets/Headers/Trace\ Curved\ 180deg.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  transform-origin: bottom;
+}
+
+.trace-quarter {
+  width: 100px;
+  height: 217px;
+  background-image: url('../Assets/Headers/Trace\ Bridge.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  margin: auto;
+  transform: rotate(90deg);
+}
+.trace-inverted.trace-quarter {
+  transform: rotate(-90deg);
+}
+
+.trace-parent {
+  position: absolute;
+  /* animation: fade-in 0.2s ease; */
+  /* scale: -1; */
+  opacity: 0.75;
+}
+
+
+.trace-parent:has(.trace-normal) {
+  width: 100px;
+  height: 740px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  align-content: center;
+}
+.trace-parent:has(.trace-quarter) {
+  width: 100px;
+  height: 720px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  translate: 0 0px;
+  align-content: end;
+  padding-bottom: 30px;
+}
+
+
+.trace-parent:has(.trace-half) {
+  width: 100px;
+  height: 740px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  align-content: center;
+}
+.trace-parent:has(.trace-half.trace-inverted) {
+  scale: 1 -1;
+}
+
+
+.trace-parent:has(.trace-short) {
+  width: 100px;
+  height: 740px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  translate: 0 0px;
+  mask-composite: intersect;
+  align-content: center;
+}
+
+/* .trace-parent:has(.trace-short.trace-inverted) {
+  width: 100px;
+  height: 514px;
+  translate: 255px 237px !important;
+  mask-composite: intersect;
+  mask-image: linear-gradient(210deg,
+      transparent 6%,
+      black 16%,
+      black 100%), linear-gradient(180deg,
+      transparent 3%,
+      black 6%,
+      black 100%);
+} */
+
+/* 
+.trace-parent:has(.trace-inverted) {
+  scale: 1 -1;
+} */
+
+.permissive-swipe::before {
+  content: "";
+  position: absolute;
+  --blurAmount: 10px;
+  --halfBlurAmount: 5px;
+  opacity: 1;
+  width: 100%;
+  height: 100%;
+  background-image: url('../Assets/Headers/Trace.svg');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  animation: sfx_flicker 0.12s ease-in-out infinite alternate;
+}
+
+.permissive-swipe.trace-half::before {
+  background-image: url('../Assets/Headers/Trace\ Curved\ 180deg.svg');
+}
+
+.permissive-swipe.trace-short::before {
+  background-image: url('../Assets/Headers/Trace\ Short.svg');
+}
+
+.permissive-swipe.trace-quarter::before {
+  background-image: url('../Assets/Headers/Trace\ Bridge.svg');
+}
+
+
+/* HINT STYLES  >>> */
+
+.hint {
+  content: '';
+  width: 740px;
+  height: 370px;
+  bottom: 50;
+  left: -315px;
+  position: absolute;
+  transform-origin: bottom;
+  margin: auto;
+  margin-bottom: 0px;
+  background: url('../Assets/Playfield/sync_frame.svg') no-repeat center/cover;
+  image-rendering: optimizeSpeed;
+  display: block;
+  will-change: transform;
+  contain: layout size;
+}
+
+.end>.hint {
+  background-image: url('../Assets/Playfield/sync_frame_hold.svg') !important;
+}
+
+.start>.hint {
+  bottom: -7.5;
+  background-image: url('../Assets/Playfield/sync_frame_hold.svg') !important;
+}

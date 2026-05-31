@@ -1,7 +1,12 @@
+var editorSettings = {
+  fastAnimation: 1,
+  commonAnimation: 3
+}
+
 let studioUI = {
   toggle: (options, onclick) => {
     return `
-    <div class="toggle ${options.additionalClasses || ""} ${(Boolean(options.state) && ownSettings.highlightToggles == 'On') ? "selected " : ""}" id="${options.id}" data-state="${options.state}" onclick="if (this.dataset.stop == 'true') {return}; studioUI.toggleSwitch(this); ${onclick}" style="${options.style || ""}">
+    <div class="toggle ${options.additionalClasses || ""}" id="${options.id}" data-state="${options.state}" onclick="studioUI.toggleSwitch(this); ${onclick}" style="${options.style || ""}">
     <btext style="margin-left: 11.5px;">${options.name}</btext>
     <secondaryText style="margin-top: auto; margin-bottom: auto; opacity: 50%;">${options.false ? options.false : "No"}</secondaryText>
     <div class="toggle_bar"><div class="toggle_tail ${options.state != true ? "toggle_button_true_pre toggle_button_true" : "toggle_button_false_pre toggle_button_false"}" style="transition: all 0.${editorSettings.fastAnimation}s ease;"></div></div>
@@ -10,7 +15,6 @@ let studioUI = {
     `
   },
 
-
   toggleSwitch: (element) => {
     let toggle = element.getElementsByClassName('toggle_bar')[0].getElementsByClassName('toggle_tail')[0]
     toggle.style.transition = `all 0.${editorSettings.commonAnimation}s ease`;
@@ -18,10 +22,6 @@ let studioUI = {
 
     if (element.dataset.state == 'false') {
       element.dataset.state = 'true'
-
-      if (ownSettings.highlightToggles == 'On') {
-        element.classList.add('selected')
-      }
 
       toggle.classList.add('toggle_button_animation_false_to_true');
       toggle.classList.add('toggle_button_false_pre');
@@ -189,5 +189,63 @@ let studioUI = {
         resolvedToggles[constant] = undefined;
       }
     }, resolvedToggles[constant] ? editorSettings.commonAnimation * 100 : 1);
+  },
+
+  initializeTabs: (tabsContainerID, tabConfig) => {
+    const tabsContainer = document.getElementById(tabsContainerID);
+    if (!tabsContainer) {
+      console.error(`Tabs container with ID ${tabsContainerID} not found`);
+      return;
+    }
+
+    // Clear existing tabs
+    tabsContainer.innerHTML = '';
+
+    // Create tabs and set up click handlers
+    tabConfig.forEach((config, index) => {
+      const tab = document.createElement('tab');
+      tab.textContent = config.label;
+      
+      if (index === 0) {
+        tab.classList.add('focused');
+      }
+
+      tab.onclick = () => {
+        // Hide all views
+        tabConfig.forEach(cfg => {
+          const view = document.getElementById(cfg.associatedViewID);
+          if (view) {
+            view.style.display = 'none';
+          }
+        });
+
+        // Show this tab's view
+        const view = document.getElementById(config.associatedViewID);
+        if (view) {
+          view.style.display = 'block';
+        }
+
+        // Update focused tab styling
+        Array.from(tabsContainer.querySelectorAll('tab')).forEach(t => {
+          t.classList.remove('focused');
+        });
+        tab.classList.add('focused');
+
+        // Run additional onclick if provided
+        if (config.onclick) {
+          eval(config.onclick);
+        }
+      };
+
+      tabsContainer.appendChild(tab);
+    });
+
+    // Initialize: show first tab's view, hide others
+    tabConfig.forEach((config, index) => {
+      const view = document.getElementById(config.associatedViewID);
+      if (view) {
+        view.style.display = index === 0 ? 'block' : 'none';
+      }
+    });
   },
 }

@@ -1,0 +1,19 @@
+{
+  "name": "Wonderland Syndrome",
+  "artist": "ki-you",
+  "cover": "cover.png",
+  "difficulties": {
+    "4": "insane.json",
+    "3": "hard.json",
+    "2": "normal.json",
+    "1": "easy.json"
+  },
+  "ratings": {
+    "4": "34",
+    "3": "30",
+    "2": "17",
+    "1": "12"
+  },
+  "duration": 240,
+  "credits": "<a href='https://youtu.be/f-mFceEcdbQ?si=pK66rZ8B-v_2iOUh' target='_blank'>Wonderland Syndrome (後頭葉ワンダーランド)</a> by <a href='https://www.youtube.com/channel/UCnU78ubdSBEWy6tYi6NegZA' target='_blank'>ki-you</a><br> ♡ Developer favorite"
+}

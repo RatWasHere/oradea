@@ -1,60 +1,148 @@
-<!DOCTYPE html> 
+<!doctype html>
 <html lang="en">
   <head>
-<meta charset="utf-8">  </head>
-<link rel="stylesheet" href="../Core/main.css">
-<link rel="stylesheet" href="./style.css">
+    <meta charset="utf-8" />
+  </head>
+  <link rel="stylesheet" href="../Core/main.css" />
+  <link rel="stylesheet" href="./style.css" />
 
-<body>
+  <body>
+    <div
+      class="flexbox"
+      id="picker-overlay"
+      style="height: 100vh; width: 100vw; overflow: hidden"
+    >
+      <div id="foldersPane">
+        <btextm class="modern" style="font-size: 30px; line-height: 30px"
+          >Folders</btextm
+        >
+        <div class="flexbox" style="justify-content: left; margin-bottom: 10px">
+          <btn style="margin-right: 5px">Create</btn>
+          <btn>Reorder</btn>
+        </div>
 
-  <div class="flexbox" id="picker-overlay" style="height: 100vh; width: 100vw; overflow: hidden;">
-    <div id="songs" class="flexbox">
-      <span id="amount"></span>
-      <div id="levels" class="masked-overflow">
-        <div id="levelsContent"></div>
+        <div class="folderTile">
+          <div>All Songs</div>
+        </div>
+        <div class="folderTile">
+          <div>My songs</div>
+        </div>
       </div>
-      <div id="song-controls" class="flexbox">
-        <btn class="flexbox dark-btn glyph_back" onclick="location.href = '../Home/homescreen.html'"
-          style="margin-left: 0px; margin-right: 10px;">
-          <btext>Back</btext>
-        </btn>
-        <btn onclick="ipcRenderer.send('openWorkshop')" class="flexbox dark-btn glyph_misctop" style="margin-left: 0px; margin-right: 10px;">
-          <btext>Workshop</btext>
-        </btn>
-        <btn onclick="location.href = '../Misc/waccastyle.html'" class="flexbox dark-btn" style="margin-left: 0px;  margin-right: 10px;">
-          <btext>Converter</btext>
-        </btn>
-        <btn class="flexbox dark-btn" style="margin-left: 0px; pointer-events: none; opacity: 0; margin-right: 10px;">
-          <btext>Sort</btext>
-        </btn>
-        <div id="search-parent" style="pointer-events: none; opacity: 0;"; class="flexbox">
-          <div class="image search"></div>
-          <input oninput="return; startSearch(this.value)" id="search" placeholder="Search...">
+
+      <div id="songs" class="flexbox">
+        <span id="amount"></span>
+        <div id="levels" class="masked-overflow">
+          <div id="levelsContent"></div>
+        </div>
+        <div id="song-controls" class="flexbox">
+          <btn
+            class="flexbox dark-btn glyph_back"
+            onclick="location.href = '../Home/homescreen.html'"
+            style="margin-left: 0px; margin-right: 10px"
+          >
+            <btext>Back</btext>
+          </btn>
+          <btn
+            onclick="ipcRenderer.send('openWorkshop')"
+            class="flexbox dark-btn glyph_misctop"
+            style="margin-left: 0px; margin-right: 10px"
+          >
+            <btext>Workshop</btext>
+          </btn>
+          <btn
+            onclick="location.href = '../Misc/waccastyle.html'"
+            class="flexbox dark-btn"
+            style="margin-left: 0px; margin-right: 10px"
+          >
+            <btext>Converter</btext>
+          </btn>
+          <btn
+            class="flexbox dark-btn"
+            style="
+              margin-left: 0px;
+              pointer-events: none;
+              opacity: 0;
+              margin-right: 10px;
+            "
+          >
+            <btext>Sort</btext>
+          </btn>
+          <div
+            id="search-parent"
+            style="pointer-events: none; opacity: 0"
+            ;
+            class="flexbox"
+          >
+            <div class="image search"></div>
+            <input
+              oninput="
+                return;
+                startSearch(this.value);
+              "
+              id="search"
+              placeholder="Search..."
+            />
+          </div>
+          <btn
+            id="foldersToggle"
+            onclick="toggleFolders()"
+            class="flexbox dark-btn glyph_misctop"
+            style="margin-left: 0px; margin-right: 15px"
+          >
+            <div class="image folder"></div>
+            <btext>Folders</btext>
+          </btn>
+        </div>
+      </div>
+      <div id="song" class="flexbox">
+        <div class="song-details-container">
+          <div id="song-cover" class="details-cover"></div>
+          <div id="song-details">
+            <btextm id="song-title">Song</btextm>
+            <btextm id="song-credits"></btextm><br />
+            <div id="song-score" class="flexbox">
+              <div id="score-text">
+                <btextm>HIGHSCORE</btextm><br />
+                <btext
+                  ><span id="unusedScore">1234567890123456789</span
+                  ><span id="usedScore"></span
+                ></btext>
+              </div>
+              <div id="score-grade"></div>
+            </div>
+          </div>
+        </div>
+        <div
+          class="song-details-container"
+          style="
+            width: 100%;
+            margin: auto;
+            margin-bottom: 0px;
+          "
+        >
+          <div
+            class="image"
+            style="
+              background: url(&quot;../Assets/Glyphs/LB_LR_DIRECTIONS.svg&quot;);
+              width: 80px;
+              height: 20px;
+              opacity: 0.5;
+              margin-left: 0px;
+              margin-bottom: 5px;
+            "
+          ></div>
+          <div id="song-difficulties" class="flexbox"></div>
+          <btn id="play-button" class="glyph_select" onclick="play()">
+            <btextm style="z-index: 1000; position: relative">Play</btextm>
+          </btn>
         </div>
       </div>
     </div>
-    <div id="song" class="flexbox">
-      <div class="song-details-container">
-        <div id="song-cover" class="details-cover"></div>
-        <div id="song-details">
-          <btextm id="song-title">Song</btextm>
-          <btextm id="song-credits"></btextm><br>
-        </div>
-      </div>
-      <div class="song-details-container" style="width: 100%; padding-bottom: 20px; margin: auto; margin-bottom: 0px;">
-        <div class="image" style="background: url('../Assets/Glyphs/LB_LR_DIRECTIONS.svg'); width: 80px; height: 20px; opacity: 0.5; margin-left: 0px; margin-bottom: 5px;"></div>
-        <div id="song-difficulties" class="flexbox"></div>
-        <btn id="play-button" class="glyph_select" onclick="play()">
-          <btextm style="z-index: 1000; position: relative;">Play</btextm>
-        </btn>
-      </div>
-    </div>
-  </div>
-</body>
+  </body>
 
-<script src="../Utilities/global.js"></script>
-<script src="../Utilities/dynamix.js"></script>
-<script src="../Utilities/controller-control.js"></script>
-<script src="./script.js"></script>C
-
+  <script src="../Utilities/global.js"></script>
+  <script src="../Utilities/dynamix.js"></script>
+  <script src="../Utilities/controller-control.js"></script>
+  <script src="./script.js"></script>
+  C
 </html>

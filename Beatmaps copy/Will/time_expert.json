@@ -1,0 +1,48 @@
+[
+    {
+        "time": 53052,
+        "playfield": {
+            "transition": "all 1s ease-out",
+            "filter": "drop-shadow(0px 0px 10px white)"
+        }
+    },
+    {
+        "time": 68000,
+        "playfield": {
+            "transition": "all 1s ease-out",
+            "filter": "drop-shadow(0px 0px 0px white) blur(4px)"
+        }
+    },
+    {
+        "time": 75000,
+        "playfield": {
+            "transition": "all 1s ease-out",
+            "filter": "drop-shadow(0px 0px 0px black) blur(0px) grayscale(100%)"
+        }
+    },
+    {
+        "time": 108947,
+        "playfield": {
+            "transition": "all 1s ease-out, scale cubic-bezier(0,1.26,.32,1.88) 0.4s",
+            "filter": "blur(0px) grayscale(0%)",
+            "scale": 1.05
+        }
+    },
+    {
+        "time": 109347,
+        "playfield": {
+            "transition": "all 0.3s ease",
+            "filter": "grayscale(50%)",
+            "scale": 1
+        }
+    },
+    {
+        "time": 110842,
+        "playfield": {
+            "transition": "all cubic-bezier(0,1.26,.32,1.88) 0.4s",
+            "filter": "grayscale(0%) drop-shadow(0px 0px 10px white)",
+            "scale": 1.1
+        }
+
+    }
+]

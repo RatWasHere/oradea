@@ -1,4 +1,3 @@
-
 .dropdown_option {
   width: calc(100% - 7.5px);
 
@@ -27,7 +26,7 @@
   transition: all var(--fastAnimation) var(--ease-strong);
 }
 
-.dropdown > .scaleInY {
+.dropdown>.scaleInY {
   border-top: solid 2px #ffffff40 !important;
   display: block;
   margin-left: -12px;
@@ -46,9 +45,7 @@
   border-bottom-right-radius: var(--round-intense);
 }
 
-.scaleIn
-
-.dropdown_option:hover {
+.scaleIn .dropdown_option:hover {
   color: #ffffff90;
   background: #ffffff05;
 }
@@ -273,19 +270,27 @@
 }
 
 .range_slider {
-  -webkit-appearance: none;  /* Override default CSS styles */
+  -webkit-appearance: none;
+  /* Override default CSS styles */
   appearance: none;
-  width: 100%; /* Full-width */
-  height: 25px; /* Specified height */
-  background: #FFFFFF40; /* Grey background */
-  outline: none; /* Remove outline */
-  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
-  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  width: 100%;
+  /* Full-width */
+  height: 25px;
+  /* Specified height */
+  background: #FFFFFF40;
+  /* Grey background */
+  outline: none;
+  /* Remove outline */
+  opacity: 0.7;
+  /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s;
+  /* 0.2 seconds transition on hover */
   transition: opacity .2s;
 }
 
 .range_slider:hover {
-  opacity: 1; /* Fully shown on mouse-over */
+  opacity: 1;
+  /* Fully shown on mouse-over */
 }
 
 .range_slider::-webkit-slider-thumb {
@@ -297,14 +302,21 @@
 }
 
 .range_slider {
-  -webkit-appearance: none;  /* Override default CSS styles */
+  -webkit-appearance: none;
+  /* Override default CSS styles */
   appearance: none;
-  width: 100%; /* Full-width */
-  height: 25px; /* Specified height */
-  background: #FFFFFF40; /* Grey background */
-  outline: none; /* Remove outline */
-  opacity: 0.7; /* Set transparency (for mouse-over effects on hover) */
-  -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+  width: 100%;
+  /* Full-width */
+  height: 25px;
+  /* Specified height */
+  background: #FFFFFF40;
+  /* Grey background */
+  outline: none;
+  /* Remove outline */
+  opacity: 0.7;
+  /* Set transparency (for mouse-over effects on hover) */
+  -webkit-transition: .2s;
+  /* 0.2 seconds transition on hover */
   transition: opacity .2s;
   position: relative;
 }
@@ -331,6 +343,104 @@
   opacity: 0.8;
 }
 
-.range_slider + btext {
+.range_slider+btext {
   opacity: 0;
+}
+
+.studio-tabs {
+  width: 100%;
+  background: #FFFFFF10;
+  height: 40px;
+  display: flex;
+  flex-direction: row;
+  flex-wrap: wrap;
+  justify-content: left;
+}
+
+.studio-tabs>tab {
+  height: 30px;
+  line-height: 30px;
+  font-size: 30px;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  font-family: 'Modern';
+  font-weight: 100;
+  display: block;
+  transition: all 0.1s ease;
+}
+
+.studio-tabs>tab:nth-child(1) {
+  margin-left: 10px;
+}
+
+
+
+.studio-tabs>tab:not(:nth-child(1))::before {
+  content: '';
+  display: inline-block;
+  height: 0px;
+  margin-right: 10px;
+  margin-left: 10px;
+  background: white;
+  opacity: 0.1;
+  width: 1px;
+  padding-top: 10px;
+  padding-bottom: 10px;
+}
+
+.studio-tabs>tab.focused {
+  font-weight: 400;
+}
+
+
+.studio-tabs>tab::after {
+  content: '';
+  /* position: absolute; */
+  display: block;
+  height: 1px;
+  width: calc(100% - 0px);
+  margin-left: 0px;
+  background: white;
+
+  opacity: 0;
+  scale: 0 1;
+  transition: all 0.2s cubic-bezier(.5,1.1,.45,1.34);
+}
+
+.studio-tabs>tab.focused::after {
+  scale: 1 1;
+  opacity: 1;
+}
+
+.studio-tabs>tab:not(:nth-child(1))::after {
+  width: calc(100% - 20px);
+  margin-left: 20px;
+}
+
+.studio-tabs>tab:not(.focused):hover::after {
+  scale: 0.8 1;
+  opacity: 0.5;
+}
+.studio-tabs>tab:not(.focused):active::after {
+  scale: 0.5 1;
+  opacity: 0.5;
+}
+.studio-tabs>tab:not(.focused):active {
+  opacity: 0.5;
+}
+.contentContainer-tabs {
+  width: calc(100% - 20px);
+  margin: auto;
+  padding: 10px;
+  height: calc(100% - 103px);
+  background: #00000020;
+  border-bottom-left-radius: 3px;
+  border-bottom-right-radius: 3px;
+}
+
+.studio-tabs:has(+.contentContainer-tabs) {
+  border-bottom: 1px #FFFFFF30 dashed !important;
+  border-top-right-radius: 5px;
+  border-top-left-radius: 5px;
+  background: none;
 }

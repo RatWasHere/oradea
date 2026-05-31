@@ -136,6 +136,12 @@ html {
 .m {
   font-family: 'Moderno' !important;
 }
+.mono {
+  font-family: 'Mono' !important;
+}
+.modern {
+  font-family: 'Modern' !important;
+}
 
 
 btext {

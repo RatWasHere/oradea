@@ -1,0 +1,77 @@
+{
+  "name": "Protagonist Syndrome",
+  "artist": "Vylet Pony",
+  "cover": "cover.jpg",
+  "difficulties": {
+    "4": "insane_buttons.json",
+    "3": "hard.json",
+    "2": "normal.json",
+    "1": "easy.json"
+  },
+  "charts": {
+    "insane": {
+      "baseline": {
+        "difficulty": 32,
+        "file": "insane_buttons.json"
+      },
+      "joysticks": {
+        "difficulty": 36,
+        "file": "insane_joysticks.json"
+      },
+      "buttons": {
+        "difficulty": 32,
+        "file": "insane_buttons.json"
+      },
+      "touch": {
+        "difficulty": 35,
+        "file": "insane_touch.json"
+      }
+    },
+    "hard": {
+      "baseline": {
+        "difficulty": 30,
+        "file": "hard_buttons.json"
+      },
+      "joysticks": {
+        "difficulty": 32,
+        "file": "hard_joysticks.json"
+      },
+      "buttons": {
+        "difficulty": 30,
+        "file": "hard_buttons.json"
+      },
+      "touch": {
+        "difficulty": 32,
+        "file": "hard_joysticks.json"
+      }
+    },
+    "normal": {
+      "baseline": {
+        "difficulty": 22,
+        "file": "normal_buttons.json"
+      },
+      "joysticks": {
+        "difficulty": 24,
+        "file": "normal_joysticks.json"
+      },
+      "touch": {
+        "difficulty": 24,
+        "file": "normal_touch.json"
+      }
+    },
+    "easy": {
+      "baseline": {
+        "difficulty": 14,
+        "file": "easy_buttons.json"
+      }
+    }
+  },
+  "ratings": {
+    "4": "33",
+    "3": "31",
+    "2": "27",
+    "1": "17"
+  },
+  "duration": 240,
+  "credits": "<a href='https://www.youtube.com/watch?v=vNR2Y7IGNEI' target='_blank'>Protagonist Syndrome</a> by <a href='https://www.youtube.com/@VyletPony' target='_blank'>Vylet Pony (AKA. Zelda Trixie Lulamoon ~ Vyvy)</a>. Artwork by <a href='https://www.deviantart.com/tag/voreburger' target='_blank'>voreburger</a>.<br> ♡ Usage permission granted via e-mail "
+}

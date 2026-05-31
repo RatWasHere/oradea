@@ -1,0 +1,4309 @@
+[
+  {
+    "time": 0,
+    "angle": 3
+  },
+  {
+    "time": 187,
+    "angle": 2
+  },
+  {
+    "time": 375,
+    "angle": 1
+  },
+  {
+    "time": 562,
+    "angle": 0
+  },
+  {
+    "time": 750,
+    "angle": 5
+  },
+  {
+    "time": 1125,
+    "angle": 1
+  },
+  {
+    "time": 1125,
+    "angle": 2
+  },
+  {
+    "time": 1500,
+    "angle": 0
+  },
+  {
+    "time": 1687,
+    "angle": 1
+  },
+  {
+    "time": 1875,
+    "angle": 2
+  },
+  {
+    "time": 2062,
+    "angle": 3
+  },
+  {
+    "time": 2250,
+    "angle": 4
+  },
+  {
+    "time": 2625,
+    "angle": 2
+  },
+  {
+    "time": 2625,
+    "angle": 1
+  },
+  {
+    "time": 3000,
+    "angle": 3
+  },
+  {
+    "time": 3187,
+    "angle": 2
+  },
+  {
+    "time": 3375,
+    "angle": 1
+  },
+  {
+    "time": 3562,
+    "angle": 0
+  },
+  {
+    "time": 3750,
+    "angle": 5
+  },
+  {
+    "time": 4125,
+    "angle": 1
+  },
+  {
+    "time": 4125,
+    "angle": 2
+  },
+  {
+    "time": 4500,
+    "angle": 1
+  },
+  {
+    "time": 4875,
+    "angle": 4
+  },
+  {
+    "time": 4875,
+    "angle": 5
+  },
+  {
+    "time": 5250,
+    "angle": 2
+  },
+  {
+    "time": 5625,
+    "angle": 1
+  },
+  {
+    "time": 5625,
+    "angle": 2
+  },
+  {
+    "time": 6000,
+    "angle": 0
+  },
+  {
+    "time": 6187,
+    "angle": 1
+  },
+  {
+    "time": 6375,
+    "angle": 2
+  },
+  {
+    "time": 6562,
+    "angle": 3
+  },
+  {
+    "time": 6750,
+    "angle": 4
+  },
+  {
+    "time": 7125,
+    "angle": 2
+  },
+  {
+    "time": 7125,
+    "angle": 1
+  },
+  {
+    "time": 7500,
+    "angle": 3
+  },
+  {
+    "time": 7687,
+    "angle": 2
+  },
+  {
+    "time": 7875,
+    "angle": 1
+  },
+  {
+    "time": 8062,
+    "angle": 0
+  },
+  {
+    "time": 8250,
+    "angle": 5
+  },
+  {
+    "time": 8625,
+    "angle": 2
+  },
+  {
+    "time": 8625,
+    "angle": 1
+  },
+  {
+    "time": 9000,
+    "angle": 0
+  },
+  {
+    "time": 9187,
+    "angle": 1
+  },
+  {
+    "time": 9375,
+    "angle": 2
+  },
+  {
+    "time": 9562,
+    "angle": 3
+  },
+  {
+    "time": 9750,
+    "angle": 4
+  },
+  {
+    "time": 9937,
+    "angle": 3
+  },
+  {
+    "time": 10125,
+    "angle": 2
+  },
+  {
+    "time": 10500,
+    "angle": 1
+  },
+  {
+    "time": 10875,
+    "angle": 0
+  },
+  {
+    "time": 11250,
+    "angle": 1,
+    "slider": true,
+    "sliderEnd": 11812
+  },
+  {
+    "time": 11250,
+    "angle": 2,
+    "slider": true,
+    "sliderEnd": 11812
+  },
+  {
+    "time": 12000,
+    "angle": 0
+  },
+  {
+    "time": 12000,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 12187
+  },
+  {
+    "time": 12187,
+    "angle": 2,
+    "slider": true,
+    "sliderEnd": 12375
+  },
+  {
+    "time": 12375,
+    "angle": 1,
+    "slider": true,
+    "sliderEnd": 12562
+  },
+  {
+    "time": 12562,
+    "angle": 0
+  },
+  {
+    "time": 12562,
+    "angle": 3
+  },
+  {
+    "time": 12656,
+    "angle": 2
+  },
+  {
+    "time": 12750,
+    "angle": 1
+  },
+  {
+    "time": 12843,
+    "angle": 2
+  },
+  {
+    "time": 12937,
+    "angle": 1
+  },
+  {
+    "time": 13031,
+    "angle": 2
+  },
+  {
+    "time": 13125,
+    "angle": 0
+  },
+  {
+    "time": 13125,
+    "angle": 3
+  },
+  {
+    "time": 13500,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 13687
+  },
+  {
+    "time": 13500,
+    "angle": 3
+  },
+  {
+    "time": 13687,
+    "angle": 1,
+    "slider": true,
+    "sliderEnd": 13875
+  },
+  {
+    "time": 13875,
+    "angle": 2,
+    "slider": true,
+    "sliderEnd": 14062
+  },
+  {
+    "time": 14062,
+    "angle": 3
+  },
+  {
+    "time": 14062,
+    "angle": 0
+  },
+  {
+    "time": 14156,
+    "angle": 5
+  },
+  {
+    "time": 14250,
+    "angle": 4
+  },
+  {
+    "time": 14343,
+    "angle": 5
+  },
+  {
+    "time": 14437,
+    "angle": 4
+  },
+  {
+    "time": 14531,
+    "angle": 5
+  },
+  {
+    "time": 14625,
+    "angle": 0
+  },
+  {
+    "time": 14625,
+    "angle": 3
+  },
+  {
+    "time": 15000,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 15187
+  },
+  {
+    "time": 15000,
+    "angle": 0
+  },
+  {
+    "time": 15187,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 15375
+  },
+  {
+    "time": 15375,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 15562
+  },
+  {
+    "time": 15562,
+    "angle": 0
+  },
+  {
+    "time": 15656,
+    "angle": 1
+  },
+  {
+    "time": 15750,
+    "angle": 2
+  },
+  {
+    "time": 15843,
+    "angle": 1
+  },
+  {
+    "time": 15937,
+    "angle": 2
+  },
+  {
+    "time": 16031,
+    "angle": 1
+  },
+  {
+    "time": 16125,
+    "angle": 2
+  },
+  {
+    "time": 16125,
+    "angle": 5
+  },
+  {
+    "time": 16500,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 16687
+  },
+  {
+    "time": 16500,
+    "angle": 3
+  },
+  {
+    "time": 16687,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 16875
+  },
+  {
+    "time": 16875,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 17062
+  },
+  {
+    "time": 17062,
+    "angle": 3
+  },
+  {
+    "time": 17156,
+    "angle": 2
+  },
+  {
+    "time": 17250,
+    "angle": 1
+  },
+  {
+    "time": 17343,
+    "angle": 2
+  },
+  {
+    "time": 17437,
+    "angle": 1
+  },
+  {
+    "time": 17531,
+    "angle": 2
+  },
+  {
+    "time": 17625,
+    "angle": 4
+  },
+  {
+    "time": 17625,
+    "angle": 1
+  },
+  {
+    "time": 18000,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 18187
+  },
+  {
+    "time": 18000,
+    "angle": 0
+  },
+  {
+    "time": 18187,
+    "angle": 2,
+    "slider": true,
+    "sliderEnd": 18375
+  },
+  {
+    "time": 18375,
+    "angle": 1,
+    "slider": true,
+    "sliderEnd": 18562
+  },
+  {
+    "time": 18562,
+    "angle": 3
+  },
+  {
+    "time": 18562,
+    "angle": 0
+  },
+  {
+    "time": 18656,
+    "angle": 4
+  },
+  {
+    "time": 18750,
+    "angle": 5
+  },
+  {
+    "time": 18843,
+    "angle": 4
+  },
+  {
+    "time": 18937,
+    "angle": 5
+  },
+  {
+    "time": 19031,
+    "angle": 4
+  },
+  {
+    "time": 19125,
+    "angle": 3
+  },
+  {
+    "time": 19125,
+    "angle": 0
+  },
+  {
+    "time": 19500,
+    "angle": 0
+  },
+  {
+    "time": 19500,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 19687
+  },
+  {
+    "time": 19687,
+    "angle": 2,
+    "slider": true,
+    "sliderEnd": 19875
+  },
+  {
+    "time": 19875,
+    "angle": 1,
+    "slider": true,
+    "sliderEnd": 20062
+  },
+  {
+    "time": 20062,
+    "angle": 3
+  },
+  {
+    "time": 20062,
+    "angle": 0
+  },
+  {
+    "time": 20156,
+    "angle": 2
+  },
+  {
+    "time": 20250,
+    "angle": 1
+  },
+  {
+    "time": 20343,
+    "angle": 2
+  },
+  {
+    "time": 20437,
+    "angle": 1
+  },
+  {
+    "time": 20531,
+    "angle": 2
+  },
+  {
+    "time": 20625,
+    "angle": 0
+  },
+  {
+    "time": 20625,
+    "angle": 3
+  },
+  {
+    "time": 21000,
+    "angle": 5,
+    "slider": true,
+    "sliderEnd": 21187
+  },
+  {
+    "time": 21187,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 21375
+  },
+  {
+    "time": 21375,
+    "angle": 1,
+    "slider": true,
+    "sliderEnd": 21562
+  },
+  {
+    "time": 21562,
+    "angle": 0
+  },
+  {
+    "time": 21562,
+    "angle": 3
+  },
+  {
+    "time": 21656,
+    "angle": 2
+  },
+  {
+    "time": 21750,
+    "angle": 3
+  },
+  {
+    "time": 21843,
+    "angle": 4
+  },
+  {
+    "time": 21937,
+    "angle": 3
+  },
+  {
+    "time": 22031,
+    "angle": 2
+  },
+  {
+    "time": 22125,
+    "angle": 5
+  },
+  {
+    "time": 22125,
+    "angle": 4
+  },
+  {
+    "time": 22500,
+    "angle": 4,
+    "slider": true,
+    "sliderEnd": 22687
+  },
+  {
+    "time": 22687,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 22875
+  },
+  {
+    "time": 22875,
+    "angle": 2,
+    "slider": true,
+    "sliderEnd": 23062
+  },
+  {
+    "time": 23062,
+    "angle": 3
+  },
+  {
+    "time": 23062,
+    "angle": 0
+  },
+  {
+    "time": 23156,
+    "angle": 1
+  },
+  {
+    "time": 23250,
+    "angle": 0
+  },
+  {
+    "time": 23343,
+    "angle": 5
+  },
+  {
+    "time": 23437,
+    "angle": 0
+  },
+  {
+    "time": 23531,
+    "angle": 1
+  },
+  {
+    "time": 23625,
+    "angle": 4
+  },
+  {
+    "time": 23625,
+    "angle": 5
+  },
+  {
+    "time": 24000,
+    "angle": 4
+  },
+  {
+    "time": 24000,
+    "swipe": true,
+    "swipeEnd": 24187,
+    "angle": 5
+  },
+  {
+    "time": 24093,
+    "angle": 3
+  },
+  {
+    "time": 24187,
+    "angle": 4
+  },
+  {
+    "time": 24281,
+    "angle": 3
+  },
+  {
+    "time": 24375,
+    "angle": 4
+  },
+  {
+    "time": 24562,
+    "swipe": true,
+    "swipeEnd": 24750,
+    "angle": 2
+  },
+  {
+    "time": 24937,
+    "angle": 2,
+    "golden": true
+  },
+  {
+    "time": 25125,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 25500,
+    "swipe": true,
+    "swipeEnd": 25687,
+    "angle": 4
+  },
+  {
+    "time": 25500,
+    "angle": 5
+  },
+  {
+    "time": 25593,
+    "angle": 0
+  },
+  {
+    "time": 25687,
+    "angle": 5
+  },
+  {
+    "time": 25781,
+    "angle": 0
+  },
+  {
+    "time": 25875,
+    "angle": 5
+  },
+  {
+    "time": 26062,
+    "swipe": true,
+    "swipeEnd": 26250,
+    "angle": 1
+  },
+  {
+    "time": 26437,
+    "angle": 1,
+    "golden": true
+  },
+  {
+    "time": 26625,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 27000,
+    "swipe": true,
+    "swipeEnd": 27187,
+    "angle": 5
+  },
+  {
+    "time": 27000,
+    "angle": 2
+  },
+  {
+    "time": 27093,
+    "angle": 3
+  },
+  {
+    "time": 27187,
+    "angle": 2
+  },
+  {
+    "time": 27281,
+    "angle": 3
+  },
+  {
+    "time": 27375,
+    "angle": 2
+  },
+  {
+    "time": 27562,
+    "swipe": true,
+    "swipeEnd": 27750,
+    "angle": 2
+  },
+  {
+    "time": 27937,
+    "angle": 2,
+    "golden": true
+  },
+  {
+    "time": 28125,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 28500,
+    "angle": 1
+  },
+  {
+    "time": 28500,
+    "swipe": true,
+    "swipeEnd": 28687,
+    "angle": 4
+  },
+  {
+    "time": 28593,
+    "angle": 0
+  },
+  {
+    "time": 28687,
+    "angle": 1
+  },
+  {
+    "time": 28781,
+    "angle": 0
+  },
+  {
+    "time": 28875,
+    "angle": 1
+  },
+  {
+    "time": 29062,
+    "swipe": true,
+    "swipeEnd": 29250,
+    "angle": 1
+  },
+  {
+    "time": 29437,
+    "angle": 1,
+    "golden": true
+  },
+  {
+    "time": 29625,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 30000,
+    "angle": 5
+  },
+  {
+    "time": 30000,
+    "swipe": true,
+    "swipeEnd": 30187,
+    "angle": 1
+  },
+  {
+    "time": 30093,
+    "angle": 0
+  },
+  {
+    "time": 30187,
+    "angle": 5
+  },
+  {
+    "time": 30281,
+    "angle": 0
+  },
+  {
+    "time": 30375,
+    "angle": 5
+  },
+  {
+    "time": 30562,
+    "swipe": true,
+    "swipeEnd": 30750,
+    "angle": 4
+  },
+  {
+    "time": 30937,
+    "angle": 1,
+    "golden": true
+  },
+  {
+    "time": 31125,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 31500,
+    "swipe": true,
+    "swipeEnd": 31687,
+    "angle": 2
+  },
+  {
+    "time": 31500,
+    "angle": 4
+  },
+  {
+    "time": 31593,
+    "angle": 3
+  },
+  {
+    "time": 31687,
+    "angle": 4
+  },
+  {
+    "time": 31781,
+    "angle": 3
+  },
+  {
+    "time": 31875,
+    "angle": 4
+  },
+  {
+    "time": 32062,
+    "swipe": true,
+    "swipeEnd": 32250,
+    "angle": 5
+  },
+  {
+    "time": 32437,
+    "angle": 2,
+    "golden": true
+  },
+  {
+    "time": 32625,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 33000,
+    "swipe": true,
+    "swipeEnd": 33187,
+    "angle": 4
+  },
+  {
+    "time": 33000,
+    "angle": 1
+  },
+  {
+    "time": 33093,
+    "angle": 0
+  },
+  {
+    "time": 33187,
+    "angle": 1
+  },
+  {
+    "time": 33281,
+    "angle": 0
+  },
+  {
+    "time": 33375,
+    "angle": 1
+  },
+  {
+    "time": 33562,
+    "swipe": true,
+    "swipeEnd": 33750,
+    "angle": 1
+  },
+  {
+    "time": 33937,
+    "angle": 1,
+    "golden": true
+  },
+  {
+    "time": 34125,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 34500,
+    "angle": 2
+  },
+  {
+    "time": 34500,
+    "swipe": true,
+    "swipeEnd": 34687,
+    "angle": 5
+  },
+  {
+    "time": 34593,
+    "angle": 3
+  },
+  {
+    "time": 34687,
+    "angle": 2
+  },
+  {
+    "time": 34781,
+    "angle": 3
+  },
+  {
+    "time": 34875,
+    "angle": 2
+  },
+  {
+    "time": 35062,
+    "swipe": true,
+    "swipeEnd": 35250,
+    "angle": 2
+  },
+  {
+    "time": 35437,
+    "angle": 2,
+    "golden": true
+  },
+  {
+    "time": 35625,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 36000,
+    "angle": 5,
+    "slider": true,
+    "sliderEnd": 36937
+  },
+  {
+    "time": 36375,
+    "angle": 2
+  },
+  {
+    "time": 36562,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 36937,
+    "angle": 2
+  },
+  {
+    "time": 37031,
+    "angle": 1
+  },
+  {
+    "time": 37125,
+    "angle": 2
+  },
+  {
+    "time": 37500,
+    "angle": 4,
+    "slider": true,
+    "sliderEnd": 38437
+  },
+  {
+    "time": 37875,
+    "angle": 1
+  },
+  {
+    "time": 38062,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 38437,
+    "angle": 1
+  },
+  {
+    "time": 38531,
+    "angle": 2
+  },
+  {
+    "time": 38625,
+    "angle": 1
+  },
+  {
+    "time": 39000,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 39937
+  },
+  {
+    "time": 39375,
+    "angle": 2
+  },
+  {
+    "time": 39562,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 39937,
+    "angle": 2
+  },
+  {
+    "time": 40031,
+    "angle": 1
+  },
+  {
+    "time": 40125,
+    "angle": 2
+  },
+  {
+    "time": 40500,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 41437
+  },
+  {
+    "time": 40875,
+    "angle": 1
+  },
+  {
+    "time": 41062,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 41437,
+    "angle": 1
+  },
+  {
+    "time": 41531,
+    "angle": 2
+  },
+  {
+    "time": 41625,
+    "angle": 1
+  },
+  {
+    "time": 42000,
+    "angle": 1,
+    "slider": true,
+    "sliderEnd": 42937
+  },
+  {
+    "time": 42375,
+    "angle": 2
+  },
+  {
+    "time": 42562,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 42937,
+    "angle": 2
+  },
+  {
+    "time": 43031,
+    "angle": 1
+  },
+  {
+    "time": 43125,
+    "angle": 2
+  },
+  {
+    "time": 43500,
+    "angle": 2,
+    "slider": true,
+    "sliderEnd": 44437
+  },
+  {
+    "time": 43875,
+    "angle": 1
+  },
+  {
+    "time": 44062,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 44437,
+    "angle": 1
+  },
+  {
+    "time": 44531,
+    "angle": 2
+  },
+  {
+    "time": 44625,
+    "angle": 1
+  },
+  {
+    "time": 45000,
+    "angle": 4,
+    "slider": true,
+    "sliderEnd": 45937
+  },
+  {
+    "time": 45375,
+    "angle": 5
+  },
+  {
+    "time": 45562,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 45937,
+    "angle": 2
+  },
+  {
+    "time": 46031,
+    "angle": 1
+  },
+  {
+    "time": 46125,
+    "angle": 2
+  },
+  {
+    "time": 46500,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 46875
+  },
+  {
+    "time": 46500,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 46875
+  },
+  {
+    "time": 46875,
+    "angle": 1
+  },
+  {
+    "time": 46968,
+    "angle": 2
+  },
+  {
+    "time": 47062,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 47062,
+    "angle": 3
+  },
+  {
+    "time": 47156,
+    "angle": 4
+  },
+  {
+    "time": 47250,
+    "angle": 5
+  },
+  {
+    "time": 47343,
+    "angle": 0
+  },
+  {
+    "time": 47437,
+    "angle": 1
+  },
+  {
+    "time": 47531,
+    "angle": 2
+  },
+  {
+    "time": 47625,
+    "angle": 1,
+    "golden": true
+  },
+  {
+    "time": 47625,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 48000,
+    "angle": 2
+  },
+  {
+    "time": 48093,
+    "angle": 1
+  },
+  {
+    "time": 48187,
+    "angle": 2
+  },
+  {
+    "time": 48281,
+    "angle": 1
+  },
+  {
+    "time": 48375,
+    "swipe": true,
+    "swipeEnd": 48562,
+    "angle": 2,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 48750,
+    "angle": 1
+  },
+  {
+    "time": 48843,
+    "angle": 2
+  },
+  {
+    "time": 48937,
+    "angle": 1
+  },
+  {
+    "time": 49031,
+    "angle": 2
+  },
+  {
+    "time": 49125,
+    "swipe": true,
+    "swipeEnd": 49312,
+    "angle": 1,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 49500,
+    "angle": 4
+  },
+  {
+    "time": 49593,
+    "angle": 5
+  },
+  {
+    "time": 49687,
+    "angle": 4
+  },
+  {
+    "time": 49781,
+    "angle": 5
+  },
+  {
+    "time": 49875,
+    "swipe": true,
+    "swipeEnd": 50062,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 50250,
+    "angle": 5
+  },
+  {
+    "time": 50343,
+    "angle": 4
+  },
+  {
+    "time": 50437,
+    "angle": 5
+  },
+  {
+    "time": 50531,
+    "angle": 4
+  },
+  {
+    "time": 50625,
+    "swipe": true,
+    "swipeEnd": 50812,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 51000,
+    "angle": 3
+  },
+  {
+    "time": 51093,
+    "angle": 0
+  },
+  {
+    "time": 51187,
+    "angle": 3
+  },
+  {
+    "time": 51281,
+    "angle": 0
+  },
+  {
+    "time": 51375,
+    "swipe": true,
+    "swipeEnd": 51562,
+    "angle": 3
+  },
+  {
+    "time": 51750,
+    "angle": 0
+  },
+  {
+    "time": 51843,
+    "angle": 3
+  },
+  {
+    "time": 51937,
+    "angle": 0
+  },
+  {
+    "time": 52031,
+    "angle": 3
+  },
+  {
+    "time": 52125,
+    "swipe": true,
+    "swipeEnd": 52312,
+    "angle": 0
+  },
+  {
+    "time": 52500,
+    "angle": 5
+  },
+  {
+    "time": 52593,
+    "angle": 0
+  },
+  {
+    "time": 52687,
+    "angle": 1
+  },
+  {
+    "time": 52781,
+    "angle": 2
+  },
+  {
+    "time": 52875,
+    "swipe": true,
+    "swipeEnd": 53062,
+    "angle": 3
+  },
+  {
+    "time": 53250,
+    "angle": 4
+  },
+  {
+    "time": 53343,
+    "angle": 3
+  },
+  {
+    "time": 53437,
+    "angle": 2
+  },
+  {
+    "time": 53531,
+    "angle": 1
+  },
+  {
+    "time": 53625,
+    "swipe": true,
+    "swipeEnd": 53812,
+    "angle": 0
+  },
+  {
+    "time": 54000,
+    "angle": 3
+  },
+  {
+    "time": 54093,
+    "angle": 0
+  },
+  {
+    "time": 54187,
+    "angle": 2
+  },
+  {
+    "time": 54281,
+    "angle": 1
+  },
+  {
+    "time": 54375,
+    "swipe": true,
+    "swipeEnd": 54562,
+    "angle": 2
+  },
+  {
+    "time": 54750,
+    "angle": 0
+  },
+  {
+    "time": 54843,
+    "angle": 3
+  },
+  {
+    "time": 54937,
+    "angle": 1
+  },
+  {
+    "time": 55031,
+    "angle": 2
+  },
+  {
+    "time": 55125,
+    "swipe": true,
+    "swipeEnd": 55312,
+    "angle": 1
+  },
+  {
+    "time": 55500,
+    "angle": 3
+  },
+  {
+    "time": 55593,
+    "angle": 0
+  },
+  {
+    "time": 55687,
+    "angle": 4
+  },
+  {
+    "time": 55781,
+    "angle": 5
+  },
+  {
+    "time": 55875,
+    "swipe": true,
+    "swipeEnd": 56062,
+    "angle": 4
+  },
+  {
+    "time": 56250,
+    "angle": 0
+  },
+  {
+    "time": 56343,
+    "angle": 3
+  },
+  {
+    "time": 56437,
+    "angle": 5
+  },
+  {
+    "time": 56531,
+    "angle": 4
+  },
+  {
+    "time": 56625,
+    "swipe": true,
+    "swipeEnd": 56812,
+    "angle": 5
+  },
+  {
+    "time": 57000,
+    "angle": 5
+  },
+  {
+    "time": 57093,
+    "angle": 0
+  },
+  {
+    "time": 57187,
+    "angle": 1
+  },
+  {
+    "time": 57281,
+    "angle": 2
+  },
+  {
+    "time": 57375,
+    "angle": 3
+  },
+  {
+    "time": 57375,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 57750,
+    "angle": 4
+  },
+  {
+    "time": 57843,
+    "angle": 3
+  },
+  {
+    "time": 57937,
+    "angle": 2
+  },
+  {
+    "time": 58031,
+    "angle": 1
+  },
+  {
+    "time": 58125,
+    "angle": 0
+  },
+  {
+    "time": 58125,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 58500,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 60000
+  },
+  {
+    "time": 58500,
+    "angle": 2
+  },
+  {
+    "time": 58875,
+    "angle": 3
+  },
+  {
+    "time": 59250,
+    "angle": 4
+  },
+  {
+    "time": 59625,
+    "angle": 3
+  },
+  {
+    "time": 60000,
+    "angle": 1
+  },
+  {
+    "time": 60093,
+    "angle": 2
+  },
+  {
+    "time": 60187,
+    "angle": 1
+  },
+  {
+    "time": 60281,
+    "angle": 2
+  },
+  {
+    "time": 60375,
+    "swipe": true,
+    "swipeEnd": 60562,
+    "angle": 1
+  },
+  {
+    "time": 60750,
+    "angle": 2
+  },
+  {
+    "time": 60843,
+    "angle": 1
+  },
+  {
+    "time": 60937,
+    "angle": 2
+  },
+  {
+    "time": 61031,
+    "angle": 1
+  },
+  {
+    "time": 61125,
+    "swipe": true,
+    "swipeEnd": 61312,
+    "angle": 2
+  },
+  {
+    "time": 61500,
+    "angle": 5
+  },
+  {
+    "time": 61593,
+    "angle": 0
+  },
+  {
+    "time": 61687,
+    "angle": 1
+  },
+  {
+    "time": 61781,
+    "angle": 2
+  },
+  {
+    "time": 61875,
+    "swipe": true,
+    "swipeEnd": 62062,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 62250,
+    "angle": 4
+  },
+  {
+    "time": 62343,
+    "angle": 3
+  },
+  {
+    "time": 62437,
+    "angle": 2
+  },
+  {
+    "time": 62531,
+    "angle": 1
+  },
+  {
+    "time": 62625,
+    "swipe": true,
+    "swipeEnd": 62812,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 63000,
+    "angle": 1
+  },
+  {
+    "time": 63093,
+    "angle": 0
+  },
+  {
+    "time": 63187,
+    "angle": 3
+  },
+  {
+    "time": 63281,
+    "angle": 2
+  },
+  {
+    "time": 63375,
+    "swipe": true,
+    "swipeEnd": 63562,
+    "angle": 1
+  },
+  {
+    "time": 63750,
+    "angle": 2
+  },
+  {
+    "time": 63843,
+    "angle": 3
+  },
+  {
+    "time": 63937,
+    "angle": 0
+  },
+  {
+    "time": 64031,
+    "angle": 1
+  },
+  {
+    "time": 64125,
+    "swipe": true,
+    "swipeEnd": 64312,
+    "angle": 2
+  },
+  {
+    "time": 64500,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 66000
+  },
+  {
+    "time": 64500,
+    "angle": 1
+  },
+  {
+    "time": 64875,
+    "angle": 0
+  },
+  {
+    "time": 65250,
+    "angle": 5
+  },
+  {
+    "time": 65625,
+    "angle": 0
+  },
+  {
+    "time": 66000,
+    "angle": 2
+  },
+  {
+    "time": 66093,
+    "angle": 1
+  },
+  {
+    "time": 66187,
+    "angle": 2
+  },
+  {
+    "time": 66281,
+    "angle": 1
+  },
+  {
+    "time": 66375,
+    "swipe": true,
+    "swipeEnd": 66562,
+    "angle": 2,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 66750,
+    "angle": 1
+  },
+  {
+    "time": 66843,
+    "angle": 2
+  },
+  {
+    "time": 66937,
+    "angle": 1
+  },
+  {
+    "time": 67031,
+    "angle": 2
+  },
+  {
+    "time": 67125,
+    "swipe": true,
+    "swipeEnd": 67312,
+    "angle": 1,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 67500,
+    "angle": 4
+  },
+  {
+    "time": 67593,
+    "angle": 5
+  },
+  {
+    "time": 67687,
+    "angle": 4
+  },
+  {
+    "time": 67781,
+    "angle": 5
+  },
+  {
+    "time": 67875,
+    "swipe": true,
+    "swipeEnd": 68062,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 68250,
+    "angle": 5
+  },
+  {
+    "time": 68343,
+    "angle": 4
+  },
+  {
+    "time": 68437,
+    "angle": 5
+  },
+  {
+    "time": 68531,
+    "angle": 4
+  },
+  {
+    "time": 68625,
+    "swipe": true,
+    "swipeEnd": 68812,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 69000,
+    "angle": 3
+  },
+  {
+    "time": 69093,
+    "angle": 0
+  },
+  {
+    "time": 69187,
+    "angle": 3
+  },
+  {
+    "time": 69281,
+    "angle": 0
+  },
+  {
+    "time": 69375,
+    "swipe": true,
+    "swipeEnd": 69562,
+    "angle": 3
+  },
+  {
+    "time": 69750,
+    "angle": 0
+  },
+  {
+    "time": 69843,
+    "angle": 3
+  },
+  {
+    "time": 69937,
+    "angle": 0
+  },
+  {
+    "time": 70031,
+    "angle": 3
+  },
+  {
+    "time": 70125,
+    "swipe": true,
+    "swipeEnd": 70312,
+    "angle": 0
+  },
+  {
+    "time": 70500,
+    "angle": 5
+  },
+  {
+    "time": 70593,
+    "angle": 0
+  },
+  {
+    "time": 70687,
+    "angle": 1
+  },
+  {
+    "time": 70781,
+    "angle": 2
+  },
+  {
+    "time": 70875,
+    "swipe": true,
+    "swipeEnd": 71062,
+    "angle": 3
+  },
+  {
+    "time": 71250,
+    "angle": 4
+  },
+  {
+    "time": 71343,
+    "angle": 3
+  },
+  {
+    "time": 71437,
+    "angle": 2
+  },
+  {
+    "time": 71531,
+    "angle": 1
+  },
+  {
+    "time": 71625,
+    "swipe": true,
+    "swipeEnd": 71812,
+    "angle": 0
+  },
+  {
+    "time": 72000,
+    "angle": 3
+  },
+  {
+    "time": 72000,
+    "swipe": true,
+    "swipeEnd": 72187,
+    "angle": 2
+  },
+  {
+    "time": 72375,
+    "swipe": true,
+    "swipeEnd": 72562,
+    "angle": 5
+  },
+  {
+    "time": 72750,
+    "swipe": true,
+    "swipeEnd": 72937,
+    "angle": 2
+  },
+  {
+    "time": 73125,
+    "swipe": true,
+    "swipeEnd": 73312,
+    "angle": 4
+  },
+  {
+    "time": 73500,
+    "swipe": true,
+    "swipeEnd": 73687,
+    "angle": 1
+  },
+  {
+    "time": 73875,
+    "swipe": true,
+    "swipeEnd": 74062,
+    "angle": 5
+  },
+  {
+    "time": 74250,
+    "swipe": true,
+    "swipeEnd": 74437,
+    "angle": 1
+  },
+  {
+    "time": 74625,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 74625,
+    "swipe": true,
+    "swipeEnd": 74812,
+    "angle": 2
+  },
+  {
+    "time": 74812,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 75000,
+    "swipe": true,
+    "swipeEnd": 75187,
+    "angle": 2,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 75000,
+    "angle": 1,
+    "golden": true
+  },
+  {
+    "time": 75375,
+    "swipe": true,
+    "swipeEnd": 75562,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 75750,
+    "swipe": true,
+    "swipeEnd": 75937,
+    "angle": 1,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 76125,
+    "swipe": true,
+    "swipeEnd": 76312,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 76500,
+    "swipe": true,
+    "swipeEnd": 76687,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 76875,
+    "swipe": true,
+    "swipeEnd": 77062,
+    "angle": 2,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 77250,
+    "swipe": true,
+    "swipeEnd": 77437,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 77625,
+    "swipe": true,
+    "swipeEnd": 77812,
+    "angle": 1,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 77625,
+    "angle": 2,
+    "golden": true
+  },
+  {
+    "time": 77812,
+    "angle": 2,
+    "golden": true
+  },
+  {
+    "time": 78000,
+    "angle": 1,
+    "golden": true
+  },
+  {
+    "time": 78375,
+    "swipe": true,
+    "swipeEnd": 78562,
+    "angle": 3,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 78750,
+    "swipe": true,
+    "swipeEnd": 78937,
+    "angle": 3,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 79125,
+    "swipe": true,
+    "swipeEnd": 79312,
+    "angle": 0,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 79500,
+    "swipe": true,
+    "swipeEnd": 79687,
+    "angle": 0,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 79875,
+    "swipe": true,
+    "swipeEnd": 80062,
+    "angle": 3,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 80250,
+    "swipe": true,
+    "swipeEnd": 80437,
+    "angle": 3,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 80625,
+    "swipe": true,
+    "swipeEnd": 80812,
+    "angle": 0,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 80625,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 80812,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 81000,
+    "swipe": true,
+    "swipeEnd": 81187,
+    "angle": 0,
+    "quarterSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 81000,
+    "angle": 2,
+    "golden": true
+  },
+  {
+    "time": 81375,
+    "swipe": true,
+    "swipeEnd": 81562,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 81750,
+    "swipe": true,
+    "swipeEnd": 81937,
+    "angle": 1
+  },
+  {
+    "time": 82125,
+    "swipe": true,
+    "swipeEnd": 82312,
+    "angle": 5
+  },
+  {
+    "time": 82125,
+    "swipe": true,
+    "swipeEnd": 82312,
+    "angle": 4
+  },
+  {
+    "time": 82500,
+    "swipe": true,
+    "swipeEnd": 82687,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 82875,
+    "swipe": true,
+    "swipeEnd": 83062,
+    "angle": 1
+  },
+  {
+    "time": 83250,
+    "swipe": true,
+    "swipeEnd": 83437,
+    "angle": 5
+  },
+  {
+    "time": 83250,
+    "swipe": true,
+    "swipeEnd": 83437,
+    "angle": 4
+  },
+  {
+    "time": 83437,
+    "angle": 1
+  },
+  {
+    "time": 83625,
+    "angle": 2
+  },
+  {
+    "time": 83812,
+    "angle": 1
+  },
+  {
+    "time": 84000,
+    "angle": 2
+  },
+  {
+    "time": 84093,
+    "angle": 1
+  },
+  {
+    "time": 84187,
+    "angle": 2
+  },
+  {
+    "time": 84281,
+    "angle": 1
+  },
+  {
+    "time": 84375,
+    "swipe": true,
+    "swipeEnd": 84562,
+    "angle": 2,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 84750,
+    "angle": 1
+  },
+  {
+    "time": 84843,
+    "angle": 2
+  },
+  {
+    "time": 84937,
+    "angle": 1
+  },
+  {
+    "time": 85031,
+    "angle": 2
+  },
+  {
+    "time": 85125,
+    "swipe": true,
+    "swipeEnd": 85312,
+    "angle": 1,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 85500,
+    "angle": 4
+  },
+  {
+    "time": 85593,
+    "angle": 5
+  },
+  {
+    "time": 85687,
+    "angle": 4
+  },
+  {
+    "time": 85781,
+    "angle": 5
+  },
+  {
+    "time": 85875,
+    "swipe": true,
+    "swipeEnd": 86062,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 86250,
+    "angle": 5
+  },
+  {
+    "time": 86343,
+    "angle": 4
+  },
+  {
+    "time": 86437,
+    "angle": 5
+  },
+  {
+    "time": 86531,
+    "angle": 4
+  },
+  {
+    "time": 86625,
+    "swipe": true,
+    "swipeEnd": 86812,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 87000,
+    "angle": 3
+  },
+  {
+    "time": 87093,
+    "angle": 0
+  },
+  {
+    "time": 87187,
+    "angle": 3
+  },
+  {
+    "time": 87281,
+    "angle": 0
+  },
+  {
+    "time": 87375,
+    "swipe": true,
+    "swipeEnd": 87562,
+    "angle": 3
+  },
+  {
+    "time": 87750,
+    "angle": 0
+  },
+  {
+    "time": 87843,
+    "angle": 3
+  },
+  {
+    "time": 87937,
+    "angle": 0
+  },
+  {
+    "time": 88031,
+    "angle": 3
+  },
+  {
+    "time": 88125,
+    "swipe": true,
+    "swipeEnd": 88312,
+    "angle": 0
+  },
+  {
+    "time": 88500,
+    "angle": 5
+  },
+  {
+    "time": 88593,
+    "angle": 0
+  },
+  {
+    "time": 88687,
+    "angle": 1
+  },
+  {
+    "time": 88781,
+    "angle": 2
+  },
+  {
+    "time": 88875,
+    "swipe": true,
+    "swipeEnd": 89062,
+    "angle": 3
+  },
+  {
+    "time": 89250,
+    "angle": 4
+  },
+  {
+    "time": 89343,
+    "angle": 3
+  },
+  {
+    "time": 89437,
+    "angle": 2
+  },
+  {
+    "time": 89531,
+    "angle": 1
+  },
+  {
+    "time": 89625,
+    "swipe": true,
+    "swipeEnd": 89812,
+    "angle": 0
+  },
+  {
+    "time": 90000,
+    "angle": 3
+  },
+  {
+    "time": 90093,
+    "angle": 0
+  },
+  {
+    "time": 90187,
+    "angle": 2
+  },
+  {
+    "time": 90281,
+    "angle": 1
+  },
+  {
+    "time": 90375,
+    "swipe": true,
+    "swipeEnd": 90562,
+    "angle": 2
+  },
+  {
+    "time": 90750,
+    "angle": 0
+  },
+  {
+    "time": 90843,
+    "angle": 3
+  },
+  {
+    "time": 90937,
+    "angle": 1
+  },
+  {
+    "time": 91031,
+    "angle": 2
+  },
+  {
+    "time": 91125,
+    "swipe": true,
+    "swipeEnd": 91312,
+    "angle": 1
+  },
+  {
+    "time": 91500,
+    "angle": 3
+  },
+  {
+    "time": 91593,
+    "angle": 0
+  },
+  {
+    "time": 91687,
+    "angle": 4
+  },
+  {
+    "time": 91781,
+    "angle": 5
+  },
+  {
+    "time": 91875,
+    "swipe": true,
+    "swipeEnd": 92062,
+    "angle": 4
+  },
+  {
+    "time": 92250,
+    "angle": 0
+  },
+  {
+    "time": 92343,
+    "angle": 3
+  },
+  {
+    "time": 92437,
+    "angle": 5
+  },
+  {
+    "time": 92531,
+    "angle": 4
+  },
+  {
+    "time": 92625,
+    "swipe": true,
+    "swipeEnd": 92812,
+    "angle": 5
+  },
+  {
+    "time": 93000,
+    "angle": 5
+  },
+  {
+    "time": 93093,
+    "angle": 0
+  },
+  {
+    "time": 93187,
+    "angle": 1
+  },
+  {
+    "time": 93281,
+    "angle": 2
+  },
+  {
+    "time": 93375,
+    "angle": 3
+  },
+  {
+    "time": 93375,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 93750,
+    "angle": 4
+  },
+  {
+    "time": 93843,
+    "angle": 3
+  },
+  {
+    "time": 93937,
+    "angle": 2
+  },
+  {
+    "time": 94031,
+    "angle": 1
+  },
+  {
+    "time": 94125,
+    "angle": 0
+  },
+  {
+    "time": 94125,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 94500,
+    "angle": 1,
+    "slider": true,
+    "sliderEnd": 94875
+  },
+  {
+    "time": 94500,
+    "angle": 2
+  },
+  {
+    "time": 94875,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 95250
+  },
+  {
+    "time": 94875,
+    "angle": 0
+  },
+  {
+    "time": 95250,
+    "angle": 4
+  },
+  {
+    "time": 95250,
+    "angle": 5,
+    "slider": true,
+    "sliderEnd": 95625
+  },
+  {
+    "time": 95625,
+    "angle": 3
+  },
+  {
+    "time": 95625,
+    "angle": 0
+  },
+  {
+    "time": 95812,
+    "angle": 5
+  },
+  {
+    "time": 95812,
+    "angle": 4
+  },
+  {
+    "time": 96000,
+    "angle": 5,
+    "slider": true,
+    "sliderEnd": 96937
+  },
+  {
+    "time": 96375,
+    "angle": 2
+  },
+  {
+    "time": 96562,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 96937,
+    "angle": 2
+  },
+  {
+    "time": 97031,
+    "angle": 1
+  },
+  {
+    "time": 97125,
+    "angle": 2
+  },
+  {
+    "time": 97500,
+    "angle": 4,
+    "slider": true,
+    "sliderEnd": 98437
+  },
+  {
+    "time": 97875,
+    "angle": 1
+  },
+  {
+    "time": 98062,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 98437,
+    "angle": 1
+  },
+  {
+    "time": 98531,
+    "angle": 2
+  },
+  {
+    "time": 98625,
+    "angle": 1
+  },
+  {
+    "time": 99000,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 99937
+  },
+  {
+    "time": 99375,
+    "angle": 2
+  },
+  {
+    "time": 99562,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 99937,
+    "angle": 2
+  },
+  {
+    "time": 100031,
+    "angle": 1
+  },
+  {
+    "time": 100125,
+    "angle": 2
+  },
+  {
+    "time": 100500,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 101437
+  },
+  {
+    "time": 100875,
+    "angle": 1
+  },
+  {
+    "time": 101062,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 101437,
+    "angle": 1
+  },
+  {
+    "time": 101531,
+    "angle": 2
+  },
+  {
+    "time": 101625,
+    "angle": 1
+  },
+  {
+    "time": 102000,
+    "angle": 1,
+    "slider": true,
+    "sliderEnd": 102937
+  },
+  {
+    "time": 102375,
+    "angle": 2
+  },
+  {
+    "time": 102562,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 102937,
+    "angle": 2
+  },
+  {
+    "time": 103031,
+    "angle": 1
+  },
+  {
+    "time": 103125,
+    "angle": 2
+  },
+  {
+    "time": 103500,
+    "angle": 2,
+    "slider": true,
+    "sliderEnd": 104437
+  },
+  {
+    "time": 103875,
+    "angle": 1
+  },
+  {
+    "time": 104062,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 104437,
+    "angle": 1
+  },
+  {
+    "time": 104531,
+    "angle": 2
+  },
+  {
+    "time": 104625,
+    "angle": 1
+  },
+  {
+    "time": 105000,
+    "angle": 4,
+    "slider": true,
+    "sliderEnd": 105937
+  },
+  {
+    "time": 105375,
+    "angle": 5
+  },
+  {
+    "time": 105562,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 105937,
+    "angle": 2
+  },
+  {
+    "time": 106031,
+    "angle": 1
+  },
+  {
+    "time": 106125,
+    "angle": 2
+  },
+  {
+    "time": 106500,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 106875
+  },
+  {
+    "time": 106500,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 106875
+  },
+  {
+    "time": 106875,
+    "angle": 1
+  },
+  {
+    "time": 106968,
+    "angle": 2
+  },
+  {
+    "time": 107062,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 107062,
+    "angle": 3
+  },
+  {
+    "time": 107156,
+    "angle": 4
+  },
+  {
+    "time": 107250,
+    "angle": 5
+  },
+  {
+    "time": 107343,
+    "angle": 0
+  },
+  {
+    "time": 107437,
+    "angle": 1
+  },
+  {
+    "time": 107531,
+    "angle": 2
+  },
+  {
+    "time": 107625,
+    "angle": 1,
+    "golden": true
+  },
+  {
+    "time": 107625,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 108000,
+    "angle": 2
+  },
+  {
+    "time": 108093,
+    "angle": 1
+  },
+  {
+    "time": 108187,
+    "angle": 2
+  },
+  {
+    "time": 108281,
+    "angle": 1
+  },
+  {
+    "time": 108375,
+    "swipe": true,
+    "swipeEnd": 108562,
+    "angle": 2,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 108750,
+    "angle": 1
+  },
+  {
+    "time": 108843,
+    "angle": 2
+  },
+  {
+    "time": 108937,
+    "angle": 1
+  },
+  {
+    "time": 109031,
+    "angle": 2
+  },
+  {
+    "time": 109125,
+    "swipe": true,
+    "swipeEnd": 109312,
+    "angle": 1,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 109500,
+    "angle": 4
+  },
+  {
+    "time": 109593,
+    "angle": 5
+  },
+  {
+    "time": 109687,
+    "angle": 4
+  },
+  {
+    "time": 109781,
+    "angle": 5
+  },
+  {
+    "time": 109875,
+    "swipe": true,
+    "swipeEnd": 110062,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 110250,
+    "angle": 5
+  },
+  {
+    "time": 110343,
+    "angle": 4
+  },
+  {
+    "time": 110437,
+    "angle": 5
+  },
+  {
+    "time": 110531,
+    "angle": 4
+  },
+  {
+    "time": 110625,
+    "swipe": true,
+    "swipeEnd": 110812,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 111000,
+    "angle": 3
+  },
+  {
+    "time": 111093,
+    "angle": 0
+  },
+  {
+    "time": 111187,
+    "angle": 3
+  },
+  {
+    "time": 111281,
+    "angle": 0
+  },
+  {
+    "time": 111375,
+    "swipe": true,
+    "swipeEnd": 111562,
+    "angle": 3
+  },
+  {
+    "time": 111750,
+    "angle": 0
+  },
+  {
+    "time": 111843,
+    "angle": 3
+  },
+  {
+    "time": 111937,
+    "angle": 0
+  },
+  {
+    "time": 112031,
+    "angle": 3
+  },
+  {
+    "time": 112125,
+    "swipe": true,
+    "swipeEnd": 112312,
+    "angle": 0
+  },
+  {
+    "time": 112500,
+    "angle": 5
+  },
+  {
+    "time": 112593,
+    "angle": 0
+  },
+  {
+    "time": 112687,
+    "angle": 1
+  },
+  {
+    "time": 112781,
+    "angle": 2
+  },
+  {
+    "time": 112875,
+    "swipe": true,
+    "swipeEnd": 113062,
+    "angle": 3
+  },
+  {
+    "time": 113250,
+    "angle": 4
+  },
+  {
+    "time": 113343,
+    "angle": 3
+  },
+  {
+    "time": 113437,
+    "angle": 2
+  },
+  {
+    "time": 113531,
+    "angle": 1
+  },
+  {
+    "time": 113625,
+    "swipe": true,
+    "swipeEnd": 113812,
+    "angle": 0
+  },
+  {
+    "time": 114000,
+    "angle": 3
+  },
+  {
+    "time": 114093,
+    "angle": 0
+  },
+  {
+    "time": 114187,
+    "angle": 2
+  },
+  {
+    "time": 114281,
+    "angle": 1
+  },
+  {
+    "time": 114375,
+    "swipe": true,
+    "swipeEnd": 114562,
+    "angle": 2
+  },
+  {
+    "time": 114750,
+    "angle": 0
+  },
+  {
+    "time": 114843,
+    "angle": 3
+  },
+  {
+    "time": 114937,
+    "angle": 1
+  },
+  {
+    "time": 115031,
+    "angle": 2
+  },
+  {
+    "time": 115125,
+    "swipe": true,
+    "swipeEnd": 115312,
+    "angle": 1
+  },
+  {
+    "time": 115500,
+    "angle": 3
+  },
+  {
+    "time": 115593,
+    "angle": 0
+  },
+  {
+    "time": 115687,
+    "angle": 4
+  },
+  {
+    "time": 115781,
+    "angle": 5
+  },
+  {
+    "time": 115875,
+    "swipe": true,
+    "swipeEnd": 116062,
+    "angle": 4
+  },
+  {
+    "time": 116250,
+    "angle": 0
+  },
+  {
+    "time": 116343,
+    "angle": 3
+  },
+  {
+    "time": 116437,
+    "angle": 5
+  },
+  {
+    "time": 116531,
+    "angle": 4
+  },
+  {
+    "time": 116625,
+    "swipe": true,
+    "swipeEnd": 116812,
+    "angle": 5
+  },
+  {
+    "time": 117000,
+    "angle": 5
+  },
+  {
+    "time": 117093,
+    "angle": 0
+  },
+  {
+    "time": 117187,
+    "angle": 1
+  },
+  {
+    "time": 117281,
+    "angle": 2
+  },
+  {
+    "time": 117375,
+    "angle": 3
+  },
+  {
+    "time": 117375,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 117750,
+    "angle": 4
+  },
+  {
+    "time": 117843,
+    "angle": 3
+  },
+  {
+    "time": 117937,
+    "angle": 2
+  },
+  {
+    "time": 118031,
+    "angle": 1
+  },
+  {
+    "time": 118125,
+    "angle": 0
+  },
+  {
+    "time": 118125,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 118500,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 120000
+  },
+  {
+    "time": 118500,
+    "angle": 1
+  },
+  {
+    "time": 118875,
+    "angle": 0
+  },
+  {
+    "time": 119250,
+    "angle": 5
+  },
+  {
+    "time": 119625,
+    "angle": 0
+  },
+  {
+    "time": 120000,
+    "angle": 2
+  },
+  {
+    "time": 120093,
+    "angle": 1
+  },
+  {
+    "time": 120187,
+    "angle": 2
+  },
+  {
+    "time": 120281,
+    "angle": 1
+  },
+  {
+    "time": 120375,
+    "swipe": true,
+    "swipeEnd": 120562,
+    "angle": 2
+  },
+  {
+    "time": 120750,
+    "angle": 1
+  },
+  {
+    "time": 120843,
+    "angle": 2
+  },
+  {
+    "time": 120937,
+    "angle": 1
+  },
+  {
+    "time": 121031,
+    "angle": 2
+  },
+  {
+    "time": 121125,
+    "swipe": true,
+    "swipeEnd": 121312,
+    "angle": 1
+  },
+  {
+    "time": 121500,
+    "angle": 5
+  },
+  {
+    "time": 121593,
+    "angle": 0
+  },
+  {
+    "time": 121687,
+    "angle": 1
+  },
+  {
+    "time": 121781,
+    "angle": 2
+  },
+  {
+    "time": 121875,
+    "swipe": true,
+    "swipeEnd": 122062,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 122250,
+    "angle": 4
+  },
+  {
+    "time": 122343,
+    "angle": 3
+  },
+  {
+    "time": 122437,
+    "angle": 2
+  },
+  {
+    "time": 122531,
+    "angle": 1
+  },
+  {
+    "time": 122625,
+    "swipe": true,
+    "swipeEnd": 122812,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 123000,
+    "angle": 1
+  },
+  {
+    "time": 123093,
+    "angle": 0
+  },
+  {
+    "time": 123187,
+    "angle": 3
+  },
+  {
+    "time": 123281,
+    "angle": 2
+  },
+  {
+    "time": 123375,
+    "swipe": true,
+    "swipeEnd": 123562,
+    "angle": 1
+  },
+  {
+    "time": 123750,
+    "angle": 2
+  },
+  {
+    "time": 123843,
+    "angle": 3
+  },
+  {
+    "time": 123937,
+    "angle": 0
+  },
+  {
+    "time": 124031,
+    "angle": 1
+  },
+  {
+    "time": 124125,
+    "swipe": true,
+    "swipeEnd": 124312,
+    "angle": 2
+  },
+  {
+    "time": 124500,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 126000
+  },
+  {
+    "time": 124500,
+    "angle": 2
+  },
+  {
+    "time": 124875,
+    "angle": 3
+  },
+  {
+    "time": 125250,
+    "angle": 4
+  },
+  {
+    "time": 125625,
+    "angle": 3
+  },
+  {
+    "time": 126000,
+    "angle": 2
+  },
+  {
+    "time": 126093,
+    "angle": 1
+  },
+  {
+    "time": 126187,
+    "angle": 2
+  },
+  {
+    "time": 126281,
+    "angle": 1
+  },
+  {
+    "time": 126375,
+    "swipe": true,
+    "swipeEnd": 126562,
+    "angle": 2,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 126750,
+    "angle": 1
+  },
+  {
+    "time": 126843,
+    "angle": 2
+  },
+  {
+    "time": 126937,
+    "angle": 1
+  },
+  {
+    "time": 127031,
+    "angle": 2
+  },
+  {
+    "time": 127125,
+    "swipe": true,
+    "swipeEnd": 127312,
+    "angle": 1,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 127500,
+    "angle": 4
+  },
+  {
+    "time": 127593,
+    "angle": 5
+  },
+  {
+    "time": 127687,
+    "angle": 4
+  },
+  {
+    "time": 127781,
+    "angle": 5
+  },
+  {
+    "time": 127875,
+    "swipe": true,
+    "swipeEnd": 128062,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 128250,
+    "angle": 5
+  },
+  {
+    "time": 128343,
+    "angle": 4
+  },
+  {
+    "time": 128437,
+    "angle": 5
+  },
+  {
+    "time": 128531,
+    "angle": 4
+  },
+  {
+    "time": 128625,
+    "swipe": true,
+    "swipeEnd": 128812,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 129000,
+    "angle": 3
+  },
+  {
+    "time": 129093,
+    "angle": 0
+  },
+  {
+    "time": 129187,
+    "angle": 3
+  },
+  {
+    "time": 129281,
+    "angle": 0
+  },
+  {
+    "time": 129375,
+    "swipe": true,
+    "swipeEnd": 129562,
+    "angle": 3
+  },
+  {
+    "time": 129750,
+    "angle": 0
+  },
+  {
+    "time": 129843,
+    "angle": 3
+  },
+  {
+    "time": 129937,
+    "angle": 0
+  },
+  {
+    "time": 130031,
+    "angle": 3
+  },
+  {
+    "time": 130125,
+    "swipe": true,
+    "swipeEnd": 130312,
+    "angle": 0
+  },
+  {
+    "time": 130500,
+    "angle": 5
+  },
+  {
+    "time": 130593,
+    "angle": 0
+  },
+  {
+    "time": 130687,
+    "angle": 1
+  },
+  {
+    "time": 130781,
+    "angle": 2
+  },
+  {
+    "time": 130875,
+    "swipe": true,
+    "swipeEnd": 131062,
+    "angle": 3
+  },
+  {
+    "time": 131250,
+    "angle": 4
+  },
+  {
+    "time": 131343,
+    "angle": 3
+  },
+  {
+    "time": 131437,
+    "angle": 2
+  },
+  {
+    "time": 131531,
+    "angle": 1
+  },
+  {
+    "time": 131625,
+    "swipe": true,
+    "swipeEnd": 131812,
+    "angle": 0
+  },
+  {
+    "time": 132000,
+    "angle": 2
+  },
+  {
+    "time": 132093,
+    "angle": 1
+  },
+  {
+    "time": 132187,
+    "angle": 2
+  },
+  {
+    "time": 132281,
+    "angle": 1
+  },
+  {
+    "time": 132375,
+    "swipe": true,
+    "swipeEnd": 132562,
+    "angle": 2,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 132750,
+    "angle": 1
+  },
+  {
+    "time": 132843,
+    "angle": 2
+  },
+  {
+    "time": 132937,
+    "angle": 1
+  },
+  {
+    "time": 133031,
+    "angle": 2
+  },
+  {
+    "time": 133125,
+    "swipe": true,
+    "swipeEnd": 133312,
+    "angle": 1,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 133500,
+    "angle": 4
+  },
+  {
+    "time": 133593,
+    "angle": 5
+  },
+  {
+    "time": 133687,
+    "angle": 4
+  },
+  {
+    "time": 133781,
+    "angle": 5
+  },
+  {
+    "time": 133875,
+    "swipe": true,
+    "swipeEnd": 134062,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 134250,
+    "angle": 5
+  },
+  {
+    "time": 134343,
+    "angle": 4
+  },
+  {
+    "time": 134437,
+    "angle": 5
+  },
+  {
+    "time": 134531,
+    "angle": 4
+  },
+  {
+    "time": 134625,
+    "swipe": true,
+    "swipeEnd": 134812,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 135000,
+    "angle": 3
+  },
+  {
+    "time": 135093,
+    "angle": 0
+  },
+  {
+    "time": 135187,
+    "angle": 3
+  },
+  {
+    "time": 135281,
+    "angle": 0
+  },
+  {
+    "time": 135375,
+    "swipe": true,
+    "swipeEnd": 135562,
+    "angle": 3
+  },
+  {
+    "time": 135750,
+    "angle": 0
+  },
+  {
+    "time": 135843,
+    "angle": 3
+  },
+  {
+    "time": 135937,
+    "angle": 0
+  },
+  {
+    "time": 136031,
+    "angle": 3
+  },
+  {
+    "time": 136125,
+    "swipe": true,
+    "swipeEnd": 136312,
+    "angle": 0
+  },
+  {
+    "time": 136500,
+    "angle": 5
+  },
+  {
+    "time": 136593,
+    "angle": 0
+  },
+  {
+    "time": 136687,
+    "angle": 1
+  },
+  {
+    "time": 136781,
+    "angle": 2
+  },
+  {
+    "time": 136875,
+    "swipe": true,
+    "swipeEnd": 137062,
+    "angle": 3
+  },
+  {
+    "time": 137250,
+    "angle": 4
+  },
+  {
+    "time": 137343,
+    "angle": 3
+  },
+  {
+    "time": 137437,
+    "angle": 2
+  },
+  {
+    "time": 137531,
+    "angle": 1
+  },
+  {
+    "time": 137625,
+    "swipe": true,
+    "swipeEnd": 137812,
+    "angle": 0
+  },
+  {
+    "time": 138000,
+    "angle": 3
+  },
+  {
+    "time": 138093,
+    "angle": 0
+  },
+  {
+    "time": 138187,
+    "angle": 2
+  },
+  {
+    "time": 138281,
+    "angle": 1
+  },
+  {
+    "time": 138375,
+    "swipe": true,
+    "swipeEnd": 138562,
+    "angle": 2
+  },
+  {
+    "time": 138750,
+    "angle": 0
+  },
+  {
+    "time": 138843,
+    "angle": 3
+  },
+  {
+    "time": 138937,
+    "angle": 1
+  },
+  {
+    "time": 139031,
+    "angle": 2
+  },
+  {
+    "time": 139125,
+    "swipe": true,
+    "swipeEnd": 139312,
+    "angle": 1
+  },
+  {
+    "time": 139500,
+    "angle": 3
+  },
+  {
+    "time": 139593,
+    "angle": 0
+  },
+  {
+    "time": 139687,
+    "angle": 4
+  },
+  {
+    "time": 139781,
+    "angle": 5
+  },
+  {
+    "time": 139875,
+    "swipe": true,
+    "swipeEnd": 140062,
+    "angle": 4
+  },
+  {
+    "time": 140250,
+    "angle": 0
+  },
+  {
+    "time": 140343,
+    "angle": 3
+  },
+  {
+    "time": 140437,
+    "angle": 5
+  },
+  {
+    "time": 140531,
+    "angle": 4
+  },
+  {
+    "time": 140625,
+    "swipe": true,
+    "swipeEnd": 140812,
+    "angle": 5
+  },
+  {
+    "time": 141000,
+    "angle": 5
+  },
+  {
+    "time": 141093,
+    "angle": 0
+  },
+  {
+    "time": 141187,
+    "angle": 1
+  },
+  {
+    "time": 141281,
+    "angle": 2
+  },
+  {
+    "time": 141375,
+    "angle": 0,
+    "golden": true
+  },
+  {
+    "time": 141375,
+    "angle": 3
+  },
+  {
+    "time": 141750,
+    "angle": 4
+  },
+  {
+    "time": 141843,
+    "angle": 3
+  },
+  {
+    "time": 141937,
+    "angle": 2
+  },
+  {
+    "time": 142031,
+    "angle": 1
+  },
+  {
+    "time": 142125,
+    "angle": 3,
+    "golden": true
+  },
+  {
+    "time": 142125,
+    "angle": 0
+  },
+  {
+    "time": 142500,
+    "angle": 2
+  },
+  {
+    "time": 142500,
+    "angle": 0,
+    "slider": true,
+    "sliderEnd": 144000
+  },
+  {
+    "time": 142875,
+    "angle": 3
+  },
+  {
+    "time": 143250,
+    "angle": 4
+  },
+  {
+    "time": 143625,
+    "angle": 3
+  },
+  {
+    "time": 144000,
+    "angle": 1
+  },
+  {
+    "time": 144093,
+    "angle": 2
+  },
+  {
+    "time": 144187,
+    "angle": 1
+  },
+  {
+    "time": 144281,
+    "angle": 2
+  },
+  {
+    "time": 144375,
+    "swipe": true,
+    "swipeEnd": 144562,
+    "angle": 1
+  },
+  {
+    "time": 144750,
+    "angle": 2
+  },
+  {
+    "time": 144843,
+    "angle": 1
+  },
+  {
+    "time": 144937,
+    "angle": 2
+  },
+  {
+    "time": 145031,
+    "angle": 1
+  },
+  {
+    "time": 145125,
+    "swipe": true,
+    "swipeEnd": 145312,
+    "angle": 2
+  },
+  {
+    "time": 145500,
+    "angle": 5
+  },
+  {
+    "time": 145593,
+    "angle": 0
+  },
+  {
+    "time": 145687,
+    "angle": 1
+  },
+  {
+    "time": 145781,
+    "angle": 2
+  },
+  {
+    "time": 145875,
+    "swipe": true,
+    "swipeEnd": 146062,
+    "angle": 5,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 146250,
+    "angle": 4
+  },
+  {
+    "time": 146343,
+    "angle": 3
+  },
+  {
+    "time": 146437,
+    "angle": 2
+  },
+  {
+    "time": 146531,
+    "angle": 1
+  },
+  {
+    "time": 146625,
+    "swipe": true,
+    "swipeEnd": 146812,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 147000,
+    "angle": 1
+  },
+  {
+    "time": 147093,
+    "angle": 0
+  },
+  {
+    "time": 147187,
+    "angle": 3
+  },
+  {
+    "time": 147281,
+    "angle": 2
+  },
+  {
+    "time": 147375,
+    "swipe": true,
+    "swipeEnd": 147562,
+    "angle": 1
+  },
+  {
+    "time": 147750,
+    "angle": 2
+  },
+  {
+    "time": 147843,
+    "angle": 3
+  },
+  {
+    "time": 147937,
+    "angle": 0
+  },
+  {
+    "time": 148031,
+    "angle": 1
+  },
+  {
+    "time": 148125,
+    "swipe": true,
+    "swipeEnd": 148312,
+    "angle": 2
+  },
+  {
+    "time": 148500,
+    "angle": 1
+  },
+  {
+    "time": 148500,
+    "angle": 3,
+    "slider": true,
+    "sliderEnd": 150000
+  },
+  {
+    "time": 148875,
+    "angle": 0
+  },
+  {
+    "time": 149250,
+    "angle": 5
+  },
+  {
+    "time": 149625,
+    "angle": 0
+  },
+  {
+    "time": 150000,
+    "angle": 2
+  },
+  {
+    "time": 150093,
+    "angle": 1
+  },
+  {
+    "time": 150187,
+    "angle": 2
+  },
+  {
+    "time": 150281,
+    "angle": 1
+  },
+  {
+    "time": 150375,
+    "swipe": true,
+    "swipeEnd": 150562,
+    "angle": 2,
+    "shortSwipe": true,
+    "direction": -1
+  },
+  {
+    "time": 150750,
+    "angle": 1
+  },
+  {
+    "time": 150843,
+    "angle": 2
+  },
+  {
+    "time": 150937,
+    "angle": 1
+  },
+  {
+    "time": 151031,
+    "angle": 2
+  },
+  {
+    "time": 151125,
+    "swipe": true,
+    "swipeEnd": 151312,
+    "angle": 1,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 151500,
+    "angle": 4
+  },
+  {
+    "time": 151593,
+    "angle": 5
+  },
+  {
+    "time": 151687,
+    "angle": 4
+  },
+  {
+    "time": 151781,
+    "angle": 5
+  },
+  {
+    "time": 151875,
+    "swipe": true,
+    "swipeEnd": 152062,
+    "angle": 4,
+    "shortSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 152250,
+    "angle": 5
+  },
+  {
+    "time": 152343,
+    "angle": 4
+  },
+  {
+    "time": 152437,
+    "angle": 5
+  },
+  {
+    "time": 152531,
+    "angle": 4
+  },
+  {
+    "time": 152625,
+    "swipe": true,
+    "swipeEnd": 152812,
+    "angle": 5,
+    "quarterSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 153000,
+    "angle": 3
+  },
+  {
+    "time": 153093,
+    "angle": 0
+  },
+  {
+    "time": 153187,
+    "angle": 3
+  },
+  {
+    "time": 153281,
+    "angle": 0
+  },
+  {
+    "time": 153375,
+    "swipe": true,
+    "swipeEnd": 153562,
+    "angle": 3
+  },
+  {
+    "time": 153750,
+    "angle": 0
+  },
+  {
+    "time": 153843,
+    "angle": 3
+  },
+  {
+    "time": 153937,
+    "angle": 0
+  },
+  {
+    "time": 154031,
+    "angle": 3
+  },
+  {
+    "time": 154125,
+    "swipe": true,
+    "swipeEnd": 154312,
+    "angle": 0
+  },
+  {
+    "time": 154500,
+    "angle": 5
+  },
+  {
+    "time": 154593,
+    "angle": 0
+  },
+  {
+    "time": 154687,
+    "angle": 1
+  },
+  {
+    "time": 154781,
+    "angle": 2
+  },
+  {
+    "time": 154875,
+    "swipe": true,
+    "swipeEnd": 155062,
+    "angle": 3
+  },
+  {
+    "time": 155250,
+    "angle": 4
+  },
+  {
+    "time": 155343,
+    "angle": 3
+  },
+  {
+    "time": 155437,
+    "angle": 2
+  },
+  {
+    "time": 155531,
+    "angle": 1
+  },
+  {
+    "time": 155625,
+    "swipe": true,
+    "swipeEnd": 155812,
+    "angle": 0
+  },
+  {
+    "time": 156000,
+    "swipe": true,
+    "swipeEnd": 156187,
+    "angle": 2
+  },
+  {
+    "time": 156375,
+    "swipe": true,
+    "swipeEnd": 156562,
+    "angle": 5
+  },
+  {
+    "time": 156750,
+    "swipe": true,
+    "swipeEnd": 156937,
+    "angle": 1
+  },
+  {
+    "time": 157125,
+    "swipe": true,
+    "swipeEnd": 157312,
+    "angle": 4
+  },
+  {
+    "time": 157500,
+    "swipe": true,
+    "swipeEnd": 157687,
+    "angle": 2
+  },
+  {
+    "time": 157875,
+    "swipe": true,
+    "swipeEnd": 158062,
+    "angle": 5
+  },
+  {
+    "time": 158250,
+    "swipe": true,
+    "swipeEnd": 158437,
+    "angle": 1
+  },
+  {
+    "time": 158625,
+    "swipe": true,
+    "swipeEnd": 158812,
+    "angle": 4
+  },
+  {
+    "time": 159000,
+    "angle": 1,
+    "slider": true,
+    "sliderEnd": 159750
+  },
+  {
+    "time": 159000,
+    "angle": 2
+  },
+  {
+    "time": 159375,
+    "angle": 3
+  },
+  {
+    "time": 159750,
+    "angle": 2,
+    "slider": true,
+    "sliderEnd": 160500
+  },
+  {
+    "time": 160125,
+    "angle": 0
+  },
+  {
+    "time": 160500,
+    "angle": 1
+  },
+  {
+    "time": 160875,
+    "angle": 3
+  },
+  {
+    "time": 161250,
+    "angle": 1
+  },
+  {
+    "time": 161625,
+    "swipe": true,
+    "swipeEnd": 161812,
+    "angle": 1,
+    "halfSwipe": true,
+    "direction": 1
+  },
+  {
+    "time": 161625,
+    "swipe": true,
+    "swipeEnd": 161812,
+    "angle": 2,
+    "halfSwipe": true,
+    "direction": -1
+  }
+]

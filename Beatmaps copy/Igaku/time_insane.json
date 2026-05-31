@@ -1,0 +1,138 @@
+[
+  {
+    "time": 0,
+    "playfield": {
+      "opacity": 0.5,
+      "scale": 0.7
+    }
+  },
+  {
+    "time": 20,
+    "playfield": {
+      "transition": "all 1.1s ease",
+      "scale": 1.1,
+      "opacity": 1,
+      "filter": "blur(6px)"
+    }
+  },
+  {
+    "time": 1411,
+    "playfield": {
+      "transition": "all 0.2s ease",
+      "scale": 1,
+      "filter": "blur(0px)"
+    }
+  },
+  {
+    "time": 10235,
+    "playfield": {
+      "transition": "all 0.1s cubic-bezier(.85,.1,.36,1.3)",
+      "transform": "perspective(40px) rotateY(-2deg)"
+    }
+  },
+  {
+    "time": 10558,
+    "playfield": {
+      "transform": "perspective(40px) rotateY(2deg)"
+    }
+  },
+    {
+    "time": 11087,
+    "playfield": {
+      "transform": "perspective(40px) rotateY(-2deg)"
+    }
+  },
+    {
+    "time": 11440,
+    "playfield": {
+      "transform": "perspective(40px) rotateY(2deg)"
+    }
+  },
+      {
+    "time": 11793,
+    "playfield": {
+      "transform": "perspective(40px) rotateY(-2deg)"
+    }
+  },
+      {
+    "time": 12126,
+    "playfield": {
+      "transform": "perspective(40px) rotateY(2deg)"
+    }
+  },
+        {
+    "time": 12322,
+    "playfield": {
+      "transform": "perspective(40px) rotateY(-2deg)"
+    }
+  },
+        {
+    "time": 12562,
+    "playfield": {
+      "transform": "perspective(40px) rotateY(2deg)"
+    }
+  },
+  {
+    "time": 12705,
+    "playfield": {
+      "transition": "all 0.2s ease",
+      "scale": 1.1,
+      "rotate": "12deg",
+      "transform":"perspective(40px) rotateY(0deg)"
+    }
+  },
+  {
+    "time": 12905,
+    "playfield": {
+      "scale": 1,
+      "rotate": "0deg"
+    }
+  },
+  {
+    "time": 21529,
+    "playfield": {
+      "transition": "all 0.1s cubic-bezier(.85,.1,.36,1.3)",
+      "scale": 1.5,
+      "transform": "translateX(25%)"
+    }
+  },
+    {
+    "time": 21882,
+    "playfield": {
+      "scale": 1.5,
+      "transform": "translateX(-25%)"
+    }
+  },
+
+    {
+    "time": 22411,
+    "playfield": {
+      "transition": "all 0.1s cubic-bezier(.85,.1,.36,1.3)",
+      "scale": 1.5,
+      "transform": "translateX(25%)"
+    }
+  },
+    {
+    "time": 22764,
+    "playfield": {
+      "scale": 1.5,
+      "transform": "translateX(-25%)"
+    }
+  },
+  
+  {
+    "time": 23117,
+    "playfield": {
+      "transition": "all 0.1s cubic-bezier(.85,.1,.36,1.3)",
+      "scale": 1.5,
+      "transform": "translateX(25%)"
+    }
+  },
+    {
+    "time": 23470,
+    "playfield": {
+      "scale": 1,
+      "transform": ""
+    }
+  }
+]

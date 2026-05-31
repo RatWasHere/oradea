@@ -367,14 +367,14 @@ const VisualsConfig = {
       defaultValue: '1'
     });
     this.gimmicksState = selectMenuFactory.create({
-      id: 'SSFX',
-      settingKey: 'ssfx',
+      id: 'dust',
+      settingKey: 'bgdust',
       defaultValue: '1'
     });
     this.vfxCache = selectMenuFactory.create({
       id: 'vfxCache',
       settingKey: 'vfx_cache',
-      defaultValue: '3'
+      defaultValue: '2'
     });
     this.noteDesign = selectMenuFactory.create({
       id: 'noteDesign',

@@ -1,0 +1,19 @@
+{
+  "name": "Honestly",
+  "artist": "THØRNS",
+  "cover": "cover.jpg",
+  "difficulties": {
+    "4": "insane.json",
+    "3": "hard.json",
+    "2": "normal.json",
+    "1": "easy.json"
+  },
+  "ratings": {
+    "4": "34",
+    "3": "31",
+    "2": "27",
+    "1": "17"
+  },
+  "duration": 240,
+  "credits": "<a href='https://www.youtube.com/watch?v=Kybi1q3rjdk' target='_blank'>Honestly</a> by <a href='https://www.youtube.com/channel/UChPZ14ZcYf__-zd5mnbdsmw' target='_blank'>THØRNS</a>"
+}

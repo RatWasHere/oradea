@@ -4,7 +4,8 @@ body {
   background-size: cover;
   background-position: center;
   background-image: url('../Assets/Playfield/black_frame_insertion.png');
-  animation: bodyIn 2s 1s ease forwards;
+  transition: background-image ease 2s;
+  /* animation: bodyIn 2s 1s ease forwards; */
 }
 
 @keyframes bodyIn {
@@ -52,12 +53,13 @@ body {
 }
 
 .dust {
-  width: 100vw; 
+  width: 100vw;
   height: 100vh;
   position: absolute;
   will-change: opacity;
   contain: paint layout size style;
 }
+
 .dust::after {
   content: "";
   display: block;
@@ -65,10 +67,11 @@ body {
   height: 100%;
   scale: 2;
   background: url('../Assets/SFX/Dust_above.svg') repeat;
-  transform-origin: bottom right;
-  animation: particlesFadeReverse 160s linear infinite reverse;
+  transform-origin: top left;
+  animation: particlesFadeReverse 160s linear infinite;
   opacity: 0.01;
 }
+
 .dust::before {
   content: "";
   display: block;
@@ -80,30 +83,36 @@ body {
   animation: particlesFade 160s linear infinite;
   opacity: 0.01;
 }
+
 @keyframes particlesFade {
   0% {
     translate: 0% 0%;
   }
+
   50% {
     translate: 100% 100%;
   }
-  100% {
-    translate: 0% 0%;
-  }
-}
-@keyframes particlesFadeReverse {
-  0% {
-    translate: 0% 0%;
-  }
-  50% {
-    translate: -100% -100%;
-  }
+
   100% {
     translate: 0% 0%;
   }
 }
 
-#overlay::before {
+@keyframes particlesFadeReverse {
+  0% {
+    translate: 0% -200%;
+  }
+
+  50% {
+    translate: -100% -100%;
+  }
+
+  100% {
+    translate: 0% -100%;
+  }
+}
+
+/* #overlay::before {
   content: "";
   position: absolute;
 
@@ -136,21 +145,25 @@ body {
   background-image: inherit;
   scale: 1.1;
   animation:overlayRotate 35s linear infinite reverse;
-}
+} */
 @keyframes overlayRotate {
   0% {
     rotate: 0deg;
     opacity: 0.3;
   }
+
   20% {
     opacity: 0.5;
   }
+
   40% {
     opacity: 0.3;
   }
+
   60% {
     opacity: 0.5;
   }
+
   80% {
     opacity: 0.3;
   }
@@ -217,20 +230,72 @@ body {
 
 #centerContainer {
   transform-origin: center;
-  background: url('../Assets/Playfield/frame_in.svg');
+  background: none;
   background-size: cover !important;
 }
 
 
+:root {
+  --perspective: 840px;
+  --mlBaseLane: 299px;
+  --rotateX: 0deg;
+  --wBaseLane: 135px;
+  --hBaseLane: 1000px;
+  --translate1: 207px;
+  --translate2: 290px;
+}
+
+
+
+
 #noteContainer {
-  /* scale: 1.2; */
   opacity: 1;
+  /* scale: 0.4; */
   width: var(--raw-size);
   height: var(--raw-size);
   transition: all var(--long) ease;
   margin: auto;
   contain: layout size style;
+  transform: scale(1);
 }
+
+.baseLane {
+  transform-origin: bottom;
+  margin-left: var(--mlBaseLane);
+  transform-style: preserve-3d;
+  transform: rotate(calc((var(--id) * 60deg) +  270deg)) translateY(var(--translate1)) rotateX(var(--rotateX)) translateY(var(--translate2)) scale(1);
+  top: calc(50% - var(--hBaseLane));
+  position: absolute;
+  height: var(--hBaseLane);
+  background: red;
+  width: var(--wBaseLane);
+  /* display: none; */
+  background: url(
+  '../Assets/Playfield/base_lane.svg')
+  /* animation: rotate 10s linear infinite; */ 
+}
+.baseLane:nth-of-type(1) {
+  display: block;
+}
+
+.baseLane:nth-of-type(1) {
+  display: block;
+}
+
+.baseLane::before {
+  width: 100%;
+  aspect-ratio: 1/1;
+  height: 890px;
+  /* right: -50%; */
+  top: -100%;
+  position: absolute;
+  /* content: ''; */
+  display: block;
+  background-color: blue;
+  background: url('../Assets/Playfield/base_lane_outers.svg');
+}
+
+
 
 #noteContainerFrame {
   width: var(--raw-size);
@@ -242,31 +307,6 @@ body {
   transition: all var(--long) ease;
 
   /* animation: hit 0.5s ease; */
-}
-
-#noteContainerFrame::before {
-  content: "";
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  background-image: url('../Assets/Playfield/frame_out.svg');
-  animation:overlayRotate 35s linear infinite;
-}
-#noteContainerFrame::after {
-  content: "";
-  display: block;
-  position: absolute;
-  width: 100%;
-  height: 100%;
-  background-repeat: no-repeat;
-  background-size: cover;
-  background-position: center;
-  background-image: url('../Assets/Playfield/frame_out.svg');
-  animation: overlayRotate 35s linear infinite reverse;
 }
 
 #perfectionIndicator {
@@ -370,7 +410,8 @@ body {
 #pauseButton {
   margin-right: 10px;
   backdrop-filter: unset !important;
-  box-shadow: none;;
+  box-shadow: none;
+  ;
 }
 
 #scoreText,
@@ -452,9 +493,10 @@ btn:has(.pause) {
   position: absolute;
   transition: all var(--long) ease;
 }
+
 #songData.viewing {
   scale: 1.2;
-  right: 300px; 
+  right: 300px;
 }
 
 #songArt {
@@ -517,6 +559,7 @@ btn:has(.pause) {
   opacity: 0.5;
   left: 26;
 }
+
 #usedScore {
   width: 240px;
   text-align: right;
@@ -525,7 +568,8 @@ btn:has(.pause) {
   opacity: 0.8;
 }
 
-#unusedScore, #usedScore {
+#unusedScore,
+#usedScore {
   font-family: Mono;
   top: 27px;
   position: absolute;
@@ -533,12 +577,38 @@ btn:has(.pause) {
 }
 
 
-#reactiveFrame {
-  background: url('../Assets/Playfield/delimitator.svg');
-  background-size: cover;
-  background-position: center;
-  background-repeat: no-repeat;
-  width: 240px;
-  height: 240px;
+#highlight_container {
+  position: relative;
+  width: 0;
+  height: 0;
+  /* Or your game's center point */
+  perspective: 1000px;
+}
+
+.glow-container {
   position: absolute;
+  /* Adjust top/left to center the element on your game axis */
+  top: -122px;
+  left: -185px;
+
+  width: 370px;
+  height: 245px;
+
+  /* This uses your existing --i variable to rotate each slice */
+  /* Adjust 60deg if you have more/fewer lanes */
+  transform: rotate(calc(var(--i) * 60deg)) translateY(-150px);
+
+  overflow: hidden;
+  clip-path: polygon(37% 100%, 63% 100%, 100% 0%, 0% 0%);
+  pointer-events: none;
+}
+
+.glow-gradient {
+  width: 100%;
+  height: 300%;
+  background: linear-gradient(to top,
+      rgba(255, 255, 255, 0) 0%,
+      rgba(255, 255, 255, 0.8) 50%,
+      rgba(255, 255, 255, 0) 100%);
+  will-change: transform;
 }

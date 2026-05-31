@@ -2,19 +2,8 @@
   "startAt":  [{ "operation": "multiply", "operand": -2 }],
   "timeSheet": [
     {
-      "time": [{"operation": "multiply", "operand": -2}],
-      "offset": [{ "operation": "multiply", "operand": -2 }]
-    },
-    {
-      "time": [{ "operation": "multiply", "operand": -1.5}],
-      "offset": 0.001,
-      "transition": [{ "operation": "multiply", "operand": 1.5 }],
-      "from": {
-        "offset": [{ "operation": "multiply", "operand": -1 }]
-      }
-    },
-    {
-      "time": 1
+"time": [{ "operation": "multiply", "operand": -2 }],
+      "speed": 0.5
     }
   ]
 }

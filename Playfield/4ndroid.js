@@ -2,9 +2,10 @@ var isAndroid = /Android/i.test(navigator.userAgent);
 
 if (isAndroid) {
   var settings = {
-    hexagon_size: 0.5,
+    // hexagon_size: 0.5,
     note_speed: 14.5,
-    input_mode: "touch"
+    input_mode: "touch",
+    perfection_indicator: 0
   }
 
   function getSetting(key, dflt) {

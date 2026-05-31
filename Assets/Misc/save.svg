@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <g>
+    <rect width="400" height="400" />
+    <path id="Rectangle" d="M364 0C383.885 0 400 16.115 400 36L400 364C400 383.885 383.885 400 364 400L36 400C16.115 400 0 383.885 0 364L0 36C0 16.115 16.115 0 36 0L364 0Z" fill="#FFFFFF" fill-opacity="0.865" />
+    <path id="Rectangle" d="M304 0L304 0L304 76C304 95.885 287.885 112 268 112L36 112C16.115 112 0 95.885 0 76L0 0L304 0Z" fill="#000000" fill-opacity="0.961" transform="translate(48 0)" />
+    <path id="Rectangle" d="M304 249L304 249L304 36C304 16.1151 287.885 0 268 0L36 0C16.115 0 0 16.1151 0 36L0 249L304 249Z" fill="#000000" fill-opacity="0.961" transform="matrix(1 0 0 -1 48 400)" />
+    <path id="Rectangle" d="M125.765 0C139.021 0 149.765 10.7434 149.765 24L149.765 75C149.765 88.2566 139.021 99 125.765 99L24 99C10.7434 99 0 88.2566 0 75L0 24C0 10.7434 10.7434 0 24 0L125.765 0Z" fill="#FFFFFF" fill-opacity="0.961" transform="translate(189 4)" />
+  </g>
+</svg>

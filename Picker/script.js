@@ -1,6 +1,7 @@
 let levels = [];
 const Clusterize = require('clusterize.js');
 let files = fs.readdirSync('./Beatmaps/');
+let bpm = 94;
 
 for (let i in files) {
   try {
@@ -21,7 +22,7 @@ for (let i in files) {
 
 let chosenSong = 0;
 let levelsDisplay = document.getElementById('levels')
-document.getElementById('amount').innerHTML = `${levels.length} Songs • More coming soon`;
+document.getElementById('amount').innerHTML = `${levels.length} Songs`;
 
 
 let difficultyMap = {
@@ -90,6 +91,21 @@ async function highlightSong(index, scrollOffset = 0) {
   const level = levels[chosenSong];
   const basePath = `${process.cwd().replaceAll('\\', '/')}/Beatmaps/${level.location}`;
 
+  let highscore = null;
+  let grade = 'X'
+  if (fs.existsSync(`./Config/Records/${level.location}`)) {
+    highscore = fs.readFileSync(`./Config/Records/${level.location}`, 'utf-8').split('\n');
+  }
+  if (!highscore) {
+    document.getElementById('unusedScore').innerHTML = '-'
+    document.getElementById('usedScore').innerHTML = ''
+  } else {
+    document.getElementById('unusedScore').innerHTML = "0".repeat(15 - highscore[1].length);
+    document.getElementById('usedScore').innerHTML = highscore[1];
+    grade = highscore[3];
+  }
+  document.getElementById('score-grade').style.backgroundImage = `url('../Assets/Scoring/${grade}.svg')`
+
   // Update UI elements
   document.getElementById('song-cover').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
   document.getElementById('songs').style.backgroundImage = `url('${basePath}/${level.information.cover}')`;
@@ -123,6 +139,7 @@ async function highlightSong(index, scrollOffset = 0) {
   for (let i in level.information.difficulties) {
     difficulties += `<div id="difficulty-${i}" onclick="selectDifficulty(${i})" class="difficulty-dot flexbox clickable ${difficultyMap[i].toLowerCase()} ${i == lastSelectedDifficulty ? 'highlighted' : ''}"><div class="dotParent"><difficulty-name>${difficultyMap[i]}</difficulty-name> <difficulty-level>${level.information.ratings[i]}</difficulty-level></div></div>`;
   }
+  bpm = level.information.bpm;
   document.getElementById('song-difficulties').innerHTML = difficulties;
   stopCurrentPreview();
 
@@ -329,3 +346,40 @@ setInterval(() => {
     }
   } catch (error) { console.log(error) }
 }, 50)
+
+let areFoldersOpen = false;
+
+function toggleFolders() {
+  if (areFoldersOpen) return closeFolders();
+  areFoldersOpen = true;
+  let folderPane = document.getElementById('foldersPane');
+  folderPane.style.translate = '0px 0px'
+  folderPane.style.scale = '1'
+}
+
+function closeFolders() {
+  areFoldersOpen = false;
+  let folderPane = document.getElementById('foldersPane');
+  folderPane.style.translate = ''
+  folderPane.style.scale = ''
+
+}
+
+function getBeatProgress(currentTime) {
+  const beatsPerSecond = bpm / 60;
+  const totalBeatsElapsed = currentTime * beatsPerSecond;
+
+  return totalBeatsElapsed % 1;
+}
+
+
+function beatUpdate() {
+  try {
+    let progress = getBeatProgress(currentAudio.currentTime);
+    let brightnessOfBackground = progress * 100;
+    // document.getElementById('levels').style.background = `#FFFFFF${Math.round((150 - Math.ceil(brightnessOfBackground)) / 10)}`;
+  } catch { }
+  requestAnimationFrame(beatUpdate)
+}
+
+beatUpdate();

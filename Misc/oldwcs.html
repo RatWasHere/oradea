@@ -1,192 +1,68 @@
 <!DOCTYPE html>
 <html>
-<head>
-  <meta charset="UTF-8">
-  <title>Wacca Style Tunnel</title>
-  <style>
-    :root {
-      --tunnel-size: 100px;
-      --ring-inner: 30%;
-      --ring-outer: 70%;
-      --arc-start: 10deg;
-      --arc-angle: 60deg; /* NEW: arc size */
-      --arc-end: calc(var(--arc-start) + var(--arc-angle));
-      --ring-color: cyan;
-    }
+  <div id="app">
+  <svg width="370" height="245" viewBox="0 0 370 245" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <linearGradient id="glowGradient" x1="0" y1="1" x2="0" y2="0">
+        <stop id="edge-bottom" offset="1" stop-color="black" />
+        <stop id="glow-center" offset="1" stop-color="white" />
+        <stop id="edge-top"    offset="1" stop-color="black" />
+      </linearGradient>
 
-    .viewport {
-      perspective: 800px;
-      /* Controls the strength of the 3D effect */
-      overflow: hidden;
-      width: 100vw;   
-      height: 100vh;
-      background: black;
-      position: relative;
-    }
+      <mask id="lightMask">
+        <rect width="100%" height="100%" fill="url(#glowGradient)" />
+      </mask>
+    </defs>
 
-    .tunnel-item {
-      width: var(--tunnel-size);
-      height: var(--tunnel-size);
-      background:
-        radial-gradient(circle, transparent var(--ring-inner), var(--ring-color) calc(var(--ring-inner) + 1%), var(--ring-color) var(--ring-outer), transparent calc(var(--ring-outer) + 1%));
-      position: absolute;
-      top: 50%;
-      left: 50%;
-      border-radius: 50%;
-      transform-style: preserve-3d;
-      animation: tunnelMove 3s linear infinite;
-      -webkit-mask-image: conic-gradient(transparent 0deg var(--arc-start), white var(--arc-start) var(--arc-end), transparent var(--arc-end) 360deg);
-      mask-image: conic-gradient(transparent 0deg var(--arc-start), white var(--arc-start) var(--arc-end), transparent var(--arc-end) 360deg);
-      -webkit-mask-repeat: no-repeat;
-      mask-repeat: no-repeat;
-    }
+    <g mask="url(#lightMask)">
+      <path d="M231.637 244.5H136.856L-0.499981 -0.5L369.5 -0.5L231.637 244.5Z" fill="white" fill-opacity="0.9"/>
+      <rect x="184" width="3" height="150" fill="white" />
+      <rect x="174" y="-47" width="23" height="250" fill="white" opacity="0.4" />
+    </g>
+  </svg>
+</div>
 
-    @keyframes war {
-      0% {
-        rotate: 0deg;
-      }
-      100% {
-        rotate: -360deg;
-      }
-    }
+<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
 
-    @keyframes tunnelMove {
-      0% {
-        transform: translate(-50%, -50%) translateZ(-1000px) scale(0.8);
-        opacity: 0;
-      }
-
-      50% {
-        opacity: 1;
-      }
-
-      100% {
-        transform: translate(-50%, -50%) translateZ(0px) scale(1.5);
-        opacity: 0;
-      }
-    }
-  </style>
-</head>
-<body>
-
-  <a href="../Picker/LevelPicker.html">back</a>
-  <a href="./lightmap.html">lightmap</a>
-</body>
 <script>
-  let parser = require('osu-mania-parser');
-  let beatmap = parser.parseFileSync('./Misc/beatmap.osu');
-  let sheet = [];
-  function swap(json){
-  var ret = {};
-  for(var key in json){
-    ret[json[key]] = key;
-  }
-  return ret;
-}
+const duration = 0.5; 
+  const glowWidth = 0.4; // The fixed thickness of the beam
+  
+  const tl = gsap.timeline({ repeat: -1 });
 
-  let keyPositions = swap(beatmap.keyPositions);
-
-  beatmap.hitObjects.forEach((hitObject, index) => {
-    if (hitObject.type == "note") {
-      let additionalOptions = {};
-      if (hitObject.hitSound.includes("clap") && hitObject.hitSound.includes("whistle")) {
-        additionalOptions.golden = true
-      } else if (hitObject.hitSound.includes("clap")) {
-        additionalOptions.flickDirection = 1;
-        additionalOptions.flick = true;
-      } else if (hitObject.hitSound.includes("whistle")) {
-        additionalOptions.flickDirection = 2;
-        additionalOptions.flick = true;
-      } else if (hitObject.hitSound.includes("finish")) {
-        additionalOptions.hold = true;
-      }
-      sheet.push({
-        time: hitObject.time,
-        angle: keyPositions[hitObject.x],
-        ...additionalOptions
-      });
-    } else if (hitObject.type == "hold") {
-      let additionalOptions = {};
-      if (hitObject.hitSound.includes("finish") && hitObject.hitSound.includes("whistle")) {
-        additionalOptions.holdableEnd = true;
-        additionalOptions.flickableAway = true;
-        if (hitObject.hitSound.includes("clap")) {
-          additionalOptions.holdableStart = true;
-        }
-      } else if (hitObject.hitSound.includes("clap")) {
-        additionalOptions.holdableStart = true;
-      } else if (hitObject.hitSound.includes("whistle")) {
-        additionalOptions.golden = true;
-      } else if (hitObject.hitSound.includes("finish")) {
-        additionalOptions.holdableStart = true;
-        additionalOptions.holdableEnd = true;
-      }
-      sheet.push({
-        time: hitObject.time,
-        angle: keyPositions[hitObject.x],
-        slider: true,
-        sliderEnd: hitObject.endTime,
-      });
-    }
-  });
-
-  // ...existing code...
-  // after building `sheet` from beatmap.hitObjects, add this block:
-  (function combineSimultaneousSliders() {
-    // group slider entries by start+end time
-    let sliderGroups = {};
-    sheet.forEach((entry, idx) => {
-      if (entry.slider) {
-        const key = `${entry.time}_${entry.sliderEnd}`;
-        sliderGroups[key] = sliderGroups[key] || [];
-        sliderGroups[key].push({ entry, idx });
-      }
-    });
-
-    // find groups of size 3 or 4
-    const combineKeys = Object.keys(sliderGroups).filter(k => {
-      const c = sliderGroups[k].length;
-      return c === 3 || c === 4;
-    });
-
-    if (combineKeys.length === 0) return;
-
-    const skip = new Set();
-    const combinedEntries = [];
-
-    combineKeys.forEach(key => {
-      const group = sliderGroups[key];
-      // mark original entries to be removed
-      group.forEach(g => skip.add(g.idx));
-
-      // compute average angle for the new long flick
-      const angles = group.map(g => g.entry.angle);
-      const avgAngle = angles.reduce((a, b) => a + b, 0) / angles.length;
-
-      const startTime = group[0].entry.time;
-      const endTime = group[0].entry.sliderEnd;
-      const distance = group.length === 3 ? 2 : 3;
-
-      combinedEntries.push({
-        time: startTime,
-        flickEnd: endTime,
-        angle: avgAngle,
-        largeFlick: true,
-        flickDirection: 1,
-        direction: distance,
-      });
-    });
-
-    // build a new sheet without the original combined sliders, then add combined entries
-    const newSheet = sheet.filter((_, idx) => !skip.has(idx));
-    newSheet.push(...combinedEntries);
-
-    // keep sheet sorted by time (and angle as tie-breaker)
-    newSheet.sort((a, b) => (a.time - b.time) || ((a.angle || 0) - (b.angle || 0)));
-
-    sheet = newSheet;
-  })();
-  require('fs').writeFileSync('./Misc/map.json', JSON.stringify(sheet, null, 2));
-
+  // Start all stops below the view (offset > 1) 
+  // and move them above the view (offset < 0)
+  tl.fromTo("#edge-top", 
+  { attr: { offset: 0 }, duration: duration, ease: "none" }, 
+  { attr: { offset: 1 + (glowWidth * 2) }, duration: duration, ease: "none" }, 
+    0
+  )
+  .fromTo("#glow-center", 
+  { attr: { offset: -glowWidth }, duration: duration, ease: "none" }, 
+    { attr: { offset: 1 + glowWidth }, duration: duration, ease: "none" }, 
+    0
+  )
+  .fromTo("#edge-bottom", 
+  { attr: { offset: -(glowWidth * 2) }, duration: duration, ease: "none" }, 
+    { attr: { offset: 1 }, duration: duration, ease: "none" }, 
+    0
+  );
 </script>
+
+<style>
+  body { 
+    background: #000; 
+    margin: 0; 
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    height: 100vh; 
+    overflow: hidden;
+  }
+
+  /* Optional: adds that high-end Electron UI feel */
+  svg {
+    filter: drop-shadow(0 0 20px rgba(255, 255, 255, 0.3));
+  }
+</style>
 </html>

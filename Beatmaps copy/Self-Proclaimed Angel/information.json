@@ -1,0 +1,19 @@
+{
+  "name": "Self-proclaimed angel",
+  "artist": "VocaloKAT",
+  "cover": "cover.jpg",
+  "difficulties": {
+    "4": "insane.json",
+    "3": "hard.json",
+    "2": "normal.json",
+    "1": "easy.json"
+  },
+  "ratings": {
+    "4": "33",
+    "3": "31",
+    "2": "27",
+    "1": "17"
+  },
+  "duration": 240,
+  "credits": "<a href='https://www.youtube.com/watch?v=qYF5vcVge98' target='_blank'>Self-Proclaimed Angel</a> by <a href='https://www.youtube.com/channel/UCZ-KjI8RFRSfx8tliTsWFFA' target='_blank'>VocaloKAT</a>"
+}

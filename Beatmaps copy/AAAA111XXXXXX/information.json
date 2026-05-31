@@ -1,0 +1,16 @@
+{
+  "name": "Parry",
+  "unromanizedName": "パリィ",
+  "artist": "Miyamori Bungaku",
+  "cover": "cover.webp",
+  "difficulties": {
+    "2": "map.json"
+  },
+  "lightmap": {
+    "2": "lightmap.json"
+  },
+  "ratings": {
+    "2": "5"
+  },
+  "duration": 135
+}

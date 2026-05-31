@@ -20,6 +20,14 @@
           <div class="image back" style="width: 50px; aspect-ratio: 1/1"></div>
         </btn>
       </div>
+      <!-- <p>perspective rotate height width t1 t2</p>
+      <input type="range" min="200" max="1500" oninput="updatePerspective(this.value)">
+      <input type="range" min="50" max="120" oninput="updateRotate(this.value)">
+      <input type="range" min="200" max="2000" oninput="updateHeight(this.value)">
+      <input type="range" min="50" max="500" oninput="updateWidth(this.value)">
+      <input type="range" min="100" max="700" oninput="updateTranslate1(this.value)">
+      <input type="range" min="100" max="900" oninput="updateTranslate2(this.value)">
+      <input type="range" min="" max="" oninput="updateMarginTop(this.value)"> -->
       <div id="gradeParent" class="flexbox"></div>
       <btextm id="songData">
         <div id="songName"></div>
@@ -53,9 +61,17 @@
       <div class="lightshow_item" id="lightshow_8"></div>
       <div id="topLevelContainer" class="flexbox">
         <div id="noteContainer">
+          <!-- <div class="baseLane" style="--id:0" id="lane_0"></div>
+          <div class="baseLane" style="--id:1" id="lane_1"></div>
+          <div class="baseLane" style="--id:2" id="lane_2"></div>
+          <div class="baseLane" style="--id:3" id="lane_3"></div>
+          <div class="baseLane" style="--id:4" id="lane_4"></div>
+          <div class="baseLane" style="--id:5" id="lane_5"></div> -->
+          <!-- <div class="lane" style="transform: rotate(30deg); background: red;"></div> -->
           <div id="noteContainerFrame"></div>
 
           <div class="frame" id="centerContainer"></div>
+          <div class="highlight_container" id="highlight_container"></div>
           <div class="center flexbox" style="--i: 0">
             <div style="margin: auto">
               <btextm id="comboText" class="small">Combo</btextm>
@@ -75,5 +91,11 @@
   </body>
   <script src="4ndroid.js"></script>
   <script src="../Utilities/global.js"></script>
+  <script src="GameState.js"></script>
+  <script src="TimingSystem.js"></script>
+  <script src="InputSystem.js"></script>
+  <script src="ScoringSystem.js"></script>
+  <script src="RenderingSystem.js"></script>
+  <script src="RhythmGame.js"></script>
   <script src="script.js"></script>
 </html>

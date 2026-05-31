@@ -1,0 +1,19 @@
+{
+  "name": "Unfortunate Hero",
+  "artist": "meltrisu",
+  "cover": "cover.jpg",
+  "difficulties": {
+    "4": "expert.json",
+    "3": "hard.json",
+    "2": "normal.json",
+    "1": "easy.json"
+  },
+  "ratings": {
+    "4": "34",
+    "3": "31",
+    "2": "21",
+    "1": "7"
+  },
+  "duration": 240,
+  "credits": "<a href='https://www.youtube.com/watch?v=5SbyPZxm2UQ' target='_blank'>Unfortunate Hero</a> by <a href='https://www.youtube.com/channel/UCVbZc9MHOPqaYrGFbfXJ4LA' target='_blank'>Meltrisu</a>"
+}

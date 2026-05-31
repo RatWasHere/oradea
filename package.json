@@ -2,6 +2,7 @@
   "productName": "oradea",
   "dependencies": {
     "clusterize.js": "^1.0.0",
+    "gsap": "^3.14.2",
     "node-hid": "^2.1.2",
     "osu-mania-parser": "github:anima-ex-inani/osu-mania-parser",
     "slim-select": "^2.12.1",
@@ -12,7 +13,7 @@
   },
   "devDependencies": {
     "electron": "^39.2.7",
-    "electron-builder": "^26.4.0",
+    "electron-builder": "^26.8.1",
     "nan": "2.18.0",
     "node-gyp": "10.0.1"
   },

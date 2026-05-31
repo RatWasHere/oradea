@@ -4,6 +4,7 @@
 .lane,
 .item {
   contain: layout style;
+  position: absolute !important;
 }
 
 .lane {
@@ -23,6 +24,15 @@
   pointer-events: none;
 }
 
+@keyframes rotate {
+  from {
+    rotate: 0deg;
+  }
+  to {
+    rotate: 360deg;
+  }
+}
+
 .laneParent {
   width: var(--raw-size);
   height: var(--raw-size);
@@ -31,17 +41,25 @@
 
 .noteContainer {
   width: 100%;
-  height: 315px;
+  height: 375px;
   /* from 315px */
   overflow: visible;
   /* scale: 1 -1; */
   /* transform: translateY(calc(-100% - (var(--note-radius) / 2))); */
-  transform: translateY(370px);
+  padding-top: 375px;
+  transform-origin: center;
   /* from 370px */
-  transition: all var(--long) ease;
+  /* transition: all var(--long) ease; */
 }
 
+
 /* NOTE STYLES  >>> */
+/* 
+:root {
+  --perspective: 870px;
+  --marginTop: 269ox
+} */
+ 
 
 .item {
   width: var(--note-radius);
@@ -140,6 +158,13 @@
   background-image: url('../Assets/Headers/Trace\ Short.svg');
   background-position: center;
   background-repeat: no-repeat;
+  transform-origin: bottom;
+  margin-top: 70px;
+  /* translate: 140px 0px; */
+  rotate: 30deg;
+}
+.trace-inverted.trace-short {
+  rotate: -30deg !important;
 }
 
 .trace-half {
@@ -151,75 +176,73 @@
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  transform-origin: bottom;
 }
 
 .trace-quarter {
-  width: 370px;
-  height: 740px;
-  margin-right: 0px;
-  transform-origin: left;
+  width: 100px;
+  height: 217px;
   background-image: url('../Assets/Headers/Trace\ Bridge.svg');
   background-size: cover;
   background-position: center;
   background-repeat: no-repeat;
+  margin: auto;
+  transform: rotate(90deg);
+}
+.trace-inverted.trace-quarter {
+  transform: rotate(-90deg);
 }
 
 .trace-parent {
   position: absolute;
   /* animation: fade-in 0.2s ease; */
-  scale: -1;
+  /* scale: -1; */
   opacity: 0.75;
-  mask-image: linear-gradient(to bottom,
-      transparent 7%,
-      black 12%,
-      black 100%);
-
 }
+
 
 .trace-parent:has(.trace-normal) {
   width: 100px;
-  height: 582px;
-  translate: 100px 100px;
-  mask-image: linear-gradient(to right,
-      transparent 56%,
-      black 57%,
-      black 100%);
-}
-
-
-.trace-parent:has(.trace-half.trace-inverted) {
-  width: 100px;
-  height: 582px;
-  translate: 255px 237px;
-  mask-image: linear-gradient(to right,
-      transparent 56%,
-      black 57%,
-      black 100%);
-}
-
-.trace-parent:has(.trace-quarter) {
-  mask-image: linear-gradient(180deg,
-      transparent 37%,
-      black 38%,
-      black 100%);
-}
-
-.trace-parent:has(.trace-short) {
-  width: 100px;
-  height: 514px;
+  height: 740px;
   left: 0;
   right: 0;
   margin: auto;
-  translate: 0px 113px;
-  /* translate: 0px 0px; */
+  align-content: center;
+}
+.trace-parent:has(.trace-quarter) {
+  width: 100px;
+  height: 720px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  translate: 0 0px;
+  align-content: end;
+  padding-bottom: 30px;
+}
+
+
+.trace-parent:has(.trace-half) {
+  width: 100px;
+  height: 740px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  align-content: center;
+}
+.trace-parent:has(.trace-half.trace-inverted) {
+  scale: 1 -1;
+}
+
+
+.trace-parent:has(.trace-short) {
+  width: 100px;
+  height: 740px;
+  left: 0;
+  right: 0;
+  margin: auto;
+  translate: 0 0px;
   mask-composite: intersect;
-  mask-image: linear-gradient(210deg,
-      transparent 6%,
-      black 16%,
-      black 100%), linear-gradient(180deg,
-      transparent 3%,
-      black 6%,
-      black 100%);
+  align-content: center;
 }
 
 /* .trace-parent:has(.trace-short.trace-inverted) {
@@ -236,10 +259,10 @@
       black 100%);
 } */
 
-
+/* 
 .trace-parent:has(.trace-inverted) {
   scale: 1 -1;
-}
+} */
 
 .permissive-swipe::before {
   content: "";

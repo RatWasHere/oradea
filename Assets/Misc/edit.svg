@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="clip_path_1">
+      <rect width="400" height="400" />
+    </clipPath>
+  </defs>
+  <g clip-path="url(#clip_path_1)">
+    <rect width="400" height="400" />
+    <path id="Rectangle" d="M124 1.52588e-05C167.084 -1.52588e-05 202 34.916 202 78L202 295.963L0 295.963L0 78C1.52588e-05 34.916 34.9159 1.52588e-05 78.0001 0L124 1.52588e-05Z" fill="#FFFFFF" fill-opacity="0.91" transform="matrix(0.707 0.707 -0.707 0.707 270.003 -13)" />
+    <path id="Triangle" d="M100.982 0L201.964 139.315L0 139.315L100.982 0Z" fill="#FFFFFF" fill-rule="evenodd" fill-opacity="0.561" transform="matrix(-0.707 -0.707 0.707 -0.707 105.037 437.6)" />
+  </g>
+</svg>

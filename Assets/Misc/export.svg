@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg width="400" height="400" viewBox="0 0 400 400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <clipPath id="clip_path_1">
+      <rect width="400" height="400" />
+    </clipPath>
+  </defs>
+  <g clip-path="url(#clip_path_1)">
+    <rect width="400" height="400" />
+    <path id="Rectangle" d="M364 0C383.885 0 400 16.1151 400 36L400 142C400 161.885 383.885 178 364 178L36 178C16.1151 178 0 161.885 0 142L0 36C0 16.1151 16.1151 0 36 0L364 0Z" fill="#FFFFFF" fill-opacity="0.91" transform="matrix(1 0 0 1 0 222)" />
+    <path id="Rectangle" d="M27.5 0C42.6899 0 55 12.3101 55 27.5L55 119.028C55 134.218 42.6899 146.528 27.5 146.528L27.5 146.528C12.3101 146.528 0 134.218 0 119.028L0 27.5C0 12.3101 12.3101 1.52588e-05 27.5 0Z" fill="#FFFFFF" transform="matrix(0.707 0.707 -0.707 0.707 200.935 0)" />
+    <path id="Rectangle" d="M27.5 0C42.6899 0 55 12.3101 55 27.5L55 119.028C55 134.218 42.6899 146.528 27.5 146.528L27.5 146.528C12.3101 146.528 0 134.218 0 119.028L0 27.5C-1.52588e-05 12.3101 12.3101 -1.52588e-05 27.5 0Z" fill="#FFFFFF" transform="matrix(0.707 -0.707 0.707 0.707 162 39)" />
+    <path id="Rectangle" d="M27.5 0C42.6899 0 55 12.3101 55 27.5L55 167.5C55 182.69 42.6899 195 27.5 195L27.5 195C12.3101 195 0 182.69 0 167.5L0 27.5C0 12.3101 12.3101 0 27.5 0Z" fill="#FFFFFF" fill-opacity="0.91" transform="matrix(1 0 0 1 173 15)" />
+  </g>
+</svg>

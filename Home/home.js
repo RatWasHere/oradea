@@ -173,3 +173,15 @@ function openSettings() {
 if (!isDismissed("welcome")) {
   fadeThisOut('./firstContact.html');
 }
+
+let randomSong = Math.floor(Math.random() * 10);
+let highlightedSongs = [
+  "Boarding",
+  "Hitogata",
+  "Kowareta",
+  "Uneven",
+  "Panish Cook",
+  "Purify",
+  "Resonance Or Core",
+  "bass guitar walz"
+]

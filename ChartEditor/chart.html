@@ -1,0 +1,27 @@
+<div id="chart-editor-overlay">
+    <div id="editor-sidebar">
+        <h3>6K Chart Editor</h3>
+        
+        <div class="control-group">
+            <label>BPM</label>
+            <input type="number" id="bpm-input" value="120">
+        </div>
+
+        <div class="control-group">
+            <label>Active Note Type</label>
+            <div id="note-type-list"></div>
+        </div>
+
+        <div class="legend">
+            <p><b>Drag:</b> Select Area</p>
+            <p><b>Click Note:</b> Toggle Select</p>
+            <p><b>Drag Note:</b> Move Selection</p>
+            <p><b>F:</b> Flip (Invert) Selection</p>
+            <p><b>Delete:</b> Remove Selection</p>
+        </div>
+    </div>
+
+    <div id="editor-canvas-container">
+        <canvas id="editor-canvas"></canvas>
+    </div>
+</div>

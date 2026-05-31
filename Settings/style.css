@@ -349,3 +349,9 @@ btn {
   font-size: 19px;
   transition: none;
 }
+
+
+@font-face {
+  font-family: 'sama';
+  src: url('../Assets/Typography/comicneue.ttf');
+}

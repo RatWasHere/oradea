@@ -1,0 +1,119 @@
+#chart_overlay {
+    position: absolute;
+    bottom: 64;
+    left: 120;
+    width: 500px;
+    height: 636px;
+    background: #FFFFFF10;
+    /* pointer-events: none; */
+    border-radius: 5px;
+    justify-items: start;
+    z-index: 2147483647;
+    backdrop-filter: blur(12px);
+    border-bottom: white 2px solid;
+    overflow: hidden;
+}
+
+lane {
+    width: calc(500px / 6);
+    height: 100%;
+    display: inline-block;
+    border-right: 1px solid #FFFFFF10;
+    border-left: 1px solid #FFFFFF10;
+    margin-right: -7px;
+}
+
+.snap-line {
+    display: block;
+    position: absolute;
+    border-bottom: 1px dashed #ffffff23;
+    width: 100%;
+}
+
+.snap-line.primary {
+    border-bottom: 1px solid #FFFFFF;
+}
+
+.snap-line:hover {
+    background: #ffffff10;
+}
+
+.chart_editor_note {
+    width: 50px;
+    position: absolute;
+    height: 50px;
+    transform-origin: top;
+    background: url('../Assets/Headers/geometrical/Note.svg');
+    background-size: cover;
+    background-repeat: no-repeat;
+    border-bottom: 5px white solid inset;
+    margin-left: 17.5px;
+}
+
+.chart_editor_hold {}
+
+.chart_editor_swipeHeader {
+    background: url('../Assets/Headers/geometrical/Starter.svg');
+    background-size: cover;
+}
+
+.chart_editor_sliderNote {
+    background: url('../Assets/Headers/geometrical/Frame.svg');
+    background-size: contain;
+}
+
+.chart_editor_holdableHeader {
+    background: url('../Assets/Headers/geometrical/Note\ Holdable.svg');
+    background-size: cover;
+}
+
+.chart_editor_goldenHeader {
+    background: url('../Assets/Headers/geometrical/Note\ Golden.svg');
+    background-size: cover;
+}
+
+.chart_editor_note {
+    background-color: rgba(255, 255, 255, 0.486);
+    background-blend-mode: overlay;
+}
+
+.chart_editor_hold {
+  position: absolute;
+  width: 50px;
+  pointer-events: all; /* Ensure the note itself is clickable */
+}
+
+.slider-drag-handle {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  /* Requirement: 100px or 50% of the parent height */
+  height: 50%;
+  max-height: 20px; 
+  cursor: ns-resize;
+  z-index: 10;
+}
+
+.slider-drag-handle:hover {
+  background: rgba(0, 255, 200, 0.4);
+}
+
+#selection-box {
+  position: fixed;
+  border: 1px solid #ffffff23;
+  background: rgba(255, 255, 255, 0.2);
+  pointer-events: none;
+  display: none;
+  z-index: 1000;
+}
+
+.chart_editor_note.selected {
+  outline: 2px solid #ffff00 !important;
+  filter: brightness(1.5);
+}
+
+.chart_editor_note {
+  will-change: transform;
+  contain: layout paint; /* Limits browser recalculation scope */
+}

@@ -274,7 +274,7 @@
 }
 
 .noteContainer:has(.sfx_slider_hold) {
-  height: 311px;
+  clip-path: inset(0 0 60px 0);
   overflow-y: clip;
 }
 
@@ -409,4 +409,83 @@
 .end_gradeParent {
   opacity: 0;
   animation: end_gradeParent 1s 1s ease-in-out forwards;
+}
+
+.highlight_container {
+  position: absolute;
+  width: 0;
+  height: 0;
+  top: 157px;
+  /* center of 740px container */
+  left: 492.5px;
+  rotate: 30deg;
+}
+
+highlight_plane {
+  width: 375px;
+  height: 245px;
+  background: url('../Assets/SFX/Hold_Segment.svg') center / cover no-repeat;
+  display: block;
+  opacity: 0;
+  transform-origin: bottom;
+  /* rotate: 125DEG; */
+  transform: rotate(calc((var(--i) * 60deg) + -60deg)) translate(75px, 0px) rotate(-270deg);
+  position: absolute;
+  top: 125px;
+  /* half width to center horizontally */
+  left: 183px;
+  /* transform-origin: center bottom; */
+}
+
+glow_layer {
+  width: 370px;
+  height: 245px;
+  opacity: 0.05;
+  display: block;
+  position: absolute;
+  top: 0;
+  left: -185px;
+  /* half width to center horizontally */
+  transform-origin: center bottom;
+  transform: rotate(calc(var(--i) * 60deg)) translateY(-31.5%);
+}
+
+glow_layer {
+  width: 370px;
+  height: 245px;
+  opacity: 0.05;
+  display: block;
+  position: absolute;
+
+  /* half width to center horizontally */
+}
+
+.glow_layer {
+  /* display: none; */
+  width: 370px;
+  height: 245px;
+  /* Replicates your SVG Path visually */
+  clip-path: polygon(37% 100%, 0% 0%, 100% 0%, 62.6% 100%);
+  
+  /* Replicates your black/white/black gradient mask */
+  background: linear-gradient(
+    to bottom, 
+    transparent 0%, 
+    rgba(255, 255, 255, 0.9) 50%, 
+    transparent 100%
+  );
+  
+  /* Make the background tall enough to slide through */
+  background-size: 100% 300%; 
+  opacity: 0.05;
+  
+  /* Hardware accelerated animation utilizing the JS variable */
+  animation: slideGlow var(--total-duration) infinite linear;
+    transform-origin: center bottom;
+  transform: rotate(calc((var(--i) * 60deg) + -60deg)) translate(75px, 0px) rotate(-270deg);
+  position: absolute;
+  top: 125px;
+  /* half width to center horizontally */
+  left: 183px;
+
 }

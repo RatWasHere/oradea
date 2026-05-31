@@ -1,0 +1,19 @@
+{
+  "name": "Tetra",
+  "artist": "Lianhua",
+  "cover": "cover.jpg",
+  "difficulties": {
+    "4": "insane.json",
+    "3": "hard.json",
+    "2": "normal.json",
+    "1": "easy.json"
+  },
+  "ratings": {
+    "4": "34",
+    "3": "31",
+    "2": "27",
+    "1": "17"
+  },
+  "duration": 240,
+  "credits": "<a href='https://www.youtube.com/watch?v=wPWkQQsjNYU' target='_blank'>Panish Cook (パニッシュ・クック)</a> by <a href='https://www.youtube.com/channel/UCnU78ubdSBEWy6tYi6NegZA' target='_blank'>ki-you</a><br> ♡ Developer favorite"
+}

@@ -80,14 +80,12 @@
       document.getElementById("text").style.opacity = "1";
       document.getElementById("text").style.animation = null;
       document.getElementById("text").style.animationName = null;
+      window.location.href = to;
 
 
       setTimeout(() => {
         document.getElementById("text").style.opacity = "0";
       }, 300);
-      setTimeout(() => {
-        window.location.href = to;
-      }, 900);
     }
 
     setTimeout(() => {

@@ -1,0 +1,19 @@
+{
+  "name": "In the garden, what I found was my eyes,,",
+  "artist": "AZALI",
+  "cover": "cover.jpg",
+  "difficulties": {
+    "4": "insane_buttons.json",
+    "3": "hard.json",
+    "2": "normal.json",
+    "1": "easy.json"
+  },
+  "ratings": {
+    "4": "33",
+    "3": "31",
+    "2": "27",
+    "1": "17"
+  },
+  "duration": 240,
+  "credits": "<a href='https://www.youtube.com/watch?v=vHMLKyie064' target='_blank'>庭で見つけたのは私の瞳,,</a> by <a href='https://crxw.net/' target='_blank'>CRXW</a>"
+}
