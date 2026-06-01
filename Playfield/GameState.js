@@ -265,9 +265,42 @@ class GameState {
       const note = this.sheet[i];
       if (note.startAt) {
         // Cache the computed value to avoid repeated calculations
-        note._cachedStartAt = this.timingSystem ?
-          this.timingSystem.fromSpecial(note.startAt) :
-          note.time;
+        if (typeof note.startAt == 'string') {
+          note.startAt = eval(note.startAt.replaceAll(`#0`, CONFIG.NOTE_PREVIEW_DELAY));
+        } else {
+          note._cachedStartAt = this.timingSystem ?
+            this.timingSystem.fromSpecial(note.startAt) :
+            note.time;
+        }
+      }
+      let relevantValues = ['time', 'offset', 'transition', 'from'];
+      if (note.timeSheet) {
+        for (let timeSheetIndex = 0; timeSheetIndex < note.timeSheet.length; timeSheetIndex++) {
+          const timeSheet = note.timeSheet[timeSheetIndex];
+          let endValue = CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION;
+
+          for (let i = 0; i < relevantValues.length; i++) {
+            if (timeSheet[relevantValues[i]] && typeof timeSheet[relevantValues[i]] == 'string') {
+              note.timeSheet[timeSheetIndex][relevantValues[i]] = eval(timeSheet[relevantValues[i]].replaceAll(`#0`, endValue));
+            }
+
+            if (timeSheet.visuals) {
+              for (let visualCategory in timeSheet.visuals) {
+                const categoryEffects = timeSheet.visuals[visualCategory];
+                if (!categoryEffects) continue;
+
+                for (let cssProperty in categoryEffects) {
+                  const propConfig = categoryEffects[cssProperty];
+                  
+                  if (propConfig && typeof propConfig === 'object' && typeof propConfig.duration === 'string') {
+                    note.timeSheet[timeSheetIndex].visuals[visualCategory][cssProperty].duration = 
+                      eval(propConfig.duration.replaceAll(`#0`, endValue));
+                  }
+                }
+              }
+            }
+          }
+        }
       }
     }
   }
@@ -496,7 +529,7 @@ class GameState {
       });
     }
 
-        for (let i = 0; i < 6; i++) {
+    for (let i = 0; i < 6; i++) {
       const container = document.getElementById('highlight_container');
 
       // 1. Create the highlight_plane

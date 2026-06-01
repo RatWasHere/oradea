@@ -85,6 +85,7 @@ const CONFIG = {
   SLIDER_OFFSET: 0
 };
 
+let information;
 
 var loadTime = 0;
 
@@ -420,13 +421,13 @@ class GameState {
       });
     }
   }
-
   async initializeAudio(location) {
     if (this.audioSource) {
       try { this.audioSource.stop(); } catch (e) { }
       this.audioSource.disconnect();
     }
-    let information = charts.find(c => c.location == location).information;
+    information = charts.find(c => c.location == location).information;
+    information.location = location;
     document.getElementById('songArt').style.backgroundImage = `url('../Beatmaps/${location}/${information.cover}')`;
     document.getElementById('songName').innerHTML = information.name;
     document.getElementById('songName').dataset.text = information.name;

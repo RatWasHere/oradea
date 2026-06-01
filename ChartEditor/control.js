@@ -55,14 +55,16 @@ let difficultyMap = {
   4: "Expert",
 }
 
-function pickChart(menu, chart) {
+let selectedDifficulty = 4;
+
+async function pickChart(menu, chart) {
   game.gameState.sheet.forEach(note => {
     try {
       freeNote(note)
     } catch (error) { }
   });
   freeSFX();
-  let difficultyInit = fs.readFileSync(`${process.cwd()}/Beatmaps/${chart}/${charts.find(c => c.location == chart).information.difficulties[4]}`);
+  let difficultyInit = fs.readFileSync(`${process.cwd()}/Beatmaps/${chart}/${charts.find(c => c.location == chart).information.difficulties[selectedDifficulty]}`);
   game.gameState.sheet = JSON.parse(difficultyInit);
   document.querySelectorAll('.item').forEach(item => item.remove());
   document.querySelectorAll('.chart_editor_note').forEach(item => item.remove());
@@ -73,9 +75,10 @@ function pickChart(menu, chart) {
   } catch (error) { }
 
 
-  game.gameState.precacheStartAtValues();
-  game.gameState.initializeAudio(chart);
+  await game.gameState.precacheStartAtValues();
+  await game.gameState.initializeAudio(chart);
   updateNotes();
+  return difficultyInit;
 }
 
 
@@ -218,9 +221,17 @@ function setPlaybackSpeed(value) {
 function changeBPM(newBpm) {
   bpm = newBpm;
   generateSnapLines();
+  try {
+    information.bpm = newBpm;
+  } catch (error) {}
 }
 
 game.init();
 
-changeBPM(94);
-pickChart(null, 'Purify');
+(async () => {
+  await pickChart(null, 'Purify');
+  let bpm = information.bpm;
+  changeBPM(bpm);
+  document.getElementById('beatsPerMinutes').value = bpm;
+  document.getElementById('beatSnapping')
+})();

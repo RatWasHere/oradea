@@ -589,7 +589,9 @@ class InputSystem {
       }, 250);
       return
     }
-    effect.parent.style.display = 'none';
+    if (effect.parent && effect.parent?.style) {
+      effect.parent.style.display = 'none';
+    }
     effect.inUse = false;
   }
 

@@ -527,6 +527,7 @@ class RenderingSystem {
 
 updateSliderPosition(note, currentTime, timing) {
     const sliderMaxHeight = CONFIG.ADJUSTED_MAX_TRAVEL;
+    console.log(timing)
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / (timing?.speed || 1);
     const offset = timing?.offset;
     const sliderEnd = note.sliderEnd;
@@ -686,9 +687,8 @@ updateSliderPosition(note, currentTime, timing) {
 
   recalculateNoteScaleTiming(note) {
     let modifier = 1;
-    if (note.timeSheet && note.timeSheet[0]?.speed) {
+    if (note.timeSheet && note.timeSheet[0]?.speed != undefined) {
       modifier = note.timeSheet[0].speed;
-      console.log('tiemsjhshshjshsj', modifier)
     }
     
     const adjustedScaleDuration = CONFIG.SCALE_DURATION / modifier;
@@ -697,6 +697,5 @@ updateSliderPosition(note, currentTime, timing) {
     note.scaleStart = note.time - (adjustedPreviewDelay + adjustedScaleDuration);
     note.scaleEnd = note.time - adjustedPreviewDelay;
     note.scaleDuration = adjustedScaleDuration;
-    console.log(note.scaleDuration)
   }
 }

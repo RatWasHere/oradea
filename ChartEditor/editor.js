@@ -143,14 +143,14 @@ noteContainer.addEventListener('mouseleave', () => {
 
 studioUI.initializeTabs('tabs', [
   {
-    label: 'Global',
-    associatedViewID: 'global'
-  },
-  {
     label: 'Selection',
     associatedViewID: 'local',
     onclick: "refreshLocalEvents()"
-  }
+  },
+  {
+    label: 'Global',
+    associatedViewID: 'global'
+  },
 ]);
 
 let noteTypeMap = {
@@ -195,15 +195,15 @@ function refreshLocalEvents() {
     <input style="width: 480px; margin: auto;" class="ss-main" value="${note.time}">
     `
 
-    endTabs.push({
-      label: "Note",
-      associatedViewID: "properties"
-    },
+    endTabs.push(
       {
         label: "Events",
         associatedViewID: "events"
-      }
-
+      },
+      {
+        label: "Properties",
+        associatedViewID: "properties"
+      },
     )
 
     if (note.swipe) {
@@ -234,10 +234,13 @@ function refreshLocalEvents() {
     </div>
     `
   }
+
+
   local.innerHTML = endHTML;
 
   requestAnimationFrame(() => {
     studioUI.initializeTabs('local-tabs', endTabs);
+    updateNoteEvents();
   })
 
 }
@@ -259,28 +262,58 @@ function updateNoteEvents() {
       let event = events[eventIndex];
 
       endHTML += `<div class="noteEvent" onmouseenter="surpressScrolling = true" onmouseleave="surpressScrolling = false">
-      <btext id="noteStartTime">time</btext>
+      <btext id="genericValueLabel">time</btext>
       <input style="width: 490px; margin: auto;" class="ss-main" value="${event.time}">
     <div style="height: 5px;"></div>
-
-      <btext id="noteStartTime">speed</btext>
-      <input style="width: 490px; margin: auto;" class="ss-main" value="${event.speed == undefined ? 1 : event.speed}">
+    <div class="expandableEventDetails">
+      <btext id="genericValueLabel">speed</btext>
+      <input oninput="game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].timeSheet[${eventIndex}].speed = Number(this.value);" style="width: 490px; margin: auto;" class="ss-main" value="${event.speed == undefined ? 1 : event.speed}">
     <div style="height: 5px;"></div>
 
-      <btext id="noteStartTime">offset</btext>
+      <btext id="genericValueLabel">offset</btext>
       <input style="width: 490px; margin: auto;" class="ss-main" value="${event.offset == undefined ? 0 : event.offset}">
 
       <div class="separator"></div>
 
-      <btext id="noteStartTime">transition</btext>
+      <btext id="genericValueLabel">transition</btext>
       <input style="width: 490px; margin: auto;" class="ss-main" value="${event.offset == undefined ? 0 : event.offset}">
+    </div>
     <div style="height: 5px;"></div>
-    <btn onclick="createNoteEvent();" style="width: 30px; height: 30px; padding: 0px !important;" class="flexbox"><div class="image" id="deleteIcon"></div></btn>
-      
+      <flexbox>
+        <btn onclick="toggleEventView(this.parentElement.parentElement);" style="width: 30px; height: 30px; padding: 0px !important;" class="flexbox"><div class="image" id="expandIcon"></div></btn>
+        <btn onclick="createNoteEvent();" style="width: 30px; height: 30px; padding: 0px !important;" class="flexbox"><div class="image" id="deleteIcon"></div></btn>
+      </flexbox>
       </div>`
     }
 
     document.getElementById('noteEvents').innerHTML = endHTML
   } catch (error) { console.log('error', error) }
 
+}
+
+/**
+ * 
+ * @param {HTMLDivElement} element 
+ */
+function toggleEventView(element) {
+  let expandableElement = element.getElementsByClassName('expandableEventDetails')[0];
+  if (element.dataset.expanded != 'false') {
+    element.classList.remove('expanded');
+    expandableElement.style.height = 0;
+    element.dataset.expanded = false;
+  } else {
+    let simulatedHeight = 0;
+    let copyForExpansion = expandableElement.cloneNode(true);
+    copyForExpansion.style.opacity = 0;
+    copyForExpansion.style.height = 'fit-content'
+    document.body.appendChild(copyForExpansion);
+    requestAnimationFrame(() => {
+      element.classList.add('expanded');
+      simulatedHeight = copyForExpansion.getBoundingClientRect().height;
+      copyForExpansion.remove();
+
+      element.dataset.expanded = true;
+      expandableElement.style.height = simulatedHeight;
+    });
+  }
 }

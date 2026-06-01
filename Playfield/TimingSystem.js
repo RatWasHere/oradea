@@ -144,7 +144,7 @@ class TimingSystem {
 
   interpolateCSSProperty(currentTime, pointStartTime, propConfig, globalConfig) {
     // Determine timeline timing boundaries using property-specific overrides if present
-    const duration = parseFloat(propConfig.duration ?? globalConfig.duration ?? 0);
+    const duration = propConfig.duration != undefined ? this.fromSpecial(propConfig.duration) : 0;
     const easing = propConfig.easing ?? globalConfig.easing ?? 'linear';
 
     const startTime = pointStartTime;

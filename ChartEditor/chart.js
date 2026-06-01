@@ -801,9 +801,16 @@ function applyState(jsonState) {
 }
 
 function saveChartDetails() {
-  let chartDetails = {
-    beatSnap: document.querySelector("#beatSnap").value,
-    bpm: document.getElementById('beatsPerMinute').value
-  }
+  game.gameState.sheet.forEach((note) => {
+    freeNote(note);
+    freeSFX(note);
+  });
+
+  let chartSheet = game.gameState.sheet;
+
+  fs.writeFileSync(`${process.cwd()}/Beatmaps/${information.location}/${information.difficulties[selectedDifficulty]}`, JSON.stringify(chartSheet));
+  console.log("Chart details saved.");
+
+  updateNotes();
 }
 

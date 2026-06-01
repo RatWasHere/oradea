@@ -371,7 +371,15 @@ glow_layer {
 
 
 
-
+#genericValueLabel {
+  font-family: 'Mono';
+  opacity: 0.3;
+  width: 100%;
+  display: block;
+  margin-left: auto;
+  text-align: left;
+  line-height: 14px;
+}
 
 
 .eventControls {
@@ -425,7 +433,14 @@ glow_layer {
   width: 20px;
   opacity: 0.5;
   margin: auto;
+}
 
+#expandIcon {
+  background-image: url('../Assets/Misc/export.svg');
+  height: 20px;
+  width: 20px;
+  opacity: 0.5;
+  margin: auto;
 }
 
 .noteEvent {
@@ -439,6 +454,18 @@ glow_layer {
   width: 490px;
   margin: auto;
   border-bottom: dashed #FFFFFF40 1px;
-  margin-top: 5px;
-  margin-bottom: 5px;
+  margin-top: 10px;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.expandableEventDetails {
+  width: calc(100%);
+  height: 0px;
+  overflow: auto;
+  transition: all 0.2s cubic-bezier(.27,.08,0,.98);
+}
+
+.expandableEventDetails .expanded {
+  overflow: visible !important;
 }

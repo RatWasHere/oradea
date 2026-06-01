@@ -1,5 +1,5 @@
 {
-  "location": "AAAA111XXXXXX",
-  "difficulty": "2",
-  "map": "map.json"
+  "location": "Purify",
+  "difficulty": "4",
+  "map": "insane.json"
 }
