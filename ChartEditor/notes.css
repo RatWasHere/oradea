@@ -100,14 +100,12 @@
 .header.end {
   background: var(--sliderBottom);
   transform-origin: top;
-  transform: translateY(-1px);
 }
 
 .header.start {
   background: var(--sliderTop);
   margin-top: auto;
   transform-origin: bottom;
-  transform: translateY(1px);
 }
 
 .header.midframe {

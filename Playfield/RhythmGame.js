@@ -182,6 +182,9 @@ class RhythmGame {
 
     setTimeout(() => {
       this.startGameLoop();
+      if (typeof currentPlaybackSpeed !== 'undefined') {
+        this.gameState.audioSource.playbackRate.value = currentPlaybackSpeed;
+      }
       this.gameState.audioContext.resume();
       this.gameState.paused = false;
       pollGamepads = null;

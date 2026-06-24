@@ -207,31 +207,25 @@ class InputSystem {
     this.updateRotations(angleDegrees, angleDegrees);
   }
 
-  handleAutoplay(currentTime) {
-    let relevantNotes = this.gameState.sheet.filter(note => {
-      return note.time <= currentTime && !note.done;
-    });
+handleAutoplay(currentTime) {
+  for (const note of this.gameState.sheet) {
+    if (note.time > currentTime || note.done) continue;
 
-    relevantNotes.forEach(note => {
-      if (note.slider) {
-        // Hold slider if we haven't started and haven't passed the start time
-        if (!note.wasEverHeld && currentTime >= note.time) {
-          note.blockRelease = true;
-          this.holdSlider(note);
-        }
-        // Release slider when we pass the end time
-        else if (note.isBeingHeld && currentTime >= note.sliderEnd) {
-          note.blockRelease = false;
-          this.releaseSlider(note);
-        }
-      } else if (note.swipe) {
-        this.swipeNote(note);
-      } else {
-        this.hitNote(note);
+    if (note.swipe) {
+      this.swipeNote(note);
+    } else if (!note.slider) {
+      this.hitNote(note);
+    } else {
+      if (!note.wasEverHeld && currentTime >= note.time) {
+        note.blockRelease = true;
+        this.holdSlider(note);
+      } else if (note.isBeingHeld && currentTime >= note.sliderEnd) {
+        note.blockRelease = false;
+        this.releaseSlider(note);
       }
-    });
+    }
   }
-
+}
   handleGamepadConnected(event) {
     if (this.gameState.phone) return
     let gamepads = navigator.getGamepads()
@@ -413,10 +407,8 @@ class InputSystem {
     end = (end + 360) % 360;
 
     if (start <= end) {
-      // Normal interval
       return angle >= start && angle <= end;
     } else {
-      // Wrapped interval (e.g. 350 -> 10)
       return angle >= start || angle <= end;
     }
   }
@@ -447,19 +439,12 @@ class InputSystem {
     for (let i = 0; i < sheet.length; i++) {
       const note = sheet[i];
 
-      // 1. Cheapest checks first: Booleans and existence
       if (!note.element || note.done) continue;
 
-      // 2. Simple Math: Time difference
-      // We check if the note is within the "hit window"
       const timeDiff = note.time - currentTime;
 
-      // If the note is already in the past (beyond threshold), skip it
-      // If the note is too far in the future, skip it
       if (Math.abs(timeDiff) > threshold) continue;
 
-      // 3. Most expensive check last: Trigonometry/Arc calculation
-      // This only runs for the 1 or 2 notes that passed the time check
       if (this.isInArc(note, rotation)) {
         matches.push(note);
       }
@@ -507,8 +492,8 @@ class InputSystem {
     }
   }
 
-  releaseSlider(note) {
-    if (note.blockRelease && note.sliderEnd >= this.gameState.currentTime) return;
+  releaseSlider(note, force) {
+    if (note.blockRelease && note.sliderEnd >= this.gameState.currentTime && !force) return;
     note.isBeingHeld = false;
     const timeDiff = note.sliderEnd - (this.gameState.currentTime);
     note.element.parentElement.classList.remove('actively_pressed_in');
@@ -581,7 +566,9 @@ class InputSystem {
 
   releaseEffect(effect) {
     if (effect.type == 'particles_constant') {
-      effect.parent.style.opacity = '0';
+      try {
+        effect.parent.style.opacity = '0';
+      } catch (error) { }
       setTimeout(() => {
         effect.inUse = false;
         effect.parent.style.display = 'none';

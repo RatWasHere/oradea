@@ -78,7 +78,7 @@ const CONFIG = {
 
   AUTOPLAY: false,
   BUTTONS: false,
-  TOUCHSCREEN: true,
+  TOUCHSCREEN: false,
 
   FLASHING_LIGHTS: 1,
   GIMMICKS: 1,
@@ -104,27 +104,22 @@ class GameState {
           this.lightMap = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/light_${this.crossDetails.map}`, 'utf8'));
         } catch (error) { };
       } else {
-        const SERVER_URL = 'http://192.168.100.11:5500'; // Replace with your actual server IP:port
+        const SERVER_URL = 'http://192.168.100.11:5500';
         try {
-          // Fetch crossdetails
           const crossResponse = await fetch(`${SERVER_URL}/Core/crossdetails`);
           this.crossDetails = await crossResponse.json();
 
-          // Fetch beatmap sheet
           const sheetResponse = await fetch(`${SERVER_URL}/Beatmaps/${this.crossDetails.location}/${this.crossDetails.map}`);
           this.sheet = await sheetResponse.json();
 
-          // Fetch song information
           const infoResponse = await fetch(`${SERVER_URL}/Beatmaps/${this.crossDetails.location}/information.json`);
           this.information = await infoResponse.json();
 
-          // Try to fetch timing sheet (optional)
           try {
             const timeResponse = await fetch(`${SERVER_URL}/Beatmaps/${this.crossDetails.location}/time_${this.crossDetails.map}`);
             this.timeSheet = await timeResponse.json();
           } catch (error) { }
 
-          // Try to fetch light map (optional)
           try {
             const lightResponse = await fetch(`${SERVER_URL}/Beatmaps/${this.crossDetails.location}/light_${this.crossDetails.map}`);
             this.lightMap = await lightResponse.json();
@@ -209,7 +204,6 @@ class GameState {
         document.styleSheets[0].insertRule(`:root { --${design}: url('../Assets/Headers/${holdNoteDesign}/${holdNoteDesigns[design]}.svg') }`);
       }
 
-      // Precache startAt values for performance
       this.precacheStartAtValues();
 
       let lastNote = this.sheet[this.sheet.length - 1];
@@ -242,7 +236,6 @@ class GameState {
 
       this.lastFrameTime = 0;
 
-      // Web Audio
       this.audioContext = new window.AudioContext();
       this.audioBuffer = null;
       this.audioSource = null;
@@ -260,48 +253,114 @@ class GameState {
   }
 
   precacheStartAtValues() {
-    // Pre-calculate startAt times for notes that have special timing
     for (let i = 0; i < this.sheet.length; i++) {
       const note = this.sheet[i];
-      if (note.startAt) {
-        // Cache the computed value to avoid repeated calculations
-        if (typeof note.startAt == 'string') {
-          note.startAt = eval(note.startAt.replaceAll(`#0`, CONFIG.NOTE_PREVIEW_DELAY));
-        } else {
-          note._cachedStartAt = this.timingSystem ?
-            this.timingSystem.fromSpecial(note.startAt) :
-            note.time;
-        }
+      if (typeof note.startAt == 'string') {
+        note.startAt = eval(note.startAt.replaceAll(`#0`, CONFIG.NOTE_PREVIEW_DELAY));
+        note._cachedStartAt = note.startAt;
+      } else if (typeof note.startAt == 'object') {
+        note._cachedStartAt = this.timingSystem ?
+          this.timingSystem.fromSpecial(note.startAt) :
+          note.time;
       }
-      let relevantValues = ['time', 'offset', 'transition', 'from'];
+
+      if (typeof note.rawStartAt == 'string') {
+        note.startAt = eval(note.rawStartAt.replaceAll(`#0`, CONFIG.NOTE_PREVIEW_DELAY));
+        note._cachedStartAt = note.startAt;
+      }
+
+      if (typeof note.rawEndAt == 'string') {
+        note.endAt = eval(note.rawEndAt.replaceAll(`#0`, CONFIG.NOTE_PREVIEW_DELAY));
+      }
+
       if (note.timeSheet) {
+        let totalPreviewDuration = CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION;
+        let relevant = {
+          rawTime: "time",
+          rawOffset: "offset",
+          rawTransition: "transition"
+        };
+
+
         for (let timeSheetIndex = 0; timeSheetIndex < note.timeSheet.length; timeSheetIndex++) {
           const timeSheet = note.timeSheet[timeSheetIndex];
-          let endValue = CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION;
 
-          for (let i = 0; i < relevantValues.length; i++) {
-            if (timeSheet[relevantValues[i]] && typeof timeSheet[relevantValues[i]] == 'string') {
-              note.timeSheet[timeSheetIndex][relevantValues[i]] = eval(timeSheet[relevantValues[i]].replaceAll(`#0`, endValue));
+          for (let rawValueKey in relevant) {
+            let value = timeSheet[rawValueKey];
+            if (!value) continue;
+            if (typeof value == 'string' && value.includes('#')) {
+              timeSheet[relevant[rawValueKey]] = eval(timeSheet[rawValueKey].replaceAll(`#0`, totalPreviewDuration));
+            } else {
+              timeSheet[relevant[rawValueKey]] = Number(timeSheet[rawValueKey]);
             }
+          }
 
-            if (timeSheet.visuals) {
-              for (let visualCategory in timeSheet.visuals) {
-                const categoryEffects = timeSheet.visuals[visualCategory];
-                if (!categoryEffects) continue;
+          if (timeSheet.from) {
+            for (let rawValueKey in relevant) {
+              let value = timeSheet.from[rawValueKey];
+              if (!value) continue;
+              if (typeof value == 'string' && value.includes('#')) {
+                timeSheet.from[relevant[rawValueKey]] = eval(timeSheet.from[rawValueKey].replaceAll(`#0`, totalPreviewDuration));
+              } else {
+                timeSheet.from[relevant[rawValueKey]] = Number(timeSheet.from[rawValueKey]);
+              }
+            }
+          }
 
-                for (let cssProperty in categoryEffects) {
-                  const propConfig = categoryEffects[cssProperty];
-                  
-                  if (propConfig && typeof propConfig === 'object' && typeof propConfig.duration === 'string') {
-                    note.timeSheet[timeSheetIndex].visuals[visualCategory][cssProperty].duration = 
-                      eval(propConfig.duration.replaceAll(`#0`, endValue));
-                  }
+          if (timeSheet.visuals) {
+            for (let visualCategory in timeSheet.visuals) {
+              let visualModifiers = timeSheet.visuals[visualCategory];
+              if (!visualModifiers) continue
+              for (let visualModifierKey in visualModifiers) {
+                let visualModifier = visualModifiers[visualModifierKey]
+                if (typeof visualModifier.rawDuration == 'string' && visualModifier.rawDuration.includes('#')) {
+                  visualModifier.duration = eval(visualModifier.duration.replaceAll(`#0`, totalPreviewDuration))
+                } else if (typeof visualModifier.rawDuration == 'string') {
+                  visualModifier.duration = Number(visualModifier.rawDuration);
                 }
               }
             }
           }
         }
       }
+      try {
+        this.recalculateNoteScaleTiming(note);
+      } catch (error) { console.error(error) }
+    }
+  }
+
+  recalculateNoteScaleTiming(note) {
+    let modifier = 1;
+    let mysticalAddition = 0;
+    let adjustedPreviewDelay = CONFIG.NOTE_PREVIEW_DELAY;
+    if (note.timeSheet && note.timeSheet[0]?.speed != undefined) {
+      modifier = note.timeSheet[0].speed;
+
+      adjustedPreviewDelay = CONFIG.NOTE_PREVIEW_DELAY / modifier;
+      // how many px does it mean if i 
+      mysticalAddition = ((CONFIG.NOTE_RADIUS / 2) / CONFIG.ADJUSTED_MAX_TRAVEL) * adjustedPreviewDelay;
+    }
+
+    const adjustedScaleDuration = CONFIG.SCALE_DURATION / modifier;
+
+    note.scaleStart = note.time - (adjustedPreviewDelay + adjustedScaleDuration);
+    note.scaleEnd = (note.time - adjustedPreviewDelay);
+    note.scaleDuration = adjustedScaleDuration;
+    note.mysticalAddition = mysticalAddition;
+
+    note.precalculatedStartAt = note.scaleStart - CONFIG.CREATION_ANTIDELAY;
+    if (note.startAt) {
+      note.precalculatedStartAt = note.time + Number(note.startAt);
+    }
+  
+    if (note.slider) {
+      note.precalculatedFailTime = Number(note.sliderEnd) + CONFIG.SLIDER_RELEASE_THRESHOLD
+    } else {
+      note.precalculatedFailTime = Number(note.time) + CONFIG.ACCEPTANCE_THRESHOLD;
+    }
+
+    if (note.endAt) {
+      note.precalculatedFailTime = (note.sliderEnd || note.time) + note.endAt;
     }
   }
 
@@ -514,7 +573,6 @@ class GameState {
     for (let i = 0; i < 6; i++) {
       // const container = document.getElementById('highlight_container');
 
-      // 1. Create the highlight_plane
       let angleMap = { 0: 5, 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 };
       let item = document.createElement('highlight_plane');
       item.style.setProperty('--i', i);
@@ -532,23 +590,19 @@ class GameState {
     for (let i = 0; i < 6; i++) {
       const container = document.getElementById('highlight_container');
 
-      // 1. Create the highlight_plane
       let item = document.createElement('highlight_plane');
       item.style.setProperty('--i', i);
       container.appendChild(item);
 
-      // 2. Create the "Extra" element (The Glow SVG)
       let extraItem = document.createElement('glow_layer');
       extraItem.style.setProperty('--i', i);
 
-      // Calculate animation duration
       const baseDuration = CONFIG.NOTE_PREVIEW_DELAY / 1000;
       const glowWidth = 0.4;
       const totalDuration = baseDuration * (1 + (glowWidth * 2));
 
       console.log(`Visible Speed: ${baseDuration}s | Total Timeline: ${totalDuration}s`);
 
-      // Inject the SVG with SMIL animations
       extraItem.innerHTML = `
     <svg width="370" height="245" viewBox="0 0 370 245" fill="none">
       <defs>
@@ -573,7 +627,6 @@ class GameState {
 
       container.appendChild(extraItem);
 
-      // Add to effectItems for existing logic
       let angleMap = { 0: 5, 1: 0, 2: 1, 3: 2, 4: 3, 5: 4 };
       this.effectItems.push({
         parent: null,
@@ -608,13 +661,11 @@ class GameState {
     let filePath;
 
     if (!isAndroid) {
-      // Desktop: Read from file system
       filePath = `./Beatmaps/${this.crossDetails.location}/audio.mp3`;
       const fileBuf = fs.readFileSync(filePath);
       const arrayBuffer = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.length);
       this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
     } else {
-      // Android: Fetch from server
       const SERVER_URL = 'http://192.168.100.11:5500';
       filePath = `${SERVER_URL}/Beatmaps/${this.crossDetails.location}/audio.mp3`;
 
@@ -648,7 +699,6 @@ class GameState {
 
     this.audioSource.start(startTime);
 
-    // 2. Set this as your absolute "Zero"
     this.audioStartTime = startTime;
     this.paused = false;
   }

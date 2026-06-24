@@ -16,7 +16,7 @@
   --ss-spacing-l: 7px;
   --ss-spacing-m: 5px;
   --ss-spacing-s: 3px;
-  --ss-animation-timing: 0.2s;
+  --ss-animation-timing: 0.16s;
   --ss-border-radius: 3px;
   --ss-selected-color: #FFFFFF90;
   --ss-selected-background: #FFFFFF10;
@@ -71,6 +71,13 @@
   transition: background-color var(--ss-animation-timing);
   overflow: hidden
 }
+.ss-main:hover {
+  background: #FFFFFF29;
+}
+.ss-main:active {
+  background: #FFFFFF10;
+}
+
 
 .ss-main:focus {
   box-shadow: 0 0 5px var(--ss-focus-color)

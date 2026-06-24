@@ -7,6 +7,11 @@ class ScoringSystem {
   judge(noteTime, affectCombo = true, note, timeOverwrite = null) {
     if (!timeOverwrite) timeOverwrite = this.gameState.currentTime;
     const currentTime = timeOverwrite - (CONFIG.AUDIO_OFFSET || 0);
+    if (note?.slider != true) {
+      try {
+        this.gameState.playHitSound(note)
+      } catch (error) { console.log(error) }
+    }
 
     const difference = Math.abs(noteTime - currentTime);
 
@@ -47,12 +52,7 @@ class ScoringSystem {
       });
     }
 
-
-
     if (note?.slider) return;
-    try {
-      this.gameState.playHitSound(note)
-    } catch (error) { console.log(error) }
     return accuracy;
   }
 

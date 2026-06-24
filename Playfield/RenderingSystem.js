@@ -92,21 +92,14 @@ class RenderingSystem {
 
   createNewNoteElements(currentTime) {
     const sheet = this.gameState.sheet;
-    const antidelayThreshold = CONFIG.CREATION_ANTIDELAY;
     const previewDelay = CONFIG.NOTE_PREVIEW_DELAY;
     const scaleDuration = CONFIG.SCALE_DURATION;
-    
+
     for (let i = 0; i < sheet.length; i++) {
       const note = sheet[i];
       if (note.element) continue;
-      
-      let modifier = 1;
-      if (note.timeSheet && note.timeSheet[0]?.speed) {
-        modifier = note.timeSheet[0].speed;
-      }
-      
-      const scaleStart = note.time - ((previewDelay / modifier) + (scaleDuration / modifier));
-      if (currentTime >= scaleStart - antidelayThreshold) {
+
+      if (currentTime >= note.precalculatedStartAt) {
         this.createNoteElement(note);
       }
     }
@@ -152,11 +145,14 @@ class RenderingSystem {
 
     // Create a fragment to batch DOM operations
     const fragment = document.createDocumentFragment();
-
+    let speedMod = 1;
+    if (note.timeSheet) {
+      speedMod = note.timeSheet[0].speed != undefined ? note.timeSheet[0].speed : 1;
+      console.log('parsed speedmod', speedMod)
+    }
     if (note.slider) {
       noteElement.classList.add('slider');
-      const actualHeight = ((note.sliderEnd - note.time) / CONFIG.NOTE_PREVIEW_DELAY) * (CONFIG.CONTAINER_REAL_RADIUS / 2);
-
+      const actualHeight = ((note.sliderEnd - note.time) / (CONFIG.NOTE_PREVIEW_DELAY / speedMod)) * (CONFIG.ADJUSTED_MAX_TRAVEL);
       noteElement.style.translate = `0px`;
 
       // noteElement.style.setProperty('--sliderHeight', `${actualHeight}px`);
@@ -343,7 +339,6 @@ class RenderingSystem {
       noteTiming = this.timingSystem.interpolateTimingPoint(currentTime - note.time, noteTiming, noteTiming.from)
     }
 
-
     if (note.slider) {
       return this.updateSliderPosition(note, currentTime, noteTiming);
     }
@@ -494,7 +489,6 @@ class RenderingSystem {
     note.points = finalNotePoints;
   }
 
-
   updateSwipeState(note) {
     if (note.time - game.gameState.currentTime > CONFIG.SWIPE_PRECHECK) return;
 
@@ -523,33 +517,30 @@ class RenderingSystem {
 
     note.points = finalNotePoints;
   }
-
-
-updateSliderPosition(note, currentTime, timing) {
-    const sliderMaxHeight = CONFIG.ADJUSTED_MAX_TRAVEL;
-    console.log(timing)
-    const previewDelay = CONFIG.NOTE_PREVIEW_DELAY / (timing?.speed || 1);
-    const offset = timing?.offset;
-    const sliderEnd = note.sliderEnd;
-    const sliderStart = note.time;
-    if (offset) {
-      currentTime = sliderStart + offset;
+  getUnboundProgress(value, min, max) {
+    return (value - min) / (max - min)
+  }
+  updateSliderPosition(note, actualCurrentTime, timing) {
+    const previewDelay = timing?.speed ? CONFIG.NOTE_PREVIEW_DELAY / timing.speed : CONFIG.NOTE_PREVIEW_DELAY;
+    const noteTime = note.time;
+    let currentTime = actualCurrentTime;
+    if (timing?.offset != undefined && timing?.offset) {
+      currentTime = noteTime + timing.offset;
     }
 
     let scale = 1;
-    let scaleStart = note.scaleStart;
-    let scaleEnd = note.scaleEnd;
-    if (!note.endedScale && currentTime >= scaleStart && currentTime <= scaleEnd) {
-      scale = (currentTime - scaleStart) / note.scaleDuration;
-    } else if (currentTime < scaleStart) {
+    if (currentTime > note.scaleStart && currentTime < note.scaleEnd) {
+      scale = (currentTime - note.scaleStart) / note.scaleDuration;
+    } else if (currentTime < note.scaleStart) {
       scale = 0;
-    } else if (!note.endedScale && currentTime > scaleEnd) {
+    } else if (currentTime > note.scaleEnd) {
       scale = 1;
     }
 
-    if ((Number(sliderEnd) + (CONFIG.ACCEPTANCE_THRESHOLD / 2)) <= currentTime) {
-      let start = Number(sliderEnd) + Number(CONFIG.ACCEPTANCE_THRESHOLD / 2);
-      let end = Number(sliderEnd) + Number(CONFIG.ACCEPTANCE_THRESHOLD);
+    let opacityThreshold = note.sliderEnd + (CONFIG.ACCEPTANCE_THRESHOLD / 2);
+    if (opacityThreshold <= currentTime) {
+      let start = opacityThreshold;
+      let end = note.sliderEnd + CONFIG.ACCEPTANCE_THRESHOLD;
       note.element.style.opacity = 1 - getProgress(currentTime, start, end);
     } else if (note.element.style.opacity != 1) {
       note.element.style.opacity = 1;
@@ -558,29 +549,18 @@ updateSliderPosition(note, currentTime, timing) {
     note.startElement.style.transform = `scale(${scale})`;
     note.endElement.style.transform = `scale(${scale})`;
 
-    const maxHeight = ((sliderEnd - sliderStart) / previewDelay) * sliderMaxHeight;
-    const progress = getProgress(currentTime + previewDelay, sliderStart, sliderEnd);
     if (note.hint) {
-      note.hint.style.transform = `scale(${getProgress(currentTime, sliderStart - previewDelay, sliderStart)})`;
+      note.hint.style.transform = `scale(${Math.min(1.1, getProgress(currentTime + previewDelay, noteTime - CONFIG.HINT_START, noteTime + previewDelay))})`;
     }
-    if (note.endHint) {
-      let scale = getProgress(currentTime, sliderEnd - previewDelay, sliderEnd);
-      note.endHint.style.transform = `scale(${scale})`;
-      if (scale > 1.05) {
-        note.endHint.style.opacity = 0;
-      }
-    }
-    let currentHeight = progress * maxHeight;
-    if ((currentTime + previewDelay) <= sliderEnd) {
-      note.midframe.style.scale = `1 ${(currentHeight) / CONFIG.NOTE_RADIUS}`;
-      note.element.style.translate = `0px ${sliderMaxHeight * -1}px`;
-      note.endElement.style.translate = `0px ${currentHeight - (CONFIG.NOTE_RADIUS)}px`;
-    } else {
-      note.element.style.translate = `0px ${(currentHeight) - (maxHeight - (sliderMaxHeight * -1))}px`;
-    }
+    let progress = getProgress(currentTime + previewDelay, note.time, note.sliderEnd);
+    let currentHeight = Math.min((progress * note.height), note.height);
+    note.midframe.style.scale = `1 ${Math.max((currentHeight) / CONFIG.NOTE_RADIUS, 0)}`
+    note.endElement.style.translate = `0px ${currentHeight - CONFIG.NOTE_RADIUS}px`
+
+    let movement = ((progress * note.height) - currentHeight);
+    note.element.style.translate = `0px ${movement - CONFIG.ADJUSTED_MAX_TRAVEL}px`;
 
     this.updateSliderHoldStatus(note);
-    return
   }
 
   updateSliderHoldStatus(note) {
@@ -608,7 +588,7 @@ updateSliderPosition(note, currentTime, timing) {
     const previewDelay = timing?.speed ? CONFIG.NOTE_PREVIEW_DELAY / timing.speed : CONFIG.NOTE_PREVIEW_DELAY;
     const noteTime = note.time;
     let currentTime = actualCurrentTime;
-    if (timing?.offset != undefined) {
+    if (timing?.offset) {
       currentTime = noteTime + timing.offset;
     }
 
@@ -636,10 +616,8 @@ updateSliderPosition(note, currentTime, timing) {
       note.hint.style.transform = `scale(${Math.min(1.1, getProgress(currentTime + previewDelay, noteTime - CONFIG.HINT_START, noteTime + previewDelay))})`;
     }
 
-    note.element.style.translate = `0px ${Math.min(
-      ((noteTime - currentTime) / previewDelay) * CONFIG.ADJUSTED_MAX_TRAVEL,
-      CONFIG.ADJUSTED_MAX_TRAVEL
-    ) * -1}px`;
+    let progress = getProgress(currentTime, note.time - previewDelay, note.time);
+    note.element.style.translate = `0px ${(progress * CONFIG.ADJUSTED_MAX_TRAVEL) - CONFIG.ADJUSTED_MAX_TRAVEL}px`;
   }
 
 
@@ -647,9 +625,12 @@ updateSliderPosition(note, currentTime, timing) {
     for (let i = 0; i < this.gameState.sheet.length; i++) {
       const note = this.gameState.sheet[i];
 
-      if (note.element && !note.done && note.time < currentTime && this.hasFailed(note, currentTime)) {
-        this.gameState.combo = 0;
-        this.gameState.scoringSystem.updateScoreDisplays();
+      if ((note.element && !note.done && this.hasFailed(note, currentTime))) {
+        if (!note.fake) {
+          this.gameState.combo = 0;
+          this.gameState.scoringSystem.updateScoreDisplays();
+        }
+
         if (note.element) {
           note.element.parentElement.parentElement.remove();
         }
@@ -663,18 +644,16 @@ updateSliderPosition(note, currentTime, timing) {
   }
 
   hasFailed(note, currentTime) {
-    if (note.done) return false;
-
-    if (note.slider || note.traceParent) {
-      let failed = currentTime > ((note.sliderEnd || note.swipeEnd) + CONFIG.SLIDER_RELEASE_THRESHOLD);
+    if (note.slider) {
+      let failed = currentTime > note.precalculatedFailTime;
       if (failed) {
         note.done = true;
-        if (note.slider) this.inputSystem.releaseSlider(note);
+        if (note.slider) this.inputSystem.releaseSlider(note, true);
       }
       return failed;
     }
 
-    return (currentTime - (note.failTime || note.time)) > CONFIG.ACCEPTANCE_THRESHOLD;
+    return currentTime > note.precalculatedFailTime;
   }
 
   createFailedHoldEffect(note) {
@@ -687,15 +666,25 @@ updateSliderPosition(note, currentTime, timing) {
 
   recalculateNoteScaleTiming(note) {
     let modifier = 1;
+    let mysticalAddition = 0;
+    let adjustedPreviewDelay = CONFIG.NOTE_PREVIEW_DELAY;
     if (note.timeSheet && note.timeSheet[0]?.speed != undefined) {
       modifier = note.timeSheet[0].speed;
+
+      adjustedPreviewDelay = CONFIG.NOTE_PREVIEW_DELAY / modifier;
+      // how many px does it mean if i 
+      mysticalAddition = ((CONFIG.NOTE_RADIUS / 2) / CONFIG.ADJUSTED_MAX_TRAVEL) * adjustedPreviewDelay;
     }
-    
+
     const adjustedScaleDuration = CONFIG.SCALE_DURATION / modifier;
-    const adjustedPreviewDelay = CONFIG.NOTE_PREVIEW_DELAY / modifier;
-    
+
     note.scaleStart = note.time - (adjustedPreviewDelay + adjustedScaleDuration);
-    note.scaleEnd = note.time - adjustedPreviewDelay;
+    note.scaleEnd = (note.time - adjustedPreviewDelay);
     note.scaleDuration = adjustedScaleDuration;
+    note.mysticalAddition = mysticalAddition;
+
+    if (modifier != 1) {
+      note.startAt = (CONFIG.NOTE_PREVIEW_DELAY / modifier) * -1;
+    }
   }
 }

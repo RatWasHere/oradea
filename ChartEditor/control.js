@@ -94,11 +94,8 @@ function updateSpeed(newSpeed) {
 }
 
 function updateZoom(newZoom) {
-  zoomFactor = newZoom;
-  updateTravelTime();
-  createBeatSnaps(snaps);
-  refreshSegments(game.gameState.currentTime);
-  document.getElementById('zoomTextValue').innerHTML = ((20 - newZoom) * 5) + '%';
+  updateScrollDuration(2000 * newZoom);
+  document.getElementById('zoomTextValue').innerHTML = (newZoom * 100) + '%';
 }
 
 
@@ -121,6 +118,7 @@ function createRangeListener() {
 }
 
 document.addEventListener('keydown', (event) => {
+  if (document.activeElement.tagName.toLowerCase() == 'input') return;
   if (event.key == ' ') {
     console.log(game.gameState.paused)
     if (game.gameState.paused) {
@@ -149,6 +147,7 @@ function updateTravelTime() {
 document.addEventListener('wheel', (event) => {
   if (surpressScrolling) return;
   let beatDuration = (60 / bpm);
+  if (!event.ctrlKey) beatDuration = beatDuration / snapDivisor;
   let progress = beatDuration;
   if (event.deltaY > 0) {
     progress = -beatDuration;
@@ -202,19 +201,21 @@ function freeSFX() {
   })
 }
 
+let currentPlaybackSpeed = 1;
+
 function setPlaybackSpeed(value) {
   const newRate = Number(value);
+  currentPlaybackSpeed = newRate; 
+  
   const oldRate = game.gameState.audioSource?.playbackRate?.value ?? 1;
-
-  // Get current position in buffer before rate change
   const currentBufferPosition = (game.gameState.audioContext.currentTime - game.gameState.audioStartTime) * oldRate;
-
-  // Change the playback rate
+  
   game.gameState.audioSource.playbackRate.value = newRate;
-
-  // Adjust audioStartTime to prevent position jump
   game.gameState.audioStartTime = game.gameState.audioContext.currentTime - (currentBufferPosition / newRate);
-
+  
+  document.getElementById('speedFactor').value = newRate;
+  document.getElementById('speedTextValue').textContent = newRate.toFixed(1);
+  
   console.log(`Speed changed to ${newRate}x`);
 }
 
@@ -229,7 +230,10 @@ function changeBPM(newBpm) {
 game.init();
 
 (async () => {
-  await pickChart(null, 'Purify');
+  let crossDetails = JSON.parse(fs.readFileSync('./Core/crossdetails', 'utf8'));
+
+  selectedDifficulty = crossDetails.difficulty;
+  await pickChart(null, crossDetails.location);
   let bpm = information.bpm;
   changeBPM(bpm);
   document.getElementById('beatsPerMinutes').value = bpm;

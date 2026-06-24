@@ -100,6 +100,17 @@
           <div id="song-details">
             <btextm id="song-title">Song</btextm>
             <btextm id="song-credits"></btextm><br />
+
+            <div class="flexbox" style="margin-left: 5px; justify-content: start;">
+            <btn onclick="edit()">
+              <div class="image edit" style="width: 27px; height: 27px;"></div>
+            </btn>
+            <btn style="margin-left: 5px;">
+              <div class="image openExternally" style="width: 27px; height: 27px;;"></div>
+            </btn>
+            </div>
+
+            <br>
             <div id="song-score" class="flexbox">
               <div id="score-text">
                 <btextm>HIGHSCORE</btextm><br />
@@ -122,6 +133,7 @@
         >
           <div
             class="image"
+            id="glyphs_map"
             style="
               background: url(&quot;../Assets/Glyphs/LB_LR_DIRECTIONS.svg&quot;);
               width: 80px;

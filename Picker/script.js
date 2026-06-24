@@ -383,3 +383,29 @@ function beatUpdate() {
 }
 
 beatUpdate();
+
+
+
+async function edit() {
+  cancelPolling = true;
+  document.getElementById('songs').style.transform = 'translateX(-100vw)';
+  document.getElementById('song-details').classList.add('transitioned')
+  document.getElementById('song-cover').classList.add('transitioned')
+  document.getElementById('song').style.transform = 'translateX(calc((50vw - 200px) * -1))';
+  document.getElementById('song-cover').style.animation = 'song-cover-animation 2.5s ease forwards'
+  requestAnimationFrame(() => {
+    document.getElementById('song-details').style.transform = 'translateY(100vh)';
+    document.getElementById('play-button').style.transform = 'translateY(100vh)';
+    document.getElementById('song-difficulties').style.transform = 'translateY(100vh)';
+    document.getElementById('glyphs_map').style.transform = 'translateY(100vh)';
+    // document.getElementById('song-cover').style.transform = 'translateY(calc(50vh - 250px))';
+    document.getElementById('song').style.background = '#00000000';
+  })
+  setTimeout(() => {
+      document.getElementById('picker-overlay').style.background = 'white'
+  }, 2000)
+  fs.writeFileSync('./Core/crossdetails', JSON.stringify({ location: levels[chosenSong].location, difficulty: lastSelectedDifficulty, map: levels[chosenSong].information.difficulties[lastSelectedDifficulty] }, null, 2));
+  setTimeout(() => {
+    location.href = '../ChartEditor/index.html'
+  }, 2650);
+}

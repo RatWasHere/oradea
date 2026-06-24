@@ -18,7 +18,7 @@ class TimingSystem {
       this.applyNoteStyles(timingPoint, note);
     }
     if (timingPoint.visuals) {
-      this.updateNoteVisuals(note, time);
+      this.updateNoteVisuals(note, time, timingPoint);
     }
     return timingPoint;
   }
@@ -53,7 +53,6 @@ class TimingSystem {
         }
 
       const pointStartTime = pointTime;
-
       if ((pointStartTime + relativeTime) <= time) {
         activePoint = point;
         activeIndex = i;
@@ -79,41 +78,40 @@ class TimingSystem {
     }
     if (game.gameState.timeSheet?.[timingPoint?.index]) game.gameState.timeSheet[timingPoint.index].applied = true;
   }
-
-  // Call this method every frame inside your game's update/render loop for visible notes
-  updateNoteVisuals(note, currentTime) {
+  applyStyleToTarget(target, key, value) {
+    if (!target) return;
+    if (target instanceof NodeList || Array.isArray(target)) {
+      for (let i = 0; i < target.length; i++) {
+        target[i].style[key] = value;
+      }
+    } else {
+      target.style[key] = value;
+    }
+  }
+  updateNoteVisuals(note, currentTime, timingPoint) {
     if (!note?.element || !note.timeSheet) return;
 
-    // 1. Find the active timing point for this specific note right now
-    const activePoint = this.getTimingPointAt(currentTime, note.timeSheet, note.time);
+    const activePoint = timingPoint ? timingPoint : this.getTimingPointAt(currentTime, note.timeSheet, note.time);
     if (!activePoint || !activePoint.visuals) return;
 
     const visualsConfig = activePoint.visuals;
-    const startTime = parseFloat(this.fromSpecial(activePoint.time));
 
-    // 2. Map structural strings to their respective DOM targets
+    // --- FIX 1: Calculate the absolute start time using the note's relative timeline offset ---
+    const rawPointTime = parseFloat(this.fromSpecial(activePoint.time));
+    const noteRelativeOffset = parseFloat(note.time || 0);
+    const absoluteStartTime = rawPointTime + noteRelativeOffset;
+
     const targetMap = {
       parent: note.element.parentElement,
       note: note.element,
       header: note.element,
-      startHint: note.element.querySelectorAll('.hint'),
+      hint: note.hint,
       endHint: note.element.querySelectorAll('.endHint')
     };
 
-    // Helper to safely apply raw styles to single elements or node lists
-    const applyStyleToTarget = (target, key, value) => {
-      if (!target) return;
-      if (target instanceof NodeList || Array.isArray(target)) {
-        for (let i = 0; i < target.length; i++) {
-          target[i].style[key] = value;
-        }
-      } else {
-        target.style[key] = value;
-      }
-    };
+    // --- FIX 2: Removed duplicate helper definition block entirely to utilize class scope ---
 
-    // 3. Process every element category defined in the visuals sheet
-    const targets = ['parent', 'note', 'header', 'startHint', 'endHint'];
+    const targets = ['parent', 'note', 'header', 'hint', 'endHint'];
     for (let i = 0; i < targets.length; i++) {
       const targetKey = targets[i];
       const styleBlock = visualsConfig[targetKey];
@@ -124,63 +122,49 @@ class TimingSystem {
         const propKey = properties[j];
         const propValue = styleBlock[propKey];
 
-        // Case A: This is a smooth mathematical easing configuration
         if (propValue && typeof propValue === 'object' && 'value' in propValue) {
+          const duration = propValue.duration || 1000;
+
+          // --- FIX 3: Base elapsed calculations on the true, offset absolute timeline ---
+          const elapsed = currentTime - absoluteStartTime;
+
+          const progress = Math.min(Math.max(elapsed / duration, 0), 1);
+
           const interpolatedStyle = this.interpolateCSSProperty(
-            currentTime,
-            startTime,
+            progress,
             propValue,
-            visualsConfig // Fallback global settings
+            visualsConfig
           );
-          applyStyleToTarget(targetMap[targetKey], propKey, interpolatedStyle);
-        }
-        // Case B: This is a static snap value (like a color hex string or instant toggle)
-        else {
-          applyStyleToTarget(targetMap[targetKey], propKey, propValue);
+
+          this.applyStyleToTarget(targetMap[targetKey], propKey, interpolatedStyle);
+        } else {
+          this.applyStyleToTarget(targetMap[targetKey], propKey, propValue);
         }
       }
     }
   }
 
-  interpolateCSSProperty(currentTime, pointStartTime, propConfig, globalConfig) {
-    // Determine timeline timing boundaries using property-specific overrides if present
-    const duration = propConfig.duration != undefined ? this.fromSpecial(propConfig.duration) : 0;
-    const easing = propConfig.easing ?? globalConfig.easing ?? 'linear';
-
-    const startTime = pointStartTime;
-    const endTime = startTime + duration;
-
-    let progress = 0;
-    if (duration > 0) {
-      // Clamp progress firmly between 0.0 and 1.0 bounds
-      const rawProgress = (currentTime - startTime) / duration;
-      progress = Math.max(0, Math.min(1, rawProgress));
-    } else {
-      progress = currentTime >= startTime ? 1 : 0;
-    }
-
-    // Run the progress factor through your existing timing system math engine
+  interpolateCSSProperty(progress, propConfig, globalConfig) {
+    const { from, to, value, easing } = propConfig;
     const easedProgress = this.applyEasing(progress, easing);
 
-    // Reconstruct the template pattern sequence string (e.g., "#1 #2" -> "2 1")
-    let resultString = propConfig.value;
-    const fromArray = propConfig.from || [0];
-    const toArray = propConfig.to || [0];
+    // Start with the raw string template (e.g., "translate(#1px, #2px)")
+    let finalStyleString = value;
 
-    // Iterate over maximum potential index arrays dynamically
-    const maxElements = Math.max(fromArray.length, toArray.length);
-    for (let i = 0; i < maxElements; i++) {
-      const startVal = fromArray[i] ?? 0;
-      const endVal = toArray[i] ?? 0;
+    // Loop through all elements in the "from" array
+    for (let i = 0; i < from.length; i++) {
+      const startVal = parseFloat(from[i]);
+      const endVal = parseFloat(to[i]);
 
-      // Perform standard linear interpolation sequence matching your note speed engine
-      const currentLerpedValue = this.lerp(startVal, endVal, easedProgress);
+      // Handle fallback if "to" array is missing a matching element
+      const currentVal = startVal + ((isNaN(endVal) ? startVal : endVal) - startVal) * easedProgress;
 
-      // Replace instances matching '#1', '#2', etc. with calculated frame numbers
-      resultString = resultString.replace(`#${i + 1}`, currentLerpedValue);
+      // Dynamically replace '#1', '#2', '#3', etc.
+      const placeholder = `#${i + 1}`;
+      finalStyleString = finalStyleString.replace(placeholder, currentVal);
     }
 
-    return resultString;
+    return finalStyleString;
   }
 
   applyPlayfieldStyles(timingPoint) {
@@ -333,7 +317,7 @@ class TimingSystem {
           ? 2 * progress * progress
           : 1 - Math.pow(-2 * progress + 2, 2) / 2;
       default:
-        if (typeof easingType == 'object' && easingType.cubicBezier) {
+        if (typeof easingType == 'object' && easingType.cubicBezier && easingType.cubicBezier.length == 4) {
           const [p1, p2, p3, p4] = easingType.cubicBezier;
           // Cubic Bezier easing function
           return this.cubicBezier(progress, p1, p2, p3, p4);

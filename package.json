@@ -80,7 +80,7 @@
     },
     "nsis": {
       "oneClick": true,
-      "uninstallDisplayName": "Uninstall Bot Maker For Discord"
+      "uninstallDisplayName": "oradea uninstaller"
     },
     "directories": {
       "output": "Release/${platform}"

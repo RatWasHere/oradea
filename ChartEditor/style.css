@@ -336,7 +336,7 @@ glow_layer {
 #zoomText {
   position: absolute;
   left: 97;
-  top: 85;
+  top: 115;
   font-family: 'Mono';
   opacity: 0.3;
 }
@@ -344,7 +344,7 @@ glow_layer {
 #speedText {
   position: absolute;
   left: 349;
-  top: 85;
+  top: 115;
   font-family: 'Mono';
   opacity: 0.3;
 }
@@ -400,15 +400,22 @@ glow_layer {
   opacity: 0.5;
   margin: auto;
 }
-
+#pasteIcon {
+  background-image: url('../Assets/Misc/paste.svg');
+  height: 30px;
+  width: 30px;
+  opacity: 0.5;
+  margin: auto;
+}
 #noteEvents {
   width: 100%;
-  height: 330px;
+  height: 355px;
   position: absolute;
-  bottom: 60px;
+  bottom: 35px;
   overflow-y: auto;
   padding-top: 10px;
   padding-bottom: 10px;
+  translate: 0px -17.5px;
   --fade-size: 10px;
 
   -webkit-mask-image: linear-gradient(to bottom,
@@ -443,11 +450,29 @@ glow_layer {
   margin: auto;
 }
 
+#extendIcon {
+  background-image: url('../Assets/Misc/openExternally.svg');
+  height: 20px;
+  width: 20px;
+  opacity: 0.5;
+  margin: auto;
+}
+
+#copyIcon {
+  background-image: url('../Assets/Misc/duplicate.svg');
+  height: 20px;
+  width: 20px;
+  opacity: 0.5;
+  margin: auto;
+}
+
 .noteEvent {
-  width: calc(100% - 10px);
+  width: calc(100% - 20px);
   padding: 5px;
+  margin: auto;
   background: #FFFFFF10;
-  margin-bottom: 15px;
+  margin-top: 5px;
+  border-radius: 5px;
 }
 
 .separator {
@@ -463,9 +488,138 @@ glow_layer {
   width: calc(100%);
   height: 0px;
   overflow: auto;
-  transition: all 0.2s cubic-bezier(.27,.08,0,.98);
+  transition: all 0.2s cubic-bezier(.27, .08, 0, .98);
 }
 
 .expandableEventDetails .expanded {
   overflow: visible !important;
+}
+
+@keyframes iconIn {
+  0% {
+    transform-origin: top left;
+    scale: 8;
+    opacity: 1;
+    filter: blur(12px);
+  }
+
+  40% {
+    filter: blur(12px);
+  }
+
+  100% {
+    transform-origin: top left;
+    scale: 1;
+    opacity: 0.5;
+    filter: blur(0px);
+  }
+}
+
+#songArt {
+  animation: iconIn 0.8s 0.7s cubic-bezier(.4, .72, .42, 1) forwards;
+  transform-origin: top left !important;
+  scale: 8;
+  filter: blur(12px);
+  opacity: 1;
+}
+
+
+#transitionOverlay {
+  width: 120vw;
+  margin-top: -10vh;
+  margin-left: -10vw;
+  height: 120vh;
+  background: white;
+  animation: out 0.7s 0.8s cubic-bezier(.64, .45, 1, .75) forwards;
+  position: absolute;
+  z-index: 9999999;
+}
+
+@keyframes out {
+  0% {
+    opacity: 1;
+  }
+
+  100% {
+    opacity: 0;
+  }
+}
+
+.specificsModal {
+  position: fixed;
+  height: 600px;
+  width: 600px;
+  top: calc(50vh - 320px);
+  left: calc(50vw - 310px);
+  z-index: 2;
+  scale: 1.2;
+  opacity: 0;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(48px);
+  box-shadow: inset #FFFFFF10 0px 0px 1px 1px;
+  border-radius: 5px;
+  padding: 10px;
+  filter: blur(12px);
+}
+
+.engagedSpecificsModal {
+  scale: 1 !important;
+  opacity: 1 !important;
+  filter: blur(0px);
+}
+
+.specificsModal>.ss-main {
+  width: 100% !important;
+}
+
+.specificStyles {
+  border-top: dotted 1px #FFFFFF10;
+  height: 343px;
+  width: calc(100% + 20px);
+  margin-left: -10px;
+  overflow-y: auto;
+  padding-top: 10px;
+  margin-top: -5px;
+
+  --fade-size: 10px;
+
+  -webkit-mask-image: linear-gradient(to bottom,
+      transparent,
+      black var(--fade-size)),
+    linear-gradient(to top,
+      transparent,
+      black var(--fade-size));
+  mask-image: linear-gradient(to bottom,
+      transparent,
+      black var(--fade-size)),
+    linear-gradient(to top,
+      transparent,
+      black var(--fade-size));
+  -webkit-mask-composite: source-in, source-in;
+  mask-composite: intersect;
+}
+
+
+.input-main {
+  display: flex;
+  flex-direction: row;
+  position: relative;
+  user-select: none;
+  color: var(--ss-font-color);
+  min-height: var(--ss-main-height);
+  width: 100%;
+  padding: var(--ss-spacing-s);
+  cursor: default;
+  border: 1px solid var(--ss-border-color);
+  border-radius: var(--ss-border-radius);
+  background-color: var(--ss-bg-color);
+  outline: 0;
+  z-index: 10000;
+  box-sizing: border-box;
+  transition: background-color var(--ss-animation-timing);
+  overflow: hidden
+}
+
+body:has(.specificsModal) #controls {
+  pointer-events: none !important;
 }

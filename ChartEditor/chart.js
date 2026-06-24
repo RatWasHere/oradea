@@ -3,8 +3,8 @@ let chartLines = document.getElementById('chart_lines');
 let existingSnaps = [];
 let scrollDuration = 2000;
 let pixelsPerMs = editorHeight / scrollDuration;
-let selectedNoteIndices = new Set(); // Stores indices of selected notes
-let selectedNotes = new Set(); // Now stores the note objects, not indices
+let selectedNoteIndices = new Set(); 
+let selectedNotes = new Set(); 
 let isSelecting = false;
 let selectionStart = { x: 0, y: 0 };
 let selectionEnd = { x: 0, y: 0 };
@@ -17,15 +17,20 @@ let dragStartTime = 0;
 let dragStartLane = 0;
 let surpressScrolling = false;
 let isMovingNote = false;
-let movedNoteObject = null; // Store the object, not the index
+let movedNoteObject = null; 
+
+function updateScrollDuration(newDuration) {
+  scrollDuration = newDuration;
+  pixelsPerMs = editorHeight / scrollDuration;
+  generateSnapLines();
+}
 function getProgress(value, min, max) {
   return Math.max(0, (value - min) / (max - min));
 }
 let undoStack = [];
 let redoStack = [];
-const MAX_HISTORY = 50; // Limit memory usage
+const MAX_HISTORY = 50; // memory usage
 
-// ===== Note Selection Functions =====
 function selectNote(note, clearOthers = true) {
   if (clearOthers) {
     selectedNotes.clear();
@@ -63,7 +68,6 @@ function toggleNoteSelection(note, clearOthers = true) {
     selectNote(note, clearOthers);
   }
 }
-// ===== End Note Selection Functions =====
 
 let angleMap = {
   "0": 4,
@@ -75,10 +79,9 @@ let angleMap = {
 }
 
 
-// Rhythm Variables
 let bpm = 120;
-let snapDivisor = 1; // 1 = 1/1 (beats), 4 = 1/4 (sixteenths), etc.
-let calculatedSpacing = 0; // We will store the pixel distance here
+let snapDivisor = 1; 
+let calculatedSpacing = 0;
 function generateSnapLines() {
   let msPerBeat = 60000 / bpm;
   let msPerSnap = msPerBeat / snapDivisor;
@@ -93,10 +96,8 @@ function generateSnapLines() {
     let snap = document.createElement('div');
     snap.className = 'snap-line';
 
-    // Store the offset index on the element
     snap.dataset.offsetIndex = i;
 
-    // Add the click event
     snap.addEventListener('click', (e) => {
       e.stopPropagation();
 
@@ -105,7 +106,6 @@ function generateSnapLines() {
       let targetSnapIndex = currentSnapIndex + parseInt(snap.dataset.offsetIndex);
       let exactTime = targetSnapIndex * msPerSnap;
 
-      // Calculate lane based on X position
       let laneIndex = getLaneFromX(e.clientX);
 
       placeNote(exactTime, laneIndex);
@@ -128,9 +128,7 @@ function updateSnapPositions() {
   let msPerBeat = 60000 / bpm;
   let msPerSnap = msPerBeat / snapDivisor;
 
-  // Which snap interval are we currently inside?
   let currentSnapIndex = Math.floor(currentTime / msPerSnap);
-  // How far into the current snap interval (0..1)
   let snapFraction = (currentTime % msPerSnap) / msPerSnap;
 
   let count = existingSnaps.length;
@@ -138,16 +136,11 @@ function updateSnapPositions() {
   for (let i = 0; i < count; i++) {
     let snap = existingSnaps[i];
 
-    // This line represents beat at currentSnapIndex + i
     let absoluteSnapIndex = currentSnapIndex + i;
 
-    // Is this a primary (beat) line?
     let isPrimary = absoluteSnapIndex % snapDivisor === 0;
     snap.classList.toggle('primary', isPrimary);
 
-    // Position: line i=0 is snapFraction ahead of the bottom,
-    // each subsequent line is one calculatedSpacing higher
-    // snapFraction=0 → line is exactly at bottom; snapFraction=1 → line is one spacing above bottom
     let yPos = editorHeight - ((1 - snapFraction) * calculatedSpacing) - (i * calculatedSpacing);
 
     snap.style.transform = `translateY(${yPos}px)`;
@@ -189,23 +182,21 @@ function createNoteElement(sheetEntryIndex) {
   }
   if (noteType) noteElement.classList.add(typeClassMaps[noteType]);
 
-  // Inside createNoteElement
   noteElement.onmousedown = (e) => {
     e.stopPropagation();
 
-    // Selection logic: use the note object
     if (!selectedNotes.has(note)) {
       selectNote(note, !e.shiftKey);
     }
 
     if (!e.target.classList.contains('slider-drag-handle')) {
       saveState();
-      startMovingNote(note); // Pass 'note' instead of 'sheetEntryIndex'
+      startMovingNote(note);
     }
   };
   noteElement.oncontextmenu = (e) => {
-    e.preventDefault(); // Stop the browser menu from appearing
-    e.stopPropagation(); // Stop the click from placing a new note or selecting
+    e.preventDefault();
+    e.stopPropagation();
 
     deleteNote(note);
   };
@@ -233,7 +224,6 @@ function startDraggingSlider(index) {
   isDraggingSlider = true;
   draggedNoteIndex = index;
 
-  // Add global listeners so dragging works even if the mouse leaves the handle
   window.addEventListener('mousemove', handleSliderDrag);
   window.addEventListener('mouseup', stopDraggingSlider);
   document.body.style.cursor = 'ns-resize';
@@ -245,21 +235,15 @@ function handleSliderDrag(e) {
   let note = game.gameState.sheet[draggedNoteIndex];
   let chartContainer = document.getElementById('chart_lines').getBoundingClientRect();
 
-  // 1. Calculate Y relative to chart bottom
   let mouseY = e.clientY - chartContainer.top;
   let clampedY = Math.max(0, Math.min(editorHeight, mouseY));
 
-  // 2. Convert Y to Time
-  // Use your pixelsPerMs ratio: (editorHeight - y) / pixelsPerMs = relative time
   let timeFromBottom = (editorHeight - clampedY) / pixelsPerMs;
   let absoluteTimeAtMouse = game.gameState.currentTime + timeFromBottom;
 
-  // 3. Snapping logic
   let msPerSnap = (60000 / bpm) / snapDivisor;
   let snappedTime = Math.round(absoluteTimeAtMouse / msPerSnap) * msPerSnap;
 
-  // 4. Constraints: Cannot be shorter than 1 snap interval
-  // Assuming sliderEnd is the "top" of the note in your visualizer
   if (snappedTime <= note.time) {
     snappedTime = note.time + msPerSnap;
   }
@@ -268,7 +252,7 @@ function handleSliderDrag(e) {
 }
 
 function stopDraggingSlider() {
-  if (isDraggingSlider) saveState(); // Add this  isDraggingSlider = false;
+  if (isDraggingSlider) saveState(); // isDraggingSlider = false;
   draggedNoteIndex = null;
   window.removeEventListener('mousemove', handleSliderDrag);
   window.removeEventListener('mouseup', stopDraggingSlider);
@@ -279,28 +263,23 @@ function updateNotes() {
   let currentTime = game.gameState.currentTime;
   let chartEnd = currentTime + scrollDuration;
 
-  // OPTIMIZATION: If sheet is sorted, we can use a more efficient loop
   for (let i = 0; i < game.gameState.sheet.length; i++) {
     let note = game.gameState.sheet[i];
     let noteEndTime = note.slider ? note.sliderEnd : note.time;
 
-    // Check visibility
     let isVisible = noteEndTime >= currentTime && note.time <= chartEnd;
 
     if (isVisible) {
-      // FIX: Ensure element exists before we try to style it
       if (!note.chartElement) {
         note.chartElement = createNoteElement(i);
       }
 
       let progress = getProgress(note.time, currentTime, chartEnd);
 
-      // Use cached element reference to avoid repeated lookups
       const el = note.chartElement;
       const visualLane = angleMap[note.angle];
       const targetParent = document.getElementById(`chart-lane-${visualLane}`);
 
-      // Move the element to the correct lane div if it's in the wrong one
       if (el.parentElement !== targetParent) {
         targetParent.appendChild(el);
       }
@@ -308,14 +287,12 @@ function updateNotes() {
         let noteDuration = note.sliderEnd - note.time;
         let holdHeight = (noteDuration / scrollDuration) * editorHeight;
 
-        // Update Height and Slider class
         el.style.height = `${holdHeight}px`;
         el.classList.add('chart_editor_hold');
 
         let endProgress = getProgress(note.sliderEnd, currentTime, chartEnd);
         let yPosBottom = editorHeight - (endProgress * editorHeight);
 
-        // Use translate3d for GPU acceleration (performance boost)
         el.style.transform = `translate3d(0, ${yPosBottom}px, 0)`;
         el.style.transformOrigin = 'bottom';
       } else {
@@ -326,21 +303,17 @@ function updateNotes() {
 
       note.chartElement.classList.toggle('selected', selectedNotes.has(note));
     } else {
-      // Clean up notes that moved off screen
       if (note.chartElement) {
         note.chartElement.remove();
         note.chartElement = null;
       }
 
-      // OPTIMIZATION: If the sheet is sorted by time and this note 
-      // is already past the chartEnd, we can stop the loop early.
       if (note.time > chartEnd) break;
     }
   }
 }
 
 function getLaneFromX(mouseX) {
-  // We check all 6 lanes to see which one contains the mouse X coordinate
   for (let i = 0; i < 6; i++) {
     const lane = document.getElementById(`chart-lane-${i}`);
     if (lane) {
@@ -350,7 +323,7 @@ function getLaneFromX(mouseX) {
       }
     }
   }
-  return 0; // Fallback to lane 0
+  return 0; 
 }
 
 const reverseAngleMap = {
@@ -365,7 +338,6 @@ const reverseAngleMap = {
 function placeNote(time, laneIndex) {
   if (currentlySelectedNoteType == 0) return;
   saveState();
-  // Keep the sheet sorted by time for performance optimizations
   let insertIndex = game.gameState.sheet.findIndex(n => n.time > time);
   if (insertIndex === -1) insertIndex = game.gameState.sheet.length;
 
@@ -389,10 +361,9 @@ function placeNote(time, laneIndex) {
 
   game.gameState.sheet.splice(insertIndex, 0, newNote);
 
-  // Re-sync internal indices
   game.gameState.sheet.forEach((note, index) => note.index = index);
 
-  // Clear selection after placing a new note
+  game.gameState.precacheStartAtValues();
   clearSelection();
 }
 
@@ -476,7 +447,7 @@ window.onmouseup = (e) => {
   } else {
     return stopMovingNote();
   }
-  
+
 };
 const horizontalFlipMap = {
   0: 3,
@@ -579,12 +550,15 @@ function handleBulkMove(e) {
       let visualLane = angleToLane[note.angle];
       let newLane = Math.max(0, Math.min(5, visualLane + laneDelta));
       note.angle = reverseAngleMap[newLane];
+
+      freeNote(note); freeSFX(note);
     });
 
     // Update anchors for the next frame
     dragStartCoords.y = e.clientY;
     dragStartLane = currentLane;
   }
+
 }
 
 function deleteNote(noteObject) {
@@ -618,32 +592,51 @@ function deleteNote(noteObject) {
   }
 }
 
-window.addEventListener('keydown', (e) => {
-  // If 'Delete' or 'Backspace' is pressed and notes are selected
-  if ((e.key.toLowerCase() === 'Delete' || e.key.toLowerCase() === 'Backspace') && selectedNotes.size > 0) {
+function flipSelectedNotesHorizontally() {
+  if (selectedNotes.size === 0) return;
+  
+  saveState();
+  
+  selectedNotes.forEach(note => {
+    note.angle = horizontalFlipMap[note.angle];
+    if (note.shortSwipe || note.quarterSwipe) {
+      if (note.direction == -1) { note.direction = 1 } else { note.direction = -1 }
+    }
+    freeNote(note); freeSFX(note);
+  });
+  
+  updateNotes();
+}
 
-    // We filter the sheet to remove all objects present in the selectedNotes Set
+let isShiftActive = false;
+
+window.addEventListener('keyup', (e) => {
+  if (!e.shiftKey) isShiftActive = false;
+})
+
+window.addEventListener('keydown', (e) => {
+  if (e.shiftKey) isShiftActive = true;
+  if (document.activeElement.tagName.toLowerCase() == 'input') return;
+  if ((e.key.toLowerCase() === 'delete' || e.key.toLowerCase() === 'backspace') && selectedNotes.size > 0) {
+    saveState();
     game.gameState.sheet = game.gameState.sheet.filter(note => {
       if (selectedNotes.has(note)) {
         freeNote(note);
         if (note.chartElement) note.chartElement.remove();
-        return false; // Remove from array
+        return false; // remove
       }
-      return true; // Keep in array
+      return true; // keep
     });
 
-    // Clear the selection set
     clearSelection();
 
-    // Re-sync indices
     game.gameState.sheet.forEach((n, i) => n.index = i);
+    updateNotes();
   }
-  // PASTE: Ctrl + V
   if (e.ctrlKey && e.key.toLowerCase() === 'v') {
     saveState();
     navigator.clipboard.readText().then(text => {
       try {
-        // 1. Clean the text (remove accidental spaces or newlines)
         const cleanText = text.trim();
         const savedClipboard = JSON.parse(cleanText);
 
@@ -655,12 +648,10 @@ window.addEventListener('keydown', (e) => {
         clearSelection();
 
         savedClipboard.forEach(clipNote => {
-          // Use || 0 as a fallback for relativeTime
           let rel = clipNote.relativeTime || 0;
           let newTime = hoveredTime + rel;
 
           let pastedNote = { ...clipNote };
-          // Clean up properties we don't want to duplicate directly
           delete pastedNote.relativeTime;
           delete pastedNote.sliderDuration;
           delete pastedNote.chartElement;
@@ -671,28 +662,24 @@ window.addEventListener('keydown', (e) => {
 
           pastedNote.time = newTime;
           if (pastedNote.slider) {
-            // Re-calculate sliderEnd based on the duration it had when copied
             let duration = clipNote.sliderDuration || (clipNote.sliderEnd - clipNote.time) || 1000;
             pastedNote.sliderEnd = newTime + duration;
           }
 
           pastedNote.chartElement = null;
 
-          // Find insertion point
           let insertIndex = game.gameState.sheet.findIndex(n => n.time > pastedNote.time);
           if (insertIndex === -1) insertIndex = game.gameState.sheet.length;
 
           game.gameState.sheet.splice(insertIndex, 0, pastedNote);
-          selectNote(pastedNote, false); // Add to selection without clearing others
+          selectNote(pastedNote, false);
         });
 
-        // Re-sort and re-index the sheet
         game.gameState.sheet.sort((a, b) => a.time - b.time);
         game.gameState.sheet.forEach((n, i) => n.index = i);
 
         console.log(`Successfully pasted ${savedClipboard.length} notes.`);
       } catch (err) {
-        // This will now tell you exactly what went wrong
         console.error("Paste failed. Real Error:", err.message);
         alert("Clipboard content is not valid JSON or the editor crashed during paste.");
       }
@@ -702,25 +689,20 @@ window.addEventListener('keydown', (e) => {
     updateNotes();
   }
 
-  // COPY: Ctrl + C
   if (e.ctrlKey && e.key.toLowerCase() === 'c') {
     if (selectedNotes.size === 0) return;
 
-    // 1. Find the anchor (earliest time)
     let minTime = Math.min(...Array.from(selectedNotes).map(n => n.time));
 
-    // 2. Map notes to a clean data format
     const clipboardData = Array.from(selectedNotes).map(note => {
       let clip = { ...note };
       clip.relativeTime = note.time - minTime;
       clip.sliderDuration = note.slider ? (note.sliderEnd - note.time) : 0;
 
-      // Remove circular references
       delete clip.chartElement;
       return clip;
     });
 
-    // 3. Write to the SYSTEM clipboard
     const jsonString = JSON.stringify(clipboardData);
     navigator.clipboard.writeText(jsonString).then(() => {
       console.log(`Copied ${clipboardData.length} notes to system clipboard.`);
@@ -734,25 +716,25 @@ window.addEventListener('keydown', (e) => {
     undo();
   }
 
-  // REDO: Ctrl + Y or Ctrl + Shift + Z
   if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) {
     e.preventDefault();
     redo();
+  }
+
+  if (e.ctrlKey && e.key.toLowerCase() === 'h') {
+    e.preventDefault();
+    flipSelectedNotesHorizontally();
   }
 });
 
 
 function saveState() {
-  // 1. Convert current sheet to a string for a clean snapshot
   const snapshot = JSON.stringify(game.gameState.sheet);
 
-  // 2. Add to undo stack
   undoStack.push(snapshot);
 
-  // 3. Clear redo stack whenever a new action is taken
   redoStack = [];
 
-  // 4. Keep stack size manageable
   if (undoStack.length > MAX_HISTORY) undoStack.shift();
   updateNotes();
 }
@@ -760,10 +742,8 @@ function saveState() {
 function undo() {
   if (undoStack.length === 0) return;
 
-  // Save current state to redo stack before moving back
   redoStack.push(JSON.stringify(game.gameState.sheet));
 
-  // Restore the last snapshot
   const lastState = undoStack.pop();
   applyState(lastState);
 }
@@ -771,7 +751,6 @@ function undo() {
 function redo() {
   if (redoStack.length === 0) return;
 
-  // Save current state to undo stack before moving forward
   undoStack.push(JSON.stringify(game.gameState.sheet));
 
   const nextState = redoStack.pop();
@@ -779,13 +758,11 @@ function redo() {
 }
 
 function applyState(jsonState) {
-  // 1. Clear current visual elements to prevent ghosting
   game.gameState.sheet.forEach((note) => {
     freeNote(note);
     freeSFX(note);
   });
 
-  // 2. Parse and assign the new data
   game.gameState.sheet = JSON.parse(jsonState);
 
   game.gameState.sheet.forEach((note) => {
@@ -794,22 +771,52 @@ function applyState(jsonState) {
   });
 
 
-  // 3. Clear selection to prevent reference errors to old objects
   clearSelection();
 
   console.log("State restored.");
 }
 
 function saveChartDetails() {
-  game.gameState.sheet.forEach((note) => {
-    freeNote(note);
-    freeSFX(note);
+  let endNotes = game.gameState.sheet.map((serializedNote) => {
+    let note = { ...serializedNote };
+
+    try {
+      delete note.playingEffects;
+      delete note.playingEffect;
+      delete note.playedHitSound;
+      delete note.blockRelease;
+      delete note.done;
+      delete note.chartElement;
+      delete note.midframe;
+      delete note.endElement;
+      delete note.startElement;
+      delete note.element;
+      delete note.scaleStart;
+      delete note.scaleEnd;
+      delete note.scaleDuration;
+      delete note.index;
+      delete note.height;
+      delete note.wasEverHeld;
+      delete note.isBeingHeld;
+      delete note.traceParent;
+      delete note.fadeInEnd;
+      delete note.fadeInStart;
+      delete note.points;
+      delete note.tracePath;
+      delete note.mysticalAddition;
+      delete note.startAt;
+      delete note._cachedStartAt;
+      delete note.endAt;
+    } catch (error) {}
+
+    return note;
   });
 
-  let chartSheet = game.gameState.sheet;
+  let chartSheet = game.gameState.sheet.sort((a, b) => {
+    a - b;
+  });
 
-  fs.writeFileSync(`${process.cwd()}/Beatmaps/${information.location}/${information.difficulties[selectedDifficulty]}`, JSON.stringify(chartSheet));
-  console.log("Chart details saved.");
+  fs.writeFileSync(`${process.cwd()}/Beatmaps/${information.location}/${information.difficulties[selectedDifficulty]}`, JSON.stringify(endNotes, null, 2));
 
   updateNotes();
 }

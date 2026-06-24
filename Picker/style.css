@@ -449,6 +449,7 @@ difficulty-level {
   width: 400px;
   overflow: hidden;
   margin-right: auto;
+  transition: all 0.2s ease;
 }
 
 #song-details-container {
@@ -687,4 +688,63 @@ btn.glyph_back::before {
 
 .folderTile:active {
   background: #FFFFFF10;
+}
+
+.edit {
+  background: url('../Assets/Misc/edit.svg');
+  background-size: cover;
+  width: 27px;
+  height: 27px;
+  opacity: 0.7;
+}
+
+.openExternally {
+  background: url('../Assets/Misc/openExternally.svg');
+  background-size: cover;
+  width: 27px;
+  opacity: 0.7;
+  height: 27px;
+}
+
+.transitioned {
+  transition: all 0.5s ease !important;
+}
+
+@keyframes song-cover-animation {
+  0% {
+    scale: 1;
+  }
+  15% {
+    scale: 0.7;
+  }
+  30% {
+    transform: translateY(calc(50vh - 250px));
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+    scale: 1;
+    transform: translateY(calc(50vh - 250px));
+  }
+  65% {
+    transform: translateY(calc(50vh - 190px));
+    scale: 0.8;
+    filter: none;
+    box-shadow: none;
+    backdrop-filter: opacity(100%);
+  }
+  95% {
+    transform: translateY(calc(50vh - 270px));
+    filter: brightness(10) blur(100px);
+    scale: 1.2;
+    box-shadow: 0px 0px 100vw 100vh #FFFFFF;
+    backdrop-filter: opacity(0%);
+  }
+  100% {
+    scale: 1.2;
+    transform: translateY(calc(50vh - 270px));
+    box-shadow: 0px 0px 200vw 200vh #FFFFFF;
+    backdrop-filter: opacity(0%);
+    filter: brightness(100) blur(200px);
+  }
 }
