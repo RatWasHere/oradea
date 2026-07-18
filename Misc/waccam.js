@@ -1,4 +1,4 @@
-const socket = new WebSocket('ws://192.168.100.235:3000/');
+const socket = new WebSocket('ws://192.168.100.58:8000/');
 
 socket.onopen = () => {
   socket.send(JSON.stringify({

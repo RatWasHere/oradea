@@ -1,4 +1,3 @@
-const { mkdirSync } = require('original-fs');
 
 const CONFIG = {
   // ===== ANGLES =====
@@ -104,11 +103,9 @@ class GameState {
           this.lightMap = JSON.parse(fs.readFileSync(`./Beatmaps/${this.crossDetails.location}/light_${this.crossDetails.map}`, 'utf8'));
         } catch (error) { };
       } else {
-        const SERVER_URL = 'http://192.168.100.11:5500';
         try {
           const crossResponse = await fetch(`${SERVER_URL}/Core/crossdetails`);
           this.crossDetails = await crossResponse.json();
-
           const sheetResponse = await fetch(`${SERVER_URL}/Beatmaps/${this.crossDetails.location}/${this.crossDetails.map}`);
           this.sheet = await sheetResponse.json();
 
@@ -314,7 +311,7 @@ class GameState {
               for (let visualModifierKey in visualModifiers) {
                 let visualModifier = visualModifiers[visualModifierKey]
                 if (typeof visualModifier.rawDuration == 'string' && visualModifier.rawDuration.includes('#')) {
-                  visualModifier.duration = eval(visualModifier.duration.replaceAll(`#0`, totalPreviewDuration))
+                  visualModifier.duration = eval(visualModifier.rawDuration.replaceAll(`#0`, totalPreviewDuration))
                 } else if (typeof visualModifier.rawDuration == 'string') {
                   visualModifier.duration = Number(visualModifier.rawDuration);
                 }
@@ -322,6 +319,8 @@ class GameState {
             }
           }
         }
+
+        note.timeSheet.sort((a, b) => {return a.time - b.time})
       }
       try {
         this.recalculateNoteScaleTiming(note);
@@ -666,7 +665,6 @@ class GameState {
       const arrayBuffer = fileBuf.buffer.slice(fileBuf.byteOffset, fileBuf.byteOffset + fileBuf.length);
       this.audioBuffer = await this.audioContext.decodeAudioData(arrayBuffer);
     } else {
-      const SERVER_URL = 'http://192.168.100.11:5500';
       filePath = `${SERVER_URL}/Beatmaps/${this.crossDetails.location}/audio.mp3`;
 
       try {

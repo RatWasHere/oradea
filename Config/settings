@@ -1,5 +1,5 @@
 {
-  "note_speed": 14,
+  "note_speed": 16,
   "hexagon_size": "1",
   "input_mode": "buttons",
   "snap_extension": "0",
@@ -7,8 +7,8 @@
   "frame_cap": "auto",
   "screen_state": "full",
   "audio_offset": "0",
-  "music_volume": "36",
-  "sfx_volume": "100",
+  "music_volume": "100",
+  "sfx_volume": "60",
   "flashing_lights": "1",
   "vfx_cache": "3",
   "gimmicks": "1",
@@ -27,7 +27,7 @@
     "5": "D",
     "6": "L"
   },
-  "perfection_indicator": "0",
+  "perfection_indicator": "1",
   "ssfx": "1",
-  "bgdust": "1"
+  "bgdust": "0"
 }

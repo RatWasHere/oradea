@@ -1,3 +1,4 @@
+const { mkdirSync } = require('original-fs');
 const fs = require('fs');
 function dismissContent(content) {
   if (!fs.existsSync('./Dismissed Content')) {

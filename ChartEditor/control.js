@@ -1,12 +1,5 @@
 const game = new RhythmGame(RenderingSystem);
-selectMenuFactory.create({
-  id: 'beatSnap',
-  defaultValue: 4,
-  onBeforeClose: (menu, value) => {
-    snapDivisor = Number(value);
-    generateSnapLines();
-  },
-});
+
 
 let segments = [];
 for (let i = 0; i < 6; i++) {
@@ -143,6 +136,12 @@ function updateTravelTime() {
   return travelTimeMs;
 }
 
+function freeEmptyLanes() {
+  const elements = document.querySelectorAll('.lane:not(:has(*))');
+  elements.forEach((e) => {
+    e.remove();
+  })
+}
 
 document.addEventListener('wheel', (event) => {
   if (surpressScrolling) return;
@@ -161,21 +160,20 @@ document.addEventListener('wheel', (event) => {
     freeNote(note);
   })
 
-  document.querySelectorAll('.chart_editor_note').forEach(e => e.remove())
-
+  
+  freeEmptyLanes();
   freeSFX();
   game.gameState.seekToTime(newTime)
-
-
 });
 
 function freeNote(note) {
   try {
-    if (note.element && note.element?.parentElement?.parentElement) {
+    if (!note.element.parentElement.parentElement.className.includes('lane')) { console.log(note, note.element.parentElement.parentElement) }
+    if (note.element?.parentElement?.parentElement) {
       note.element.parentElement.parentElement.remove();
     }
   } catch (error) { }
-  
+
   try {
     if (note.traceParent) {
       note.traceParent.remove();
@@ -205,17 +203,17 @@ let currentPlaybackSpeed = 1;
 
 function setPlaybackSpeed(value) {
   const newRate = Number(value);
-  currentPlaybackSpeed = newRate; 
-  
+  currentPlaybackSpeed = newRate;
+
   const oldRate = game.gameState.audioSource?.playbackRate?.value ?? 1;
   const currentBufferPosition = (game.gameState.audioContext.currentTime - game.gameState.audioStartTime) * oldRate;
-  
+
   game.gameState.audioSource.playbackRate.value = newRate;
   game.gameState.audioStartTime = game.gameState.audioContext.currentTime - (currentBufferPosition / newRate);
-  
+
   document.getElementById('speedFactor').value = newRate;
   document.getElementById('speedTextValue').textContent = newRate.toFixed(1);
-  
+
   console.log(`Speed changed to ${newRate}x`);
 }
 
@@ -224,7 +222,7 @@ function changeBPM(newBpm) {
   generateSnapLines();
   try {
     information.bpm = newBpm;
-  } catch (error) {}
+  } catch (error) { }
 }
 
 game.init();
@@ -235,7 +233,20 @@ game.init();
   selectedDifficulty = crossDetails.difficulty;
   await pickChart(null, crossDetails.location);
   let bpm = information.bpm;
+  beatSnapping = information.snapping || 1;
   changeBPM(bpm);
-  document.getElementById('beatsPerMinutes').value = bpm;
-  document.getElementById('beatSnapping')
+  document.getElementById('beatsPerMinute').value = bpm;
+  snapDivisor = beatSnapping;
+  generateSnapLines();
+  document.getElementById('beatSnap').querySelector(`option[value="${beatSnapping}"]`).selected = true;
+  changeOffsetMs(information.offsetMs || 0)
+  selectMenuFactory.create({
+    id: 'beatSnap',
+    defaultValue: 4,
+    onBeforeClose: (menu, value) => {
+      snapDivisor = Number(value);
+      generateSnapLines();
+      information.snapping = value;
+    },
+  });
 })();

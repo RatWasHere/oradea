@@ -12,6 +12,9 @@ const fs = require('fs');
   'disable-backgrounding-occluded-windows'
 ].forEach(switchName => app.commandLine.appendSwitch(switchName));
 
+
+app.commandLine.appendSwitch('js-flags', '--expose-gc');
+
 // Global variables
 let mainWindow;
 let settingsWindow;
@@ -276,6 +279,13 @@ app.on('ready', () => {
     }
   });
 });
+
+
+ipcMain.on('performanceFix', () => {
+  if (global.gc) {
+    global.gc();
+  }
+})
 
 // ==================== Legal Windows ====================
 

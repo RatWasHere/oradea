@@ -103,6 +103,7 @@ class TimingSystem {
 
     const targetMap = {
       parent: note.element.parentElement,
+      lane: note.element.parentElement.parentElement,
       note: note.element,
       header: note.element,
       hint: note.hint,
@@ -111,7 +112,7 @@ class TimingSystem {
 
     // --- FIX 2: Removed duplicate helper definition block entirely to utilize class scope ---
 
-    const targets = ['parent', 'note', 'header', 'hint', 'endHint'];
+    const targets = ['parent', 'lane', 'note', 'header', 'hint', 'endHint'];
     for (let i = 0; i < targets.length; i++) {
       const targetKey = targets[i];
       const styleBlock = visualsConfig[targetKey];

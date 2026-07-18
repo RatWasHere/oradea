@@ -79,8 +79,11 @@ let angleMap = {
 }
 
 
+
+
 let bpm = 120;
-let snapDivisor = 1; 
+let snapDivisor = 1;
+let offsetMs;
 let calculatedSpacing = 0;
 function generateSnapLines() {
   let msPerBeat = 60000 / bpm;
@@ -100,9 +103,10 @@ function generateSnapLines() {
 
     snap.addEventListener('click', (e) => {
       e.stopPropagation();
+      if (currentlySelectedNoteType == 4) return;
 
       let msPerSnap = (60000 / bpm) / snapDivisor;
-      let currentSnapIndex = Math.floor(game.gameState.currentTime / msPerSnap);
+      let currentSnapIndex = Math.floor((game.gameState.currentTime + offsetMs) / msPerSnap);
       let targetSnapIndex = currentSnapIndex + parseInt(snap.dataset.offsetIndex);
       let exactTime = targetSnapIndex * msPerSnap;
 
@@ -111,9 +115,29 @@ function generateSnapLines() {
       placeNote(exactTime, laneIndex);
     });
 
+    snap.addEventListener('mousedown', (e) => {
+      if (currentlySelectedNoteType != 4) return;
+      e.stopPropagation();
+      
+
+      let msPerSnap = (60000 / bpm) / snapDivisor;
+      let currentSnapIndex = Math.floor((game.gameState.currentTime + offsetMs) / msPerSnap);
+      let targetSnapIndex = currentSnapIndex + parseInt(snap.dataset.offsetIndex);
+      let exactTime = targetSnapIndex * msPerSnap;
+
+      let laneIndex = getLaneFromX(e.clientX);
+
+      let slider = placeNote(exactTime, laneIndex);
+
+      requestAnimationFrame(() => {
+        let sliderIndex = game.gameState.sheet.indexOf(slider);
+        startDraggingSlider(sliderIndex);
+      })
+    });
+
     snap.onmouseenter = () => {
       let msPerSnap = (60000 / bpm) / snapDivisor;
-      let currentSnapIndex = Math.floor(game.gameState.currentTime / msPerSnap);
+      let currentSnapIndex = Math.floor((game.gameState.currentTime + offsetMs) / msPerSnap);
       let targetSnapIndex = currentSnapIndex + parseInt(snap.dataset.offsetIndex);
       hoveredTime = targetSnapIndex * msPerSnap;
     };
@@ -124,7 +148,7 @@ function generateSnapLines() {
 }
 
 function updateSnapPositions() {
-  let currentTime = game.gameState.currentTime;
+  let currentTime = game.gameState.currentTime + offsetMs;
   let msPerBeat = 60000 / bpm;
   let msPerSnap = msPerBeat / snapDivisor;
 
@@ -187,6 +211,8 @@ function createNoteElement(sheetEntryIndex) {
 
     if (!selectedNotes.has(note)) {
       selectNote(note, !e.shiftKey);
+    } else if (e.shiftKey) {
+      deselectNote(note);
     }
 
     if (!e.target.classList.contains('slider-drag-handle')) {
@@ -236,7 +262,7 @@ function handleSliderDrag(e) {
   let chartContainer = document.getElementById('chart_lines').getBoundingClientRect();
 
   let mouseY = e.clientY - chartContainer.top;
-  let clampedY = Math.max(0, Math.min(editorHeight, mouseY));
+  let clampedY = Math.max(1, Math.min(editorHeight, mouseY));
 
   let timeFromBottom = (editorHeight - clampedY) / pixelsPerMs;
   let absoluteTimeAtMouse = game.gameState.currentTime + timeFromBottom;
@@ -248,11 +274,19 @@ function handleSliderDrag(e) {
     snappedTime = note.time + msPerSnap;
   }
 
-  note.sliderEnd = snappedTime;
+
+  
+  if ((snappedTime - Number(offsetMs)) - note.time < 0.1) {
+    console.log('recalcing', note.time, Number(note.time) + ((60 / bpm) / beatSnapping))
+    note.sliderEnd = Number(note.time) + (((60 / bpm) / beatSnapping) * 1000);
+  } else {
+    note.sliderEnd = snappedTime - Number(offsetMs);
+  }
 }
 
 function stopDraggingSlider() {
-  if (isDraggingSlider) saveState(); // isDraggingSlider = false;
+  game.gameState.precacheStartAtValues();
+  if (isDraggingSlider) saveState();
   draggedNoteIndex = null;
   window.removeEventListener('mousemove', handleSliderDrag);
   window.removeEventListener('mouseup', stopDraggingSlider);
@@ -336,6 +370,7 @@ const reverseAngleMap = {
 };
 
 function placeNote(time, laneIndex) {
+  time = Number(time) - Number(offsetMs);
   if (currentlySelectedNoteType == 0) return;
   saveState();
   let insertIndex = game.gameState.sheet.findIndex(n => n.time > time);
@@ -345,7 +380,7 @@ function placeNote(time, laneIndex) {
   if (typeof currentlySelectedNoteType !== 'undefined') {
     if (currentlySelectedNoteType == 2) additionalOptions = { golden: true };
     else if (currentlySelectedNoteType == 3) additionalOptions = { holdable: true };
-    else if (currentlySelectedNoteType == 4) additionalOptions = { slider: true, sliderEnd: time + 1000 };
+    else if (currentlySelectedNoteType == 4) additionalOptions = { slider: true, sliderEnd: (Number(time) + (((60 / bpm) / beatSnapping) * 1000)) };
     else if (currentlySelectedNoteType == 5) additionalOptions = { swipe: true, swipeEnd: time + 100 };
     else if (currentlySelectedNoteType == 6) additionalOptions = { swipe: true, shortSwipe: true, direction: 1, swipeEnd: time + 100 };
     else if (currentlySelectedNoteType == 7) additionalOptions = { swipe: true, quarterSwipe: true, direction: 1, swipeEnd: time + 100 };
@@ -365,6 +400,8 @@ function placeNote(time, laneIndex) {
 
   game.gameState.precacheStartAtValues();
   clearSelection();
+
+  return newNote;
 }
 
 let movedNoteIndex = null;
@@ -649,7 +686,7 @@ window.addEventListener('keydown', (e) => {
 
         savedClipboard.forEach(clipNote => {
           let rel = clipNote.relativeTime || 0;
-          let newTime = hoveredTime + rel;
+          let newTime = hoveredTime + rel - Number(offsetMs);
 
           let pastedNote = { ...clipNote };
           delete pastedNote.relativeTime;
@@ -679,6 +716,10 @@ window.addEventListener('keydown', (e) => {
         game.gameState.sheet.forEach((n, i) => n.index = i);
 
         console.log(`Successfully pasted ${savedClipboard.length} notes.`);
+
+        requestAnimationFrame(() => {
+          game.gameState.precacheStartAtValues();
+        })
       } catch (err) {
         console.error("Paste failed. Real Error:", err.message);
         alert("Clipboard content is not valid JSON or the editor crashed during paste.");
@@ -817,7 +858,14 @@ function saveChartDetails() {
   });
 
   fs.writeFileSync(`${process.cwd()}/Beatmaps/${information.location}/${information.difficulties[selectedDifficulty]}`, JSON.stringify(endNotes, null, 2));
-
+  fs.writeFileSync(`${process.cwd()}/Beatmaps/${information.location}/information.json`, JSON.stringify(information, null, 2));
   updateNotes();
 }
 
+
+function changeOffsetMs(ms) {
+  offsetMs = Number(ms);
+  information.offsetMs = offsetMs;
+
+  generateSnapLines();
+}

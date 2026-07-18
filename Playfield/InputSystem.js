@@ -74,7 +74,7 @@ class InputSystem {
     note.done = true;
     this.createNoteAura(note).then(() => {
       note.traceParent.remove();
-      note.element.parentElement.remove();
+      note.element.parentElement.parentElement.remove();
     })
   }
 
@@ -209,6 +209,7 @@ class InputSystem {
 
 handleAutoplay(currentTime) {
   for (const note of this.gameState.sheet) {
+    if (note.fake) continue;
     if (note.time > currentTime || note.done) continue;
 
     if (note.swipe) {
@@ -460,7 +461,7 @@ handleAutoplay(currentTime) {
 
     for (let i = 0; i < notes.length; i++) {
       const note = notes[i];
-      if (note.swipe) continue;
+      if (note.swipe || note.fake) continue;
 
       if (note.slider) {
         if (note.isBeingHeld || note.done || note.wasEverHeld) continue;
@@ -524,20 +525,67 @@ handleAutoplay(currentTime) {
     }
 
     this.createNoteAura(note).then(() => {
-      note.element.parentElement.remove();
+      note.element.parentElement.parentElement.remove();
     });
 
     if (point) {
+      const targetType = 'segment_highlight_' + point.segment;
       requestAnimationFrame(() => {
-        this.gameState.effectItems.find(i => i.type == 'segment_highlight_' + point.segment).element.style.transition = 'opacity 0.25s ease';
-        this.gameState.effectItems.find(i => i.type == 'segment_highlight_' + point.segment).element.style.opacity = 0;
+        const effectItems = this.gameState.effectItems;
+        for (let i = 0; i < effectItems.length; i++) {
+          const effectItem = effectItems[i];
+          if (effectItem.type == targetType) {
+            effectItem.element.style.transition = 'opacity 0.25s ease';
+            effectItem.element.style.opacity = 0;
+            break;
+          }
+        }
       })
     }
   }
 
+  #freeUpConsumable(consumable) {
+      consumable.parent.style.display = 'none';
+      consumable.inUse = false;
+  }
+
+  #activateConsumableAnimation(consumable) {
+    consumable.element.style.animationName = '';
+    if (consumable.particleElement) {
+      consumable.particleElement.style.animationName = '';
+    }
+    if (consumable.particleElementRepeat) {
+      consumable.particleElementRepeat.style.animationName = '';
+    }
+  }
+
+  #hideConstantEffect(effect) {
+    effect.inUse = false;
+    if (effect.parent) {
+      effect.parent.style.display = 'none';
+      effect.parent.style.opacity = null;
+    }
+  }
+
   consumeEffect(type, angle, effectOffset = 0) {
-    let consumable = this.gameState.effectItems.find(i => i.type === type && !i.inUse);
-    if (!consumable) consumable = this.gameState.effectItems.find(i => i.type === type);
+    let consumable = null;
+    const effectItems = this.gameState.effectItems;
+    for (let i = 0; i < effectItems.length; i++) {
+      const item = effectItems[i];
+      if (item.type === type && !item.inUse) {
+        consumable = item;
+        break;
+      }
+    }
+    if (!consumable) {
+      for (let i = 0; i < effectItems.length; i++) {
+        const item = effectItems[i];
+        if (item.type === type) {
+          consumable = item;
+          break;
+        }
+      }
+    }
     consumable.inUse = true;
     consumable.parent.style.display = 'block';
     consumable.parent.style.rotate = `${(angle * CONFIG.SNAP_INTERVAL) + 90 + effectOffset}deg`;
@@ -548,20 +596,9 @@ handleAutoplay(currentTime) {
     if (consumable.particleElementRepeat) {
       consumable.particleElementRepeat.style.animationName = 'none';
     }
-    requestAnimationFrame(() => {
-      consumable.element.style.animationName = '';
-      if (consumable.particleElement) {
-        consumable.particleElement.style.animationName = '';
-      }
-      if (consumable.particleElementRepeat) {
-        consumable.particleElementRepeat.style.animationName = '';
-      }
-    });
+    requestAnimationFrame(this.#activateConsumableAnimation.bind(this, consumable));
     if (consumable.constant) return consumable;
-    setTimeout(() => {
-      consumable.parent.style.display = 'none';
-      consumable.inUse = false;
-    }, 700);
+    setTimeout(this.#freeUpConsumable.bind(this, consumable), 700);
   }
 
   releaseEffect(effect) {
@@ -569,11 +606,7 @@ handleAutoplay(currentTime) {
       try {
         effect.parent.style.opacity = '0';
       } catch (error) { }
-      setTimeout(() => {
-        effect.inUse = false;
-        effect.parent.style.display = 'none';
-        effect.parent.style.opacity = null;
-      }, 250);
+      setTimeout(this.#hideConstantEffect.bind(this, effect), 250);
       return
     }
     if (effect.parent && effect.parent?.style) {

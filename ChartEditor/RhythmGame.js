@@ -1,3 +1,5 @@
+let globalLoopID = 0;
+let updateSkips = 0;
 class RhythmGame {
   constructor() {
     this.gameState = new GameState();
@@ -52,22 +54,28 @@ class RhythmGame {
   }
 
   updateTimestamps(time) {
+    updateSkips++;
+    if (updateSkips != 10) return;
+    updateSkips = 0;
     let currentTime = Math.round(time);
     let timeLength = `${currentTime}`.length;
-    document.getElementById('timestamp').innerHTML = `${'0'.repeat(this.gameState.zerosInMS - timeLength)}${currentTime}`;
+    document.getElementById('timestamp').innerText = `${'0'.repeat(this.gameState.zerosInMS - timeLength)}${currentTime}`;
 
     currentTime = time / 1000;
     let minutes = Math.floor(currentTime / 60);
     let seconds = Math.floor(currentTime - minutes * 60);
     let milliseconds = Math.floor((currentTime - minutes * 60 - seconds) * 1000);
-    document.getElementById('humanformat').innerHTML = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}:${milliseconds < 10 ? '0' : ''}${milliseconds.toString().slice(0, 2)}`;
+    document.getElementById('humanformat').innerText = `${minutes < 10 ? '0' : ''}${minutes}:${seconds < 10 ? '0' : ''}${seconds}:${milliseconds < 10 ? '0' : ''}${milliseconds.toString().slice(0, 2)}`;
   
     if (this.gameState.stopUpdatingRange) return;
     document.getElementById('timeRange').value = time;
   }
 
   startGameLoop() {
+    let loopID = globalLoopID + 1;
+    globalLoopID = loopID;
     const gameLoop = (timestamp) => {
+      if (globalLoopID != loopID) return;
       const currentTime = this.gameState.currentTime;
       if ((currentTime) > this.gameState.endsAt) return this.endGame();
 

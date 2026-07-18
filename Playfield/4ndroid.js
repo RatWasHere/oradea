@@ -1,4 +1,5 @@
 var isAndroid = /Android/i.test(navigator.userAgent);
+const SERVER_URL = 'http://192.168.1.52:8000';
 
 if (isAndroid) {
   var settings = {
@@ -17,9 +18,13 @@ if (isAndroid) {
   }
 
 
+  let requestedFs = false;
   window.addEventListener('touchend', () => {
     var elem = document.body;
-    elem.requestFullscreen();
+    if (!requestedFs) {
+      elem.requestFullscreen();
+      requestedFs = true;
+    }
   })
 
   if (isAndroid) {

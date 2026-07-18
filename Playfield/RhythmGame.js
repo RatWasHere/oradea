@@ -40,7 +40,6 @@ class RhythmGame {
       }
     } else {
       // Android: Fetch from server
-      const SERVER_URL = 'http://192.168.100.11:5500';
       for (let type in audioPaths) {
         try {
           // build correct URL (audioPaths like "./Assets/hit_normal.mp3")

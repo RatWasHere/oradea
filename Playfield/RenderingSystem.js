@@ -147,8 +147,7 @@ class RenderingSystem {
     const fragment = document.createDocumentFragment();
     let speedMod = 1;
     if (note.timeSheet) {
-      speedMod = note.timeSheet[0].speed != undefined ? note.timeSheet[0].speed : 1;
-      console.log('parsed speedmod', speedMod)
+      speedMod = note.timeSheet[0]?.speed != undefined ? note.timeSheet[0]?.speed : 1;
     }
     if (note.slider) {
       noteElement.classList.add('slider');
@@ -646,7 +645,7 @@ class RenderingSystem {
   hasFailed(note, currentTime) {
     if (note.slider) {
       let failed = currentTime > note.precalculatedFailTime;
-      if (failed) {
+      if (failed && !note.fake) {
         note.done = true;
         if (note.slider) this.inputSystem.releaseSlider(note, true);
       }

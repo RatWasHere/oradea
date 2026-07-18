@@ -207,6 +207,12 @@ function refreshLocalEvents() {
     <input 
     oninput="game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].rawStartAt = this.value ? this.value : undefined; game.gameState.precacheStartAtValues();"
     style="margin: auto;" placeholder="leave empty for auto..." class="ss-main" value="${note.rawStartAt || ""}">
+
+        <btext id="noteStartTime">end note render at ms</btext>
+    <input 
+    oninput="game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].rawEndAt = this.value ? this.value : undefined; game.gameState.precacheStartAtValues();"
+    style="margin: auto;" placeholder="leave empty for auto..." class="ss-main" value="${note.rawEndAt || ""}">
+
     `
 
     endTabs.push(
@@ -226,11 +232,6 @@ function refreshLocalEvents() {
     <input style="width: 480px; margin: auto;" class="ss-main" value="${note.sliderEnd}">
     <div style="height: 5px;"></div>
     <btext style="font-family: 'Mono'; font-weight: 100; letter-spacing: -0.9px;"><span style="opacity: 0.5; ">Duration:</span> ${note.sliderEnd - note.time}</btext>
-    <div class="separator"></div>
-    <btext id="noteStartTime">end note render at ms</btext>
-    <input 
-    oninput="game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].rawEndAt = this.value ? this.value : undefined; game.gameState.precacheStartAtValues();"
-    style="margin: auto;" placeholder="leave empty for auto..." class="ss-main" value="${note.rawEndAt || ""}">
     `
     }
     if (note.swipe) {
@@ -241,7 +242,7 @@ function refreshLocalEvents() {
         style: "width: 475px;",
         state: note.direction != -1
       }, `saveState(); game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].direction = ${note.direction == -1 ? 1 : -1}; refreshLocalEvents(); freeNote(game.gameState.sheet[${game.gameState.sheet.indexOf(note)}]); freeSFX(game.gameState.sheet[${game.gameState.sheet.indexOf(note)}]);`);
-    } else {
+    }
       endHTML += studioUI.toggle({
         name: "Fake Note",
         false: "No",
@@ -249,15 +250,16 @@ function refreshLocalEvents() {
         style: "width: 475px;",
         state: note.fake == true
       }, `saveState(); game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].fake = ${!note.fake ? true : false};`);
-    }
 
     endHTML += `</div>
-    <div class="contentContainer-tabs" id="events">
-    <div class="eventControls">
+    <div class="contentContainer-tabs flexbox" id="events">
+    <flexbox class="eventControls">
       <div id="noteEvents">
       </div>
     <btn onclick="createNoteEvent();" style="width: 50px; height: 50px; padding: 0px !important;" class="flexbox"><div class="image" id="createIcon"></div></btn>
-    </div>
+    <btn onclick="pasteNoteEvents(${game.gameState.sheet.indexOf(note)});" style="width: 50px; height: 50px; padding: 0px !important; margin-right: auto; margin-left: 5px;" class="flexbox"><div class="image" id="pasteIcon"></div></btn>
+    
+    </flexbox>
     </div>
     `
   }
@@ -291,7 +293,7 @@ function updateNoteEvents() {
 
       endHTML += `<div class="noteEvent" onmouseenter="surpressScrolling = true" onmouseleave="surpressScrolling = false">
       <btext id="genericValueLabel">time</btext>
-      <input style="margin: auto;" class="ss-main" value="${event.rawTime != undefined ? event.rawTime : 0}" oninput="game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].timeSheet[${eventIndex}].rawTime = this.value; game.gameState.recalculateNoteScaleTiming(game.gameState.sheet[${game.gameState.sheet.indexOf(note)}]); game.gameState.precacheStartAtValues();">
+      <input style="margin: auto;" class="ss-main" value="${event.rawTime != undefined ? event.rawTime : 0}" oninput="game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].timeSheet[${eventIndex}].rawTime = this.value;" onblur="game.gameState.recalculateNoteScaleTiming(game.gameState.sheet[${game.gameState.sheet.indexOf(note)}]); game.gameState.precacheStartAtValues();">
     <div style="height: 5px;"></div>
     <div class="expandableEventDetails">
     <div style="height: 5px;"></div>
@@ -369,7 +371,7 @@ function displayEventSpecifics(noteIndex, eventIndex) {
     <div class="flexbox" style="width: 100%;">
       <div style="width: calc(50% - 5px); margin-right: 5px;">
         <btext id="genericValueLabel">transition duration (ms)</btext>
-        <input oninput="game.gameState.sheet[${noteIndex}].timeSheet[${eventIndex}].rawTransition = this.value; game.gameState.recalculateNoteScaleTiming(game.gameState.sheet[${game.gameState.sheet.indexOf(note)}]); game.gameState.precacheStartAtValues();" class="ss-main" value="${event.initial_transition != undefined ? event.initial_transition : (event.transition == undefined ? 0 : event.transition)}">
+        <input oninput="game.gameState.sheet[${noteIndex}].timeSheet[${eventIndex}].rawTransition = this.value; game.gameState.recalculateNoteScaleTiming(game.gameState.sheet[${game.gameState.sheet.indexOf(note)}]); game.gameState.precacheStartAtValues();" class="ss-main" value="${event.rawTransition != undefined ? event.rawTransition : 0}">
       </div>
 
       <div style="width: 50%;">
@@ -426,29 +428,61 @@ function displayEventSpecifics(noteIndex, eventIndex) {
   })
 }
 
-let availableStyleProperties = ['scale', 'opacity', 'transform', 'filter', 'rotate', 'unset']
+let availableStyleProperties = ['scale', 'opacity', 'transform', 'filter', 'rotate', 'background', 'unset']
 
 
 async function pasteNoteEventStyleProperties(noteIndex, eventIndex) {
   let clipboard = await navigator.clipboard.readText();
   let parsed = JSON.parse(clipboard);
-  console.log(parsed);
   if (!Array.isArray(parsed) || !parsed[0].location) return;
 
   // if anyone snooping through the code looking for a reason to call me lazy, feel free to call me out for this forEach
+  // now stop looking, it's bad code.
+
+  
   parsed.forEach((style) => {
     let deserializedStyle = JSON.parse(JSON.stringify(style));
     delete deserializedStyle.property;
     delete deserializedStyle.location;
+    if (!game.gameState.sheet[noteIndex].timeSheet[eventIndex].visuals) {
+      game.gameState.sheet[noteIndex].timeSheet[eventIndex].visuals = {
+        note: {},
+        parent: {},
+        hint: {},
+        lane: {},
+        tracePath: {},
+        traceParent: {}
+      }
+    }
+    if (!game.gameState.sheet[noteIndex].timeSheet[eventIndex].visuals[style.location]) {
+      game.gameState.sheet[noteIndex].timeSheet[eventIndex].visuals[style.location] = {};
+    }
     game.gameState.sheet[noteIndex].timeSheet[eventIndex].visuals[style.location][style.property] = deserializedStyle;
-    console.log(game.gameState.sheet[noteIndex].timeSheet[eventIndex].visuals[style.location][style.property], game.gameState.sheet[noteIndex].timeSheet[eventIndex].visuals)
-    console.log('ayte')
   });
 
   requestAnimationFrame(() => {
     refreshNoteEventStyleProperties(noteIndex, eventIndex);
   })
 }
+
+
+async function pasteNoteEvents(noteIndex) {
+  let clipboard = await navigator.clipboard.readText();
+  let parsed = JSON.parse(clipboard);
+  if (!Array.isArray(parsed) || parsed[0].rawTime == undefined) return;
+
+  parsed.forEach((event) => {
+    if (!Array.isArray(game.gameState.sheet[noteIndex].timeSheet)) {
+      game.gameState.sheet[noteIndex].timeSheet = [];
+    }
+    game.gameState.sheet[noteIndex].timeSheet.push(event);
+  });
+
+  requestAnimationFrame(() => {
+    refreshLocalEvents(noteIndex);
+  })
+}
+
 
 function createNoteEventStyleProperty(noteIndex, eventIndex) {
   let event = game.gameState.sheet[noteIndex].timeSheet[eventIndex];
@@ -458,6 +492,7 @@ function createNoteEventStyleProperty(noteIndex, eventIndex) {
       note: {},
       parent: {},
       hint: {},
+      lane: {},
       tracePath: {},
       traceParent: {}
     };
@@ -481,6 +516,7 @@ function capitalizeFirstLetter(string) {
 
 function refreshNoteEventStyleProperties(noteIndex, eventIndex) {
   let note = game.gameState.sheet[noteIndex];
+  game.gameState.sheet[noteIndex].timeSheet.sort((a, b) => {return a.time - b.time});
   let event = game.gameState.sheet[noteIndex].timeSheet[eventIndex];
 
   let selectsPendingInitiation = [];
@@ -500,9 +536,13 @@ function refreshNoteEventStyleProperties(noteIndex, eventIndex) {
     selectsPendingInitiation.push({
       id: `${location}-${property}-on-${noteIndex}-${eventIndex}`,
       onAfterClose: (m, value) => {
+        saveState();
+        console.log(location, event.visuals, property)
         let deserializedCurrentValue = JSON.parse(JSON.stringify(event.visuals[location][property]))
+        if (!event.visuals[value]) event.visuals[value] = {};
         delete event.visuals[location][property];
         event.visuals[value][property] = deserializedCurrentValue;
+        console.log(event.visuals[value][property]);
 
         refreshNoteEventStyleProperties(noteIndex, eventIndex);
       }
@@ -511,6 +551,7 @@ function refreshNoteEventStyleProperties(noteIndex, eventIndex) {
     selectsPendingInitiation.push({
       id: `${location}-${property}-on-${noteIndex}-${eventIndex}-property`,
       onAfterClose: (m, value) => {
+        saveState();
         let deserializedCurrentValue = JSON.parse(JSON.stringify(event.visuals[location][property]))
         delete event.visuals[location][property];
         event.visuals[location][value] = deserializedCurrentValue;
@@ -540,7 +581,8 @@ function refreshNoteEventStyleProperties(noteIndex, eventIndex) {
           <btext id="genericValueLabel">apply to</btext>
           <select id="${location}-${property}-on-${noteIndex}-${eventIndex}">
             <option ${location == 'note' ? 'selected' : ''} value="note">Note</option>
-            <option ${location == 'path' ? 'selected' : ''} value="parent">Path</option>
+            <option ${location == 'parent' ? 'selected' : ''} value="parent">Path</option>
+            <option ${location == 'lane' ? 'selected' : ''} value="lane">Lane</option>
             <option ${location == 'hint' ? 'selected' : ''} value="hint">Hint</option>
             ${note.swipe ? `
               <option ${location == 'tracePath' ? 'selected' : ''} value="tracePath">Trace</option>

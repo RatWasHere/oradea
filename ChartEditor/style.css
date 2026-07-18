@@ -109,7 +109,7 @@ input[type="range"]:active::-webkit-slider-thumb {
   position: absolute;
   right: 28;
   font-family: 'Mono';
-  top: 100;
+  top: 96;
   padding-left: 7px;
 }
 
@@ -117,7 +117,7 @@ input[type="range"]:active::-webkit-slider-thumb {
   position: absolute;
   font-family: 'Mono';
   right: 28;
-  top: 114;
+  top: 110;
   opacity: 0.3;
 }
 

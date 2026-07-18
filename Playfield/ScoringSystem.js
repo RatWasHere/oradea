@@ -56,6 +56,10 @@ class ScoringSystem {
     return accuracy;
   }
 
+  #resetComboDisplayAnimation() {
+    
+  }
+
   updateScoreDisplays() {
     let scoreLength = `${this.gameState.score}`.length;
     let lastScoreLength = this.gameState.cachedScoreLength || 0;

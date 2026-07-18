@@ -250,7 +250,7 @@ class GameState {
               for (let visualModifierKey in visualModifiers) {
                 let visualModifier = visualModifiers[visualModifierKey]
                 if (typeof visualModifier.rawDuration == 'string' && visualModifier.rawDuration.includes('#')) {
-                  visualModifier.duration = eval(visualModifier.duration.replaceAll(`#0`, totalPreviewDuration))
+                  visualModifier.duration = eval(visualModifier.rawDuration.replaceAll(`#0`, totalPreviewDuration))
                 } else if (typeof visualModifier.rawDuration == 'string') {
                   visualModifier.duration = Number(visualModifier.rawDuration);
                 }
@@ -258,6 +258,8 @@ class GameState {
             }
           }
         }
+
+        note.timeSheet.sort((a, b) => {return a.time - b.time})
       }
       try {
         this.recalculateNoteScaleTiming(note);
@@ -589,14 +591,12 @@ class GameState {
     this.audioSource.buffer = this.audioBuffer;
     this.audioSource.connect(this.gainNode);
 
-    // Restore playback speed BEFORE starting
     if (typeof currentPlaybackSpeed !== 'undefined') {
       this.audioSource.playbackRate.value = currentPlaybackSpeed;
     }
 
     const timeInSeconds = timeInMs / 1000;
     const playbackRate = this.audioSource.playbackRate.value;
-    // Account for playback rate in audioStartTime calculation
     this.audioStartTime = this.audioContext.currentTime - (timeInSeconds / playbackRate);
 
     this.audioSource.start(this.audioContext.currentTime, timeInSeconds);
@@ -606,14 +606,12 @@ class GameState {
         item.done = false;
       }
       if (item.time < timeInMs) {
-        if (item.element) {
-          item.element.remove();
+        if (item.element?.parentElement?.parentElement) {
+          item.element.parentElement.parentElement.remove();
         }
         item.element = null;
         item.playedHitSound = false;
       }
     }
   }
-
-
 }
