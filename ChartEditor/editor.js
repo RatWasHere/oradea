@@ -243,6 +243,26 @@ function refreshLocalEvents() {
         state: note.direction != -1
       }, `saveState(); game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].direction = ${note.direction == -1 ? 1 : -1}; refreshLocalEvents(); freeNote(game.gameState.sheet[${game.gameState.sheet.indexOf(note)}]); freeSFX(game.gameState.sheet[${game.gameState.sheet.indexOf(note)}]);`);
     }
+
+    if (note.slider) {
+      endHTML += studioUI.toggle({
+        name: "Holdable Start",
+        false: "No",
+        true: "Yes",
+        style: "width: 475px;",
+        state: note.holdableStart == true
+      }, `saveState(); game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].holdableStart = ${!note.fake ? true : false};`);
+    }
+    if (note.slider) {
+      endHTML += studioUI.toggle({
+        name: "Holdable End",
+        false: "No",
+        true: "Yes",
+        style: "width: 475px;",
+        state: note.holdableEnd == true
+      }, `saveState(); game.gameState.sheet[${game.gameState.sheet.indexOf(note)}].holdableEnd = ${!note.fake ? true : false};`);
+    }
+
       endHTML += studioUI.toggle({
         name: "Fake Note",
         false: "No",

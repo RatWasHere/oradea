@@ -1,5 +1,5 @@
 var isAndroid = /Android/i.test(navigator.userAgent);
-const SERVER_URL = 'http://192.168.1.52:8000';
+const SERVER_URL = 'http://192.168.1.50:8080/';
 
 if (isAndroid) {
   var settings = {

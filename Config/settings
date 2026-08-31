@@ -1,5 +1,5 @@
 {
-  "note_speed": 16,
+  "note_speed": 16.4,
   "hexagon_size": "1",
   "input_mode": "buttons",
   "snap_extension": "0",
@@ -27,7 +27,7 @@
     "5": "D",
     "6": "L"
   },
-  "perfection_indicator": "1",
+  "perfection_indicator": "0",
   "ssfx": "1",
-  "bgdust": "0"
+  "bgdust": "1"
 }

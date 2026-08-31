@@ -265,11 +265,9 @@ body {
   width: 300px;
   height: 80px;
   background-size: cover;
-  background-repeat: none;
+  background-repeat: no-repeat;
   animation: show_scoring 0.25s ease;
-  animation-fill-mode: forwards;
   display: none;
-  position: absolute;
 }
 
 #perfect {
@@ -295,6 +293,7 @@ body {
 @keyframes show_scoring {
   0% {
     opacity: 0.5;
+    display: block;
     scale: 0.8;
   }
 
@@ -311,6 +310,7 @@ body {
   99% {
     opacity: 0;
     scale: 0.8;
+    display: block;
   }
 
   100% {

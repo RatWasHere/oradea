@@ -53,7 +53,7 @@ const CONFIG = {
     'perfect': [0, 52.8],
     'great': [52.8, 90.8],
     'ok': [90.8, 169],
-    'bad': [169, 242.0],
+    'bad': [169, 203.5],
   },
   ACCURACY_SCORES: {
     'perfect': 200,
@@ -85,6 +85,7 @@ const CONFIG = {
   VFX_DURATION: 1,
   SLIDER_OFFSET: 0
 };
+
 
 
 class GameState {
@@ -260,6 +261,10 @@ class GameState {
           this.timingSystem.fromSpecial(note.startAt) :
           note.time;
       }
+      
+      let relative = (relativeTo) => {
+        return relativeTo - note.time;
+      }
 
       if (typeof note.rawStartAt == 'string') {
         note.startAt = eval(note.rawStartAt.replaceAll(`#0`, CONFIG.NOTE_PREVIEW_DELAY));
@@ -268,6 +273,11 @@ class GameState {
 
       if (typeof note.rawEndAt == 'string') {
         note.endAt = eval(note.rawEndAt.replaceAll(`#0`, CONFIG.NOTE_PREVIEW_DELAY));
+      }
+
+      if (note.swipe || note.quarterSwipe || note.halfSwipe || note.shortSwipe) {
+        note.swipe_fadeInEnd = note.time - CONFIG.NOTE_PREVIEW_DELAY;
+        note.swipe_fadeInStart = (note.time - CONFIG.NOTE_PREVIEW_DELAY) - CONFIG.SCALE_DURATION;
       }
 
       if (note.timeSheet) {
@@ -296,11 +306,7 @@ class GameState {
             for (let rawValueKey in relevant) {
               let value = timeSheet.from[rawValueKey];
               if (!value) continue;
-              if (typeof value == 'string' && value.includes('#')) {
                 timeSheet.from[relevant[rawValueKey]] = eval(timeSheet.from[rawValueKey].replaceAll(`#0`, totalPreviewDuration));
-              } else {
-                timeSheet.from[relevant[rawValueKey]] = Number(timeSheet.from[rawValueKey]);
-              }
             }
           }
 
@@ -320,7 +326,7 @@ class GameState {
           }
         }
 
-        note.timeSheet.sort((a, b) => {return a.time - b.time})
+        note.timeSheet.sort((a, b) => { return a.time - b.time })
       }
       try {
         this.recalculateNoteScaleTiming(note);
@@ -351,7 +357,7 @@ class GameState {
     if (note.startAt) {
       note.precalculatedStartAt = note.time + Number(note.startAt);
     }
-  
+
     if (note.slider) {
       note.precalculatedFailTime = Number(note.sliderEnd) + CONFIG.SLIDER_RELEASE_THRESHOLD
     } else {

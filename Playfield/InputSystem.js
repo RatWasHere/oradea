@@ -72,6 +72,7 @@ class InputSystem {
       this.gameState.scoringSystem.judge(note.swipeEnd, true);
     }
     note.done = true;
+    this.vibrate(1)
     this.createNoteAura(note).then(() => {
       note.traceParent.remove();
       note.element.parentElement.parentElement.remove();
@@ -520,7 +521,7 @@ handleAutoplay(currentTime) {
     if (note.hold && note.time < this.gameState.currentTime) {
       this.vibrate(3);
     } else {
-      this.vibrate(2);
+      this.vibrate(note.golden == true ? 'golden' : null);
       this.createHoldEffect(note);
     }
 
@@ -664,26 +665,12 @@ handleAutoplay(currentTime) {
   }
 
   vibrate(kind) {
-    return
-    let settings = {
-      w: 1,
-      s: 1,
-      d: 35
-    };
-    let effectType = "dual-rumble";
-
-    if (kind == "HOLDING") {
-      settings.d = 10;
-      settings.w = 0.1;
-      settings.s = 0.1;
-    }
-
-
-    this.gameState.gamepad.vibrationActuator.playEffect(effectType, {
+    // return;
+    navigator.getGamepads()[0].vibrationActuator.playEffect("dual-rumble", {
       startDelay: 0,
-      duration: settings.d,
-      weakMagnitude: settings.w,
-      strongMagnitude: settings.s,
+      duration: kind == 'golden' ? 120 : 60,
+      weakMagnitude: 0.7,
+      strongMagnitude: 0.3
     });
   }
 }

@@ -28,18 +28,15 @@ class RenderingSystem {
   }
 
   updateBeatMarkerScale(currentTime) {
-    const beatsPerCycle = 2; // or 2, or make it a variable
+    const beatsPerCycle = 2; 
     const cycleDuration = this.gameState.beatDuration * beatsPerCycle;
     const cycleProgress = (currentTime % cycleDuration) / cycleDuration;
 
-    // Only scale on the first beat of each cycle
     const beatInCycle = Math.floor((currentTime / this.gameState.beatDuration) % beatsPerCycle);
 
     if (beatInCycle === 0) {
-      // Scale from 0 to 1 during the first beat
       this.gameState.elements.bpmFrame.style.scale = (currentTime % this.gameState.beatDuration) / this.gameState.beatDuration;
     } else {
-      // Stay at 1 for the remaining beats
       this.gameState.elements.bpmFrame.style.scale = 1;
     }
   }
@@ -52,18 +49,14 @@ class RenderingSystem {
 
     this.gameState.sectors = sectors;
 
-    // Update both hover highlighting AND active press effects
     for (let i = 0; i < CONFIG.PREVIEW_COUNT; i++) {
       const preview_segment = this.previewElements[i];
       if (!preview_segment) continue;
 
-      // Check if either cursor is in this sector (hover effect)
       const isHovered = (i === sectors[0] || i === sectors[1]);
 
-      // Check if this sector is being actively pressed
       const isActive = (i === sectors[0] && this.gameState.keysPressed['w']) ||
         (i === sectors[1] && this.gameState.keysPressed['s']);
-      // Apply hover effect
       if (isHovered) {
         preview_segment.classList.add('selected');
       } else {
@@ -254,8 +247,7 @@ class RenderingSystem {
         traceParent.appendChild(tracePath);
         note.traceParent = traceParent;
         note.tracePath = tracePath;
-        note.fadeInEnd = (note.time - (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION)) + (CONFIG.NOTE_PREVIEW_DELAY / 2);
-        note.fadeInStart = (note.time - CONFIG.NOTE_PREVIEW_DELAY) - CONFIG.SCALE_DURATION;
+
 
         noteElement.style.setProperty('--duration', `${note.swipeEnd - note.time}ms`)
 
@@ -354,7 +346,7 @@ class RenderingSystem {
   }
 
   updateHoldableNote(note, time) {
-    if (note.time > time) return;
+    if (note.time > time || note.fake) return;
     for (let [pointID, point] of this.inputSystem.points) {
       let pointAngle = this.inputSystem.getSegment(point.angle);
       if (pointAngle == 6) pointAngle = 0;
@@ -371,7 +363,7 @@ class RenderingSystem {
     };
     if (note.time - time > (CONFIG.NOTE_PREVIEW_DELAY + CONFIG.SCALE_DURATION)) return;
     if (note.time > time) {
-      note.tracePath.style.opacity = getProgress(time, note.fadeInStart, note.fadeInEnd);
+      note.tracePath.style.opacity = getProgress(time, note.swipe_fadeInStart, note.swipe_fadeInEnd);
     }
     if (note.fadeInEnd <= time) {
       note.tracePath.style.opacity = 1;
@@ -628,6 +620,7 @@ class RenderingSystem {
         if (!note.fake) {
           this.gameState.combo = 0;
           this.gameState.scoringSystem.updateScoreDisplays();
+          this.gameState.scoringPad.miss.push(note.time - currentTime)
         }
 
         if (note.element) {
